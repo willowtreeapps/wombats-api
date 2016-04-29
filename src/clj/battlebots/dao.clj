@@ -20,8 +20,11 @@
 
 (defn complete-round!
   [id]
-  (swap! rounds assoc name
-         (assoc (get @rounds id) :active false)))
+  (if (get @rounds id)
+    (swap! rounds
+           (fn [roundsval]
+             (assoc-in roundsval [id :active] false)))))
+
 
 ;; players
 (defn add-player!
