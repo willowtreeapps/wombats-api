@@ -34,7 +34,7 @@
   (not-found "Not Found")
 
   ;; list games
-  (GET "/games" [] (dao/get-games))
+  (GET "/rounds" [] (dao/get-rounds))
   )
 
 (def app (wrap-middleware #'routes))
