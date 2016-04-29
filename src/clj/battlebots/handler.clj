@@ -3,7 +3,8 @@
             [compojure.route :refer [not-found resources]]
             [hiccup.page :refer [include-js include-css html5]]
             [battlebots.middleware :refer [wrap-middleware]]
-            [config.core :refer [env]]))
+            [config.core :refer [env]]
+            [battlebots.dao :as dao]))
 
 (def mount-target
   [:div#app
@@ -24,11 +25,16 @@
      (include-js "/js/app.js")]))
 
 
-(defroutes routes
+(defroutes
+  routes
+  ;; CMS home page will live here
   (GET "/" [] loading-page)
-  (GET "/about" [] loading-page)
-  
+
   (resources "/")
-  (not-found "Not Found"))
+  (not-found "Not Found")
+
+  ;; list games
+  (GET "/games" [] (dao/get-games))
+  )
 
 (def app (wrap-middleware #'routes))
