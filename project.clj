@@ -6,8 +6,7 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [ring-server "0.4.0"]
-                 [reagent "0.5.1"
-                  :exclusions [org.clojure/tools.reader]]
+                 [reagent "0.5.1" :exclusions [org.clojure/tools.reader]]
                  [reagent-forms "0.5.22"]
                  [reagent-utils "0.1.7"]
                  [ring "1.4.0"]
@@ -15,17 +14,18 @@
                  [compojure "1.5.0"]
                  [hiccup "1.0.5"]
                  [yogthos/config "0.8"]
-                 [org.clojure/clojurescript "1.8.40"
-                  :scope "provided"]
+                 [org.clojure/clojurescript "1.8.40" :scope "provided"]
                  [secretary "1.2.3"]
-                 [venantius/accountant "0.1.7"
-                  :exclusions [org.clojure/tools.reader]]
+                 [venantius/accountant "0.1.7" :exclusions [org.clojure/tools.reader]]
                  [re-frame "0.7.0"]]
 
   :plugins [[lein-environ "1.0.2"]
             [lein-cljsbuild "1.1.1"]
-            [lein-asset-minifier "0.2.7"
-             :exclusions [org.clojure/clojure]]]
+            [lein-less "1.7.5"]
+            [lein-asset-minifier "0.2.7" :exclusions [org.clojure/clojure]]]
+
+  :less {:source-paths ["less/main.less"]
+         :target-path  "resources/public/css"}
 
   :ring {:handler battlebots.handler/app
          :uberwar-name "battlebots.war"}
@@ -36,17 +36,13 @@
 
   :main battlebots.server
 
-  :clean-targets ^{:protect false}
-  [:target-path
-   [:cljsbuild :builds :app :compiler :output-dir]
-   [:cljsbuild :builds :app :compiler :output-to]]
+  :clean-targets ^{:protect false} [:target-path [:cljsbuild :builds :app :compiler :output-dir]
+                                                 [:cljsbuild :builds :app :compiler :output-to]]
 
   :source-paths ["src/clj" "src/cljc"]
   :resource-paths ["resources" "target/cljsbuild"]
 
-  :minify-assets
-  {:assets
-   {"resources/public/css/site.min.css" "resources/public/css/site.css"}}
+  :minify-assets {:assets {"resources/public/css/site.min.css" "resources/public/css/site.css"}}
 
   :cljsbuild {:builds {:app {:source-paths ["src/cljs" "src/cljc"]
                              :compiler {:output-to "target/cljsbuild/public/js/app.js"
@@ -61,33 +57,30 @@
                    :dependencies [[ring/ring-mock "0.3.0"]
                                   [ring/ring-devel "1.4.0"]
                                   [prone "1.1.1"]
-                                  [lein-figwheel "0.5.2"
-                                   :exclusions [org.clojure/core.memoize
-                                                ring/ring-core
-                                                org.clojure/clojure
-                                                org.ow2.asm/asm-all
-                                                org.clojure/data.priority-map
-                                                org.clojure/tools.reader
-                                                org.clojure/clojurescript
-                                                org.clojure/core.async
-                                                org.clojure/tools.analyzer.jvm]]
+                                  [lein-figwheel "0.5.2" :exclusions [org.clojure/core.memoize
+                                                                      ring/ring-core
+                                                                      org.clojure/clojure
+                                                                      org.ow2.asm/asm-all
+                                                                      org.clojure/data.priority-map
+                                                                      org.clojure/tools.reader
+                                                                      org.clojure/clojurescript
+                                                                      org.clojure/core.async
+                                                                      org.clojure/tools.analyzer.jvm]]
                                   [org.clojure/tools.nrepl "0.2.12"]
                                   [com.cemerick/piggieback "0.2.1"]
-                                  [pjstadig/humane-test-output "0.8.0"]
-                                  ]
+                                  [pjstadig/humane-test-output "0.8.0"]]
 
                    :source-paths ["env/dev/clj"]
-                   :plugins [[lein-figwheel "0.5.2"
-                              :exclusions [org.clojure/core.memoize
-                                           ring/ring-core
-                                           org.clojure/clojure
-                                           org.ow2.asm/asm-all
-                                           org.clojure/data.priority-map
-                                           org.clojure/tools.reader
-                                           org.clojure/clojurescript
-                                           org.clojure/core.async
-                                           org.clojure/tools.analyzer.jvm]]
-                             ]
+
+                   :plugins [[lein-figwheel "0.5.2" :exclusions [org.clojure/core.memoize
+                                                                 ring/ring-core
+                                                                 org.clojure/clojure
+                                                                 org.ow2.asm/asm-all
+                                                                 org.clojure/data.priority-map
+                                                                 org.clojure/tools.reader
+                                                                 org.clojure/clojurescript
+                                                                 org.clojure/core.async
+                                                                 org.clojure/tools.analyzer.jvm]]]
 
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]
@@ -95,8 +88,7 @@
                    :figwheel {:http-server-root "public"
                               :server-port 3449
                               :nrepl-port 7002
-                              :nrepl-middleware ["cemerick.piggieback/wrap-cljs-repl"
-                                                 ]
+                              :nrepl-middleware ["cemerick.piggieback/wrap-cljs-repl"]
                               :css-dirs ["resources/public/css"]
                               :ring-handler battlebots.handler/app}
 
@@ -104,12 +96,7 @@
 
                    :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
                                               :compiler {:main "battlebots.dev"
-                                                         :source-map true}}
-
-
-
-                                        }
-                               }}
+                                                         :source-map true}}}}}
 
              :uberjar {:hooks [minify-assets.plugin/hooks]
                        :source-paths ["env/prod/clj"]
@@ -118,8 +105,6 @@
                        :aot :all
                        :omit-source true
                        :cljsbuild {:jar true
-                                   :builds {:app
-                                            {:source-paths ["env/prod/cljs"]
-                                             :compiler
-                                             {:optimizations :advanced
-                                              :pretty-print false}}}}}})
+                                   :builds {:app {:source-paths ["env/prod/cljs"]
+                                                  :compiler {:optimizations :advanced
+                                                             :pretty-print false}}}}}})
