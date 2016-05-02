@@ -1,11 +1,11 @@
 (ns battlebots.core
   (:require [reagent.core :as reagent]
             [re-frame.core :as re-frame]
-            [battlebots.config :as config]
             [battlebots.handlers]
             [battlebots.subs]
-            [battlebots.db :as db]
-            [battlebots.views :as views]))
+            [battlebots.routes :as routes]
+            [battlebots.views :as views]
+            [battlebots.config :as config]))
 
 (when config/debug?
   (println "dev mode"))
@@ -15,5 +15,6 @@
                   (.getElementById js/document "app")))
 
 (defn ^:export init []
+  (routes/app-routes)
   (re-frame/dispatch-sync [:initialize-db])
   (mount-root))
