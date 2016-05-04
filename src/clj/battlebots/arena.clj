@@ -27,7 +27,7 @@
 (defn pos-open
   "returns true of false depending if a given coodinate in a given arena is open"
   [[x y] arena]
-  (= (:open arena-key) (get (get arena x) y)))
+  (= (:open arena-key) (get-in arena [x y])))
 
 (defn generate-random-coords
   "generates random coordinates from a given dimension set"
@@ -51,13 +51,13 @@
 
 (defn replacer
   "replaces an empty cell with a value in a given arena"
-  [arena item]
+  [item arena]
     (update-cell (find-random-open-space arena) item arena))
 
 (defn sprinkle
   "sprinkles given items into an arena"
   [amount item arena]
-  (reduce replacer arena (repeat amount item)))
+  (reduce replacer (repeat amount item) arena))
 ;; ----------------------------------
 ;; END MAP GENERATION HELPERS
 ;; ----------------------------------
