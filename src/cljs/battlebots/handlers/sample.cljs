@@ -1,4 +1,4 @@
-(ns battlebots.handlers.routing
+(ns battlebots.handlers.sample
     (:require [re-frame.core :as re-frame]
               [battlebots.db :as db]))
 

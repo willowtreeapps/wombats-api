@@ -1,5 +1,5 @@
 (ns battlebots.server
-  (:require [battlebots.handler :refer [app]]
+  (:require [battlebots.router :refer [app]]
             [config.core :refer [env]]
             [ring.adapter.jetty :refer [run-jetty]])
   (:gen-class))

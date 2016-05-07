@@ -1,4 +1,7 @@
 (ns battlebots.db)
 
 (def default-db
-  {:word "Aloha"})
+  {:bootstrapping? false
+   :games []
+   :errors []
+   :word "Aloha"})
