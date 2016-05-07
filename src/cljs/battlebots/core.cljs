@@ -1,8 +1,8 @@
 (ns battlebots.core
   (:require [reagent.core :as reagent]
             [re-frame.core :as re-frame]
-            [battlebots.handlers]
-            [battlebots.subs]
+            [battlebots.handlers.root]
+            [battlebots.subs.root]
             [battlebots.routes :as routes]
             [battlebots.views :as views]
             [battlebots.config :as config]))

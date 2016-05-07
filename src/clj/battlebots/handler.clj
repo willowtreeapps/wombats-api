@@ -1,5 +1,5 @@
 (ns battlebots.handler
-  (:require [compojure.core :refer [GET defroutes]]
+  (:require [compojure.core :refer [GET POST DELETE defroutes]]
             [compojure.route :refer [not-found resources]]
             [hiccup.page :refer [include-js include-css html5]]
             [battlebots.middleware :refer [wrap-middleware]]
