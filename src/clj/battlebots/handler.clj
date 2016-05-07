@@ -33,8 +33,23 @@
   (resources "/")
   (not-found "Not Found")
 
-  ;; list games
+  ;; add round - should return a URI to identify round
+  (POST "/rounds" [round])
+
+  ;; list rounds
   (GET "/rounds" [] (dao/get-rounds))
+
+  ;; add player - should return a URI to identify player
+  (POST "/rounds/:round-id/players/" [round-id player])
+
+  ;; remove player
+  (DELETE "/rounds/:round-id/players/:player-id" [round-id player-id])
+
+
+  ;; get arena
+  ;; TODO - websockets call to push all arena changes out to listeners
+
+
   )
 
 (def app (wrap-middleware #'routes))
