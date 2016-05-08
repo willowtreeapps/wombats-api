@@ -9,6 +9,7 @@
                  [reagent "0.5.1" :exclusions [org.clojure/tools.reader]]
                  [reagent-forms "0.5.22"]
                  [reagent-utils "0.1.7"]
+                 [prismatic/schema "1.1.1"]
                  [com.stuartsierra/component "0.3.1"]
                  [com.novemberain/monger "3.0.2"]
                  [ring "1.4.0"]

@@ -1,10 +1,15 @@
 (ns battlebots.controllers.games
-  (:require [ring.util.response :refer [response]]))
+  (:require [ring.util.response :refer [response]]
+            [battlebots.services.mongodb :refer [get-db]]
+            [monger.collection :as mc]))
 
 (defn get-games
   "returns all games or a specified game"
   ([]
-    (response []))
+   (let [db (get-db)
+         games (mc/find-maps db "games")]
+     (println games)
+     (response [])))
   ([game-id]
     (response {})))
 

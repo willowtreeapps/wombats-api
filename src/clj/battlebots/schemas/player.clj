@@ -1,0 +1,1 @@
+(ns battlebots.schema.player)
