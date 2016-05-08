@@ -5,7 +5,7 @@
                    {:path "#/about"      :display "About"}
                    {:path "#/playground" :display "Playground"}])
 
-(defn render-link 
+(defn render-link
   "Renders a single navbar link"
   [link]
   (fn []

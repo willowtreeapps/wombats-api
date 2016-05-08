@@ -51,13 +51,13 @@
 
 (defn replacer
   "replaces an empty cell with a value in a given arena"
-  [item arena]
+  [arena item]
     (update-cell (find-random-open-space arena) item arena))
 
 (defn sprinkle
   "sprinkles given items into an arena"
   [amount item arena]
-  (reduce replacer (repeat amount item) arena))
+  (reduce replacer arena (repeat amount item)))
 ;; ----------------------------------
 ;; END MAP GENERATION HELPERS
 ;; ----------------------------------

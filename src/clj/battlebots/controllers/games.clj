@@ -1,7 +1,8 @@
 (ns battlebots.controllers.games
   (:require [ring.util.response :refer [response]]
             [battlebots.services.mongodb :refer [get-db]]
-            [monger.collection :as mc])
+            [monger.collection :as mc]
+            [battlebots.arena :as arena])
   (:import org.bson.types.ObjectId))
 
 (def games-coll "games")
@@ -20,7 +21,15 @@
 (defn add-game
   "adds a new game"
   []
-  (response {}))
+  (let [db (get-db)
+        _id (ObjectId.)
+        arena (arena/new-arena arena/large-arena)
+        game {:_id _id
+              :initial-arena arena
+              :rounds []
+              :players []}]
+    (mc/insert db games-coll game)
+    (response game)))
 
 (defn remove-game
   "removes a game"

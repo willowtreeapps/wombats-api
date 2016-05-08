@@ -1,6 +1,6 @@
-(ns battlebots.schema.round
+(ns battlebots.schemas.round
   (:require [schema.core :as s]))
 
 (s/defschema Round
   "round schema"
-  {:id s/Int})
+  {:_id s/Int})
