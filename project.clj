@@ -12,6 +12,7 @@
                  [prismatic/schema "1.1.1"]
                  [com.stuartsierra/component "0.3.1"]
                  [com.novemberain/monger "3.0.2"]
+                 [cheshire "5.1.1"]
                  [ring "1.4.0"]
                  [ring/ring-defaults "0.2.0"]
                  [ring/ring-json "0.4.0"]

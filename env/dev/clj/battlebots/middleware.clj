@@ -2,7 +2,8 @@
   (:require [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
             [prone.middleware :refer [wrap-exceptions]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
-            [ring.middleware.reload :refer [wrap-reload]]))
+            [ring.middleware.reload :refer [wrap-reload]]
+            [monger.json]))
 
 (defn wrap-middleware [handler]
   (-> handler
