@@ -30,7 +30,7 @@
             [lein-less "1.7.5"]
             [lein-asset-minifier "0.2.7" :exclusions [org.clojure/clojure]]]
 
-  :less {:source-paths ["less/main.less"]
+  :less {:source-paths ["src/less"]
          :target-path  "resources/public/css"}
 
   :ring {:handler battlebots.handler/app
@@ -96,7 +96,7 @@
                               :nrepl-port 7002
                               :nrepl-middleware ["cemerick.piggieback/wrap-cljs-repl"]
                               :css-dirs ["resources/public/css"]
-                              :ring-handler battlebots.handler/app}
+                              :ring-handler battlebots.router/app}
 
                    :env {:dev true}
 
