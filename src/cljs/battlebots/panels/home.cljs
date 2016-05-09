@@ -25,8 +25,7 @@
 
 (defn home-panel []
   (let [active-game (re-frame/subscribe [:active-game])
-        games (re-frame/subscribe [:games])
-        initial-arena (:initial-arena @active-game)]
+        games (re-frame/subscribe [:games])]
     (fn []
       [:div.panel-home
        [:h1 "Battlebots"]
@@ -38,5 +37,5 @@
         (for [game @games]
          ^{:key (:_id game)} [battlebot-game game])]
        [:div.active-game
-        (for [row initial-arena]
+        (for [row (:initial-arena @active-game)]
            ^{:key (rand 100)} [battlebot-board-row row])]])))

@@ -114,12 +114,12 @@
 ;; with the arena dimensions
 (def small-arena {:dimx 20
                   :dimy 20
-                  :food-freq 40
-                  :block-freq 20
-                  :poison-freq 20})
+                  :food-freq 10
+                  :block-freq 10
+                  :poison-freq 4})
 
-(def large-arena {:dimx 100
-                  :dimy 100
-                  :food-freq 40
-                  :block-freq 20
-                  :poison-freq 20})
+(def large-arena {:dimx 50
+                  :dimy 50
+                  :food-freq 10
+                  :block-freq 10
+                  :poison-freq 3})
