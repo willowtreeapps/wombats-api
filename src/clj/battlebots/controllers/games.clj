@@ -34,7 +34,10 @@
 (defn remove-game
   "removes a game"
   [game-id]
-  (response "ok"))
+  (let [db (get-db)
+        _id (ObjectId. game-id)]
+    (mc/remove-by-id db games-coll _id)
+    (response "ok")))
 
 (defn get-rounds
   "returns all rounds, or a specifed round, for a given game"

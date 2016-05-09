@@ -1,7 +1,7 @@
 (ns battlebots.handlers.games
     (:require [re-frame.core :as re-frame]
               [battlebots.db :as db]
-              [battlebots.services.battlebots :refer [post-game]]))
+              [battlebots.services.battlebots :refer [post-game del-game]]))
 
 (defn update-games
   "updates all games in state"
@@ -26,7 +26,24 @@
   [db [_ game]]
   (assoc db :active-game game))
 
+(defn remove-game
+  "removes a selected game"
+  [db [_ game]]
+  (let [game-id (:_id game)]
+    (del-game game-id
+      #(re-frame/dispatch [:filter-game game-id])
+      #(re-frame/dispatch [:update-errors %]))
+    db))
+
+(defn filter-game
+  "filters a game out of state"
+  [db [_ game-id]]
+  (let [games (:games db)]
+    (assoc db :games (remove #(= game-id (:_id %)) games))))
+
 (re-frame/register-handler :update-games update-games)
 (re-frame/register-handler :create-game create-game)
 (re-frame/register-handler :add-game add-game)
 (re-frame/register-handler :set-active-game set-active-game)
+(re-frame/register-handler :remove-game remove-game)
+(re-frame/register-handler :filter-game filter-game)

@@ -1,5 +1,5 @@
 (ns battlebots.services.battlebots
-  (:require [ajax.core :refer [GET POST]]))
+  (:require [ajax.core :refer [GET POST DELETE]]))
 
 (defn get-games
   "fetches a list of all available games"
@@ -16,3 +16,10 @@
                  :keywords? true
                  :handler on-success
                  :error-handler on-error}))
+
+(defn del-game
+  "deletes a game record"
+  [_id on-success on-error]
+  (DELETE (str "/games/" _id) {:keywords? true
+                               :handler on-success
+                               :error-handler on-error}))
