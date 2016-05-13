@@ -1,5 +1,5 @@
 (ns battlebots.repl
-  (:use battlebots.handler
+  (:use battlebots.router
         battlebots.arena
         ring.server.standalone
         [ring.middleware file-info file]))
