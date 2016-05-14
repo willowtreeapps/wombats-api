@@ -9,12 +9,18 @@
                  [reagent "0.5.1" :exclusions [org.clojure/tools.reader]]
                  [reagent-forms "0.5.22"]
                  [reagent-utils "0.1.7"]
+                 [prismatic/schema "1.1.1"]
+                 [com.stuartsierra/component "0.3.1"]
+                 [com.novemberain/monger "3.0.2"]
+                 [cheshire "5.1.1"]
                  [ring "1.4.0"]
                  [ring/ring-defaults "0.2.0"]
+                 [ring/ring-json "0.4.0"]
                  [compojure "1.5.0"]
                  [hiccup "1.0.5"]
                  [yogthos/config "0.8"]
                  [org.clojure/clojurescript "1.8.40" :scope "provided"]
+                 [cljs-ajax "0.5.4"]
                  [secretary "1.2.3"]
                  [venantius/accountant "0.1.7" :exclusions [org.clojure/tools.reader]]
                  [re-frame "0.7.0"]]
@@ -24,7 +30,7 @@
             [lein-less "1.7.5"]
             [lein-asset-minifier "0.2.7" :exclusions [org.clojure/clojure]]]
 
-  :less {:source-paths ["less/main.less"]
+  :less {:source-paths ["src/less"]
          :target-path  "resources/public/css"}
 
   :ring {:handler battlebots.handler/app
@@ -90,7 +96,7 @@
                               :nrepl-port 7002
                               :nrepl-middleware ["cemerick.piggieback/wrap-cljs-repl"]
                               :css-dirs ["resources/public/css"]
-                              :ring-handler battlebots.handler/app}
+                              :ring-handler battlebots.router/app}
 
                    :env {:dev true}
 

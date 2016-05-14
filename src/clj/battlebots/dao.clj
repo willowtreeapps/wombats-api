@@ -1,6 +1,6 @@
 (ns battlebots.dao)
 
-(def rounds (atom {}))
+(def rounds (atom {:round-one []}))
 
 ;; rounds
 (defn save-round!
@@ -28,5 +28,4 @@
 
 ;; players
 (defn add-player!
-  [round-id player]
-  )
+  [round-id player])

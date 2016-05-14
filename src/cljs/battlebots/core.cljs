@@ -1,8 +1,8 @@
 (ns battlebots.core
   (:require [reagent.core :as reagent]
             [re-frame.core :as re-frame]
-            [battlebots.handlers]
-            [battlebots.subs]
+            [battlebots.handlers.root]
+            [battlebots.subs.root]
             [battlebots.routes :as routes]
             [battlebots.views :as views]
             [battlebots.config :as config]))
@@ -16,5 +16,6 @@
 
 (defn ^:export init []
   (routes/app-routes)
-  (re-frame/dispatch-sync [:initialize-db])
+  (re-frame/dispatch-sync [:initialize-app])
+  (re-frame/dispatch [:bootstrap-app])
   (mount-root))
