@@ -27,7 +27,7 @@
 
   (context "/players" []
     (GET "/" [] (players/get-players))
-    (POST "/" [] (players/add-player))
+    (POST "/" req (players/add-player (:params req)))
     (GET "/:player-id" [player-id] (players/get-players player-id))
     (DELETE "/:player-id" [player-id] (players/remove-player player-id)))
 
