@@ -26,6 +26,11 @@
 
   (defroute "/playground" []
     (re-frame/dispatch [:set-active-panel :playground-panel]))
+  
+  (defroute "/signin" []
+    (re-frame/dispatch [:set-active-panel :signin-panel]))
 
+  (defroute "/signup" []
+    (re-frame/dispatch [:set-active-panel :signup-panel]))
   ;; ------- END -------
   (hook-browser-navigation!))

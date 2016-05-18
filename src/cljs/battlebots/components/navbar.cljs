@@ -3,7 +3,9 @@
 
 (def navbar-links [{:path "#/"           :display "Home"}
                    {:path "#/about"      :display "About"}
-                   {:path "#/playground" :display "Playground"}])
+                   {:path "#/playground" :display "Playground"}
+                   {:path "#/signin"     :display "Signin"}
+                   {:path "#/signup"     :display "Signup"}])
 
 (defn render-link
   "Renders a single navbar link"
