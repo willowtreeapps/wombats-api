@@ -22,7 +22,7 @@
 (defn main-panel []
   (let [active-panel (re-frame/subscribe [:active-panel])]
     (fn []
-      [:div
+      [:divi
         [navbar/root active-panel]
         [:div.main-container
          [show-panel @active-panel]]])))

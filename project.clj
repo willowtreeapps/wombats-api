@@ -6,6 +6,8 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [ring-server "0.4.0"]
+                 [buddy/buddy-auth "0.13.0"]
+                 [buddy/buddy-hashers "0.14.0"]
                  [reagent "0.5.1" :exclusions [org.clojure/tools.reader]]
                  [reagent-forms "0.5.22"]
                  [reagent-utils "0.1.7"]
@@ -21,6 +23,7 @@
                  [yogthos/config "0.8"]
                  [org.clojure/clojurescript "1.8.40" :scope "provided"]
                  [cljs-ajax "0.5.4"]
+                 [alandipert/storage-atom "2.0.1"]
                  [secretary "1.2.3"]
                  [venantius/accountant "0.1.7" :exclusions [org.clojure/tools.reader]]
                  [re-frame "0.7.0"]]

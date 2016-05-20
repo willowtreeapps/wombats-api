@@ -1,6 +1,8 @@
 (ns battlebots.middleware
   (:require [ring.middleware.defaults :refer [api-defaults site-defaults wrap-defaults]]
             [prone.middleware :refer [wrap-exceptions]]
+            [buddy.auth.backends :as backends]
+            [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-params]]
             [ring.middleware.reload :refer [wrap-reload]]
@@ -15,12 +17,17 @@
       (catch Exception e
         {:status 400 :body (.getMessage e)}))))
 
+(def secret "mysecret")
+(def backend (backends/jws {:secret secret}))
+
 (defn wrap-middleware [handler]
   (-> handler
-     (wrap-defaults api-defaults) ;; api-defaults should only be set for api endpoints. TODO refactor out site endpoints
+      (wrap-defaults api-defaults) ;; api-defaults should only be set for api endpoints. TODO refactor out site endpoints
       wrap-json-params
       wrap-keyword-params
       wrap-json-response
+      (wrap-authorization backend)
+      (wrap-authentication backend)
       wrap-exception-handling
-      ;;wrap-exceptions
+      ;; wrap-exceptions
       wrap-reload))
