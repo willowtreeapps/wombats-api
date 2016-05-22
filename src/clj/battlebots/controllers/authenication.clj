@@ -8,6 +8,14 @@
             [battlebots.controllers.players :refer [players-coll]]
             [battlebots.schemas.player :refer [isPlayer]]))
 
+(defn user-to-token
+  "generates a token from a given user object"
+  [user]
+  {:token (jws/sign (select-keys user [:_id
+                                       :username
+                                       :bot-repo
+                                       :roles]) secret)})
+
 (defn account-details
   "returns the current logged in users player object"
   [request]
@@ -19,17 +27,14 @@
   [player]
   (let [player-object (merge (isPlayer player) {:password (hashers/derive (:password player))
                                                 :roles [:user]})]
-    (response (dissoc (db/insert-one players-coll player-object) :password))))
+    (let [user (db/insert-one players-coll player-object)]
+      (response (user-to-token user)))))
 
 (defn login
   "login handler"
   [login]
   (let [user (db/find-one-by players-coll :username (:username login))
-        token {:token (jws/sign (select-keys user [:_id
-                                                   :username
-                                                   :bot-repo
-                                                   :roles]) secret)}
         isAuthed? (hashers/check (:password login) (:password user))]
     (if isAuthed? 
-      (response token)
+      (response (user-to-token user))
       (throw-unauthorized {:message "Not authorized"}))))

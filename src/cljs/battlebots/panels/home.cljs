@@ -27,10 +27,13 @@
 
 (defn home-panel []
   (let [active-game (re-frame/subscribe [:active-game])
-        games (re-frame/subscribe [:games])]
+        games (re-frame/subscribe [:games])
+        user (re-frame/subscribe [:user])]
     (fn []
       [:div.panel-home
        [:h1 "Battlebots"]
+       (when @user 
+         [:h3 (str "Welcome back " (:username @user) "!")])
        [:input.btn {:type "button"
                     :value "Add Game"
                     :on-click #(re-frame/dispatch [:create-game])}]

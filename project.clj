@@ -17,6 +17,7 @@
                  [cheshire "5.1.1"]
                  [ring "1.4.0"]
                  [ring/ring-defaults "0.2.0"]
+                 [ring-transit "0.1.4"]
                  [ring/ring-json "0.4.0"]
                  [compojure "1.5.0"]
                  [hiccup "1.0.5"]

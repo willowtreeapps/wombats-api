@@ -32,5 +32,11 @@
 
   (defroute "/signup" []
     (re-frame/dispatch [:set-active-panel :signup-panel]))
+
+  (defroute "/signout" []
+    (re-frame/dispatch [:sign-out])
+    (re-frame/dispatch [:set-active-panel :home-panel])
+    
+    (set! (-> js/window .-location .-hash) "#/"))
   ;; ------- END -------
   (hook-browser-navigation!))
