@@ -18,6 +18,7 @@
       (catch Exception e
         {:status 400 :body (.getMessage e)}))))
 
+;; TODO pull secret from ENV
 (def secret "mysecret")
 (def backend (backends/jws {:secret secret}))
 
