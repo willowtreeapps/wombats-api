@@ -12,6 +12,11 @@
   [collection-name _id]
   (mc/find-one-as-map (get-db) collection-name {:_id (ObjectId. _id)}))
 
+(defn find-one-by 
+  "finds a record by looking it up in a given collection by a given parameter"
+  [collection-name param value]
+  (mc/find-one-as-map (get-db) collection-name {param value}))
+
 (defn find-all
   "returns all records of a given collection"
   [collection-name]

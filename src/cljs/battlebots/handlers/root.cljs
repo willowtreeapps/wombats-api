@@ -1,11 +1,16 @@
 (ns battlebots.handlers.root
     (:require [re-frame.core :as re-frame]
-              [battlebots.db :as db]
+              
+              ;; Handlers
+              [battlebots.handlers.account]
               [battlebots.handlers.games]
               [battlebots.handlers.routing]
               [battlebots.handlers.sample]
               [battlebots.handlers.ui]
-              [battlebots.services.battlebots :refer [get-games]]))
+           
+              [battlebots.db :as db]
+              [battlebots.services.battlebots :refer [get-games
+                                                      get-current-user]]))
 
 (defn initialize-app-state
   "initializes application state on bootstrap"
@@ -15,9 +20,15 @@
 (defn bootstrap
   "makes all necessary requests to initially bootstrap an application"
   [db _]
+  
+  (get-current-user
+    #(re-frame/dispatch [:update-user %])
+    #(re-frame/dispatch [:update-errors %]))
+
   (get-games
     #(re-frame/dispatch [:update-games %])
     #(re-frame/dispatch [:update-errors %]))
+
   (assoc db :bootstrapping? true))
 
 (re-frame/register-handler :initialize-app initialize-app-state)
