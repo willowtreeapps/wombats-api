@@ -58,6 +58,13 @@
   "sprinkles given items into an arena"
   [amount item arena]
   (reduce replacer arena (repeat amount item)))
+
+(defn place-walls
+  "places walls in an organized structures around the arena"
+  [amount arena config]
+  (let [wall-symbol (:block arena-key)]
+    ;; TODO Update wall generation logic Github issue #10
+    arena))
 ;; ----------------------------------
 ;; END MAP GENERATION HELPERS
 ;; ----------------------------------
@@ -72,19 +79,19 @@
 (defn blocks
   "sprinkle blocks around the arena argument and return a new arena
   make sure there are no inaccessible areas"
-  [frequency arena]
+  [frequency config arena]
   (let [amount (get-number-of-items frequency arena)]
-    (sprinkle amount (:block arena-key) arena)))
+    (place-walls amount arena config)))
 
 (defn food
   "sprinkle food around the arena argument and return a new arena"
-  [frequency arena]
+  [frequency config arena]
   (let [amount (get-number-of-items frequency arena)]
     (sprinkle amount (:food arena-key) arena)))
 
 (defn poison
   "sprinkle poison around the arena argument and return a new arena"
-  [frequency arena]
+  [frequency config arena]
   (let [amount (get-number-of-items frequency arena)]
     (sprinkle amount (:poison arena-key) arena)))
 ;; ----------------------------------
@@ -102,9 +109,12 @@
 
 (defn new-arena
   "compose all arena building functions to make a fresh new arena"
-  [{:keys [dimx dimy food-freq block-freq poison-freq]}]
+  [{:keys [dimx dimy food-freq block-freq poison-freq] :as config}]
   (let [arena (empty-arena dimx dimy)]
-    ((apply comp (map #(partial %1 %2) [poison food blocks] [poison-freq food-freq block-freq])) arena)))
+    ((apply comp (map (fn [item-func item-frequency]
+                        (partial item-func item-frequency config))
+                      [poison food blocks]
+                      [poison-freq food-freq block-freq])) arena)))
 ;; ----------------------------------
 ;; END ARENA GENERATION
 ;; ----------------------------------
