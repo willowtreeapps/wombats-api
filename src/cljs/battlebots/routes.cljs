@@ -24,9 +24,9 @@
   (defroute "/about" []
     (re-frame/dispatch [:set-active-panel :about-panel]))
 
-  (defroute "/playground" []
-    (re-frame/dispatch [:set-active-panel :playground-panel]))
-  
+  (defroute "/admin" []
+    (re-frame/dispatch [:set-active-panel :admin-panel]))
+
   (defroute "/signin" []
     (re-frame/dispatch [:set-active-panel :signin-panel]))
 
@@ -36,7 +36,7 @@
   (defroute "/signout" []
     (re-frame/dispatch [:sign-out])
     (re-frame/dispatch [:set-active-panel :home-panel])
-    
+
     (set! (-> js/window .-location .-hash) "#/"))
   ;; ------- END -------
   (hook-browser-navigation!))

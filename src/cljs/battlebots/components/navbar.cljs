@@ -1,20 +1,23 @@
 (ns battlebots.components.navbar
-  (:require [re-frame.core :as re-frame]))
+  (:require [re-frame.core :as re-frame]
+            [battlebots.utils.user :refer [isAdmin? isUser?]]))
+
+(def admin-links [{:path "#/admin" :display "Admin Center"}])
 
 (def authenticated-links [{:path "#/signout" :display "Sign out"}])
 
 (def unauthenticated-links [{:path "#/signin" :display "Signin"}])
 
 (def common-links [{:path "#/"           :display "Home"}
-                   {:path "#/about"      :display "About"}
-                   {:path "#/playground" :display "Playground"}])
+                   {:path "#/about"      :display "About"}])
 
 (defn resolve-links
   "renders role dependent links"
-  [isAuthed?]
-  (if isAuthed?
-    (concat common-links authenticated-links)
-    (concat common-links unauthenticated-links)))
+  [user]
+  (cond
+   (isAdmin? user) (concat common-links admin-links authenticated-links)
+   (isUser? user) (concat common-links authenticated-links)
+   :else (concat common-links unauthenticated-links)))
 
 (defn render-link
   "Renders a single navbar link"
@@ -26,9 +29,9 @@
 (defn root
   "Navbar container"
   []
-  (let [token (re-frame/subscribe [:auth-token])]
+  (let [user (re-frame/subscribe [:user])]
     (fn []
       [:nav.navbar
        [:ul
-        (for [link (resolve-links (not (empty? @token)))]
+        (for [link (resolve-links @user)]
           ^{:key (:path link)} [render-link link])]])))

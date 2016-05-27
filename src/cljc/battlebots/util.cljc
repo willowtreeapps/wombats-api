@@ -1,7 +1,6 @@
-(ns battlebots.util)
+(ns battlebots.utils)
 
-(defn foo-cljc [x]
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
-  
+(defn in?
+  "true if coll contains elm"
+  [coll elm]
+  (some #(= elm %) coll))
