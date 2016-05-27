@@ -1,13 +1,32 @@
-@navbar-link-padding: 10px;
+@import "../defaults/spacing";
+@import "../base/buttons";
 
 .navbar {
-  .navbar-link {
-    display: inline-block;
+    .navbar-list {
+        position: relative;
 
-    a {
-      display: block;
-      text-decoration: none;
-      padding: @navbar-link-padding;
+        list-style: none;
+        padding: 0;
+        margin: @base-spacing-unit
     }
-  }
+
+    .navbar-link {
+        display: inline-block;
+
+        a {
+            display: block;
+            text-decoration: none;
+            padding: @base-spacing-unit--half;
+        }
+    }
+
+    .user-menu-button {
+        position: absolute;
+        right: 0;
+        top: 0;
+
+        button {
+            .button-link-mixin();
+        }
+    }
 }

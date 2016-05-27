@@ -2,5 +2,5 @@
 
 (defn admin-panel []
   (fn []
-    [:div.panel-admin
+    [:div.pnanel-admin
      [:h1 "Admin"]]))
