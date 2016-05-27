@@ -6,6 +6,6 @@
    :auth-token (get-item "token")
    :user nil
    :active-game {}
+   :active-panel nil
    :games []
-   :errors []
-   :word "Aloha"})
+   :errors []})
