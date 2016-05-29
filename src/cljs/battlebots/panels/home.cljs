@@ -26,13 +26,14 @@
        ^{:key (rand 100)} [battlebot-board-cell cell])]))
 
 (defn home-panel []
+  (re-frame/dispatch [:fetch-games])
   (let [active-game (re-frame/subscribe [:active-game])
         games (re-frame/subscribe [:games])
         user (re-frame/subscribe [:user])]
     (fn []
       [:div.panel-home
        [:h1 "Battlebots"]
-       (when @user 
+       (when @user
          [:h3 (str "Welcome back " (:username @user) "!")])
        [:input.btn {:type "button"
                     :value "Add Game"

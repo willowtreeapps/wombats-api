@@ -7,9 +7,9 @@
 (defn get-players
   "returns all players or a specified player"
   ([]
-   (response (db/find-all players-coll)))
+   (response (map #(dissoc % :password) (db/find-all players-coll))))
   ([player-id]
-   (response (db/find-one players-coll player-id))))
+   (response (dissoc (db/find-one players-coll player-id) :password))))
 
 (defn remove-player
   "removes a specified player"

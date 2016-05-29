@@ -13,7 +13,7 @@
 ;;
 ;; Helper functions
 ;;
-(defn get-roles 
+(defn get-roles
   "Pulls rolls out of a request object"
   [request]
   (get-in request [:identity :roles]))
@@ -26,7 +26,7 @@
 ;;
 ;; Access Handlers
 ;;
-;; Access handlers allow you to define rules around who is allowed 
+;; Access handlers allow you to define rules around who is allowed
 ;; access to specified resources
 
 (defn any-access "Un-restricted access to resources" [request] true)
@@ -49,29 +49,29 @@
 ;;
 ;; Access Rules
 ;;
-;; Access rules define the auth logic that protects each endpoint. 
+;; Access rules define the auth logic that protects each endpoint.
 ;; By default if no rule is specified then access is allowed (This
-;; can be adjusted) 
+;; can be adjusted)
 ;;
-;; NOTE: Access Rules do not cascade. The first match will resolve 
+;; NOTE: Access Rules do not cascade. The first match will resolve
 ;; the request
-(def access-rules {:rules [;; Authenication 
-                           {:uri "/auth/account-details"
+(def access-rules {:rules [;; Authenication
+                           {:uri "/api/v1/auth/account-details"
                             :handler authenticated-user}
 
-                           {:pattern #"^/auth/.*"
+                           {:pattern #"^/api/v1/auth/.*"
                             :handler any-access}
-                           
+
                            ;; Games
-                           {:pattern #"^/games/.*"
+                           {:pattern #"^/api/v1/game/.*"
                             :handler is-admin?
                             :request-method :delete}
 
-                           {:pattern #"^/games.*"
+                           {:pattern #"^/api/v1/game.*"
                             :handler authenticated-user}
-                           
+
                            ;; Players
-                           {:pattern #"^/players.*"
+                           {:pattern #"^/api/v1/player.*"
                             :handler is-admin?}]})
 
 ;;
@@ -80,31 +80,40 @@
 (defroutes
   routes
 
-  (context "/games" []
-    (GET "/" [] (games/get-games))
-    (POST "/" [] (games/add-game))
-    (GET "/:game-id" [game-id] (games/get-games game-id))
-    (DELETE "/:game-id" [game-id] (games/remove-game game-id))
+  (context "/api/v1" []
+    (context "/game" []
+      (GET "/" [] (games/get-games))
+      (POST "/" [] (games/add-game))
 
-    (context "/:game-id/rounds" [game-id]
-      (GET "/" [] (games/get-rounds game-id))
-      (POST "/" [] (games/add-round game-id))
-      (GET "/:round-id" [round-id] (games/get-rounds game-id round-id)))
+      (context "/:game-id" [game-id]
+        (GET "/" [] (games/get-games game-id))
+        (DELETE "/" [] (games/remove-game game-id))
 
-    (context "/:game-id/players" [game-id]
-      (GET "/" [] (games/get-players game-id))
-      (POST "/" [] (games/add-player game-id))
-      (GET "/:player-id" [player-id] (games/get-players game-id player-id))))
+        (context "/round" []
+          (GET "/" [] (games/get-rounds game-id))
+          (POST "/" [] (games/add-round game-id))
 
-  (context "/players" []
-    (GET "/" []  (players/get-players))
-    (GET "/:player-id" [player-id] (players/get-players player-id))
-    (DELETE "/:player-id" [player-id] (players/remove-player player-id)))
-  
-  (context "/auth" []
-    (GET "/account-details" req (auth/account-details req))
-    (POST "/signup" req (auth/signup (:params req)))
-    (POST "/login" req (auth/login (:params req))))
+          (context "/:round-id" [round-id]
+            (GET "/" [] (games/get-rounds game-id round-id))))
+
+        (context "/player" []
+          (GET "/" [] (games/get-players game-id))
+          (POST "/" [] (games/add-player game-id))
+
+          (context "/:player-id" [player-id]
+            (GET "/" [] (games/get-players game-id player-id))))))
+
+    (context "/player" []
+      (GET "/" []  (players/get-players))
+
+      (context "/:player-id" [player-id]
+        (GET "/" [] (players/get-players player-id))
+        (DELETE "/" [] (players/remove-player player-id))))
+
+    (context "/auth" []
+      (GET "/account-details" req (auth/account-details req))
+      (POST "/signup" req (auth/signup (:params req)))
+      (POST "/login" req (auth/login (:params req)))))
 
   ;; Main view
   (GET "/" [] index)

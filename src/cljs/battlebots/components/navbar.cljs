@@ -6,7 +6,7 @@
                    :display "Admin Center"}])
 
 (defn authenticated-links [user]
-  [{:on-click #(println "haha")
+  [{:on-click #(println "TODO: toggle menu")
     :display (:username user)
     :class-name "user-menu-button"
     :children [:ul.user-menu

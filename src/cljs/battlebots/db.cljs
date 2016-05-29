@@ -5,6 +5,7 @@
   {:bootstrapping? false
    :auth-token (get-item "token")
    :user nil
+   :users []
    :active-game {}
    :active-panel nil
    :games []
