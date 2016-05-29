@@ -7,9 +7,7 @@
   (fn []
     [:li
      [:button {:on-click #(re-frame/dispatch [:set-active-game game])}
-      (:_id game)]
-     [:button {:on-click #(re-frame/dispatch [:remove-game game])}
-      "Remove Game"]]))
+      (:_id game)]]))
 
 (defn battlebot-board-cell
   "renders a cell of a game board"

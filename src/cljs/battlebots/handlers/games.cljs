@@ -30,12 +30,11 @@
 
 (defn remove-game
   "removes a selected game"
-  [db [_ game]]
-  (let [game-id (:_id game)]
-    (del-game game-id
-      #(re-frame/dispatch [:filter-game game-id])
-      #(re-frame/dispatch [:update-errors %]))
-    db))
+  [db [_ game-id]]
+  (del-game game-id
+    #(re-frame/dispatch [:filter-game game-id])
+    #(re-frame/dispatch [:update-errors %]))
+  db)
 
 (defn filter-game
   "filters a game out of state"

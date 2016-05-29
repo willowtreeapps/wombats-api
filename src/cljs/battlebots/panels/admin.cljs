@@ -31,7 +31,7 @@
                                :roles "User Roles"
                                :remove "Remove User"}
                      :formatters {:remove (fn [record]
-                                             [:button {:on-click #(re-frame/dispatch [:remove-user (:_id record)])} "Remove User"])}})))
+                                            [:button {:on-click #(re-frame/dispatch [:remove-user (:_id record)])} "Remove User"])}})))
 
 (defn render-games
   "renders games table"
@@ -40,7 +40,9 @@
     (sortable-table {:class-name "game-panel"
                      :collection (map #(dissoc % :initial-arena) @games)
                      :record-id-key :_id
-                     :aliases {}})))
+                     :aliases {:_id "Game ID"}
+                     :formatters {:remove (fn [record]
+                                            [:button {:on-click #(re-frame/dispatch [:remove-game (:_id record)])} "Remove Game"])}})))
 
 (defn show-active-panel
   []
