@@ -23,6 +23,26 @@
      (for [cell row]
        ^{:key (rand 100)} [battlebot-board-cell cell])]))
 
+(defn authed-homepage
+  [user games active-game]
+  [:div
+   [:h3 (str "Welcome back " (:username @user) "!")]
+   [:p "Game ids"]
+   [:ul.game-list
+    (for [game @games]
+      ^{:key (:_id game)} [battlebot-game game])]
+   [:div.active-game
+    (for [row (:initial-arena @active-game)]
+      ^{:key (rand 100)} [battlebot-board-row row])]])
+
+(def unauthed-homepage
+  [:div
+   [:p
+    [:a {:href "#/signup"} "Signup"]
+    " or "
+    [:a {:href "#/signin"} "Signin"]
+    " now!"]])
+
 (defn home-panel []
   (re-frame/dispatch [:fetch-games])
   (let [active-game (re-frame/subscribe [:active-game])
@@ -31,15 +51,6 @@
     (fn []
       [:div.panel-home
        [:h1 "Battlebots"]
-       (when @user
-         [:h3 (str "Welcome back " (:username @user) "!")])
-       [:input.btn {:type "button"
-                    :value "Add Game"
-                    :on-click #(re-frame/dispatch [:create-game])}]
-       [:p "Game ids"]
-       [:ul.game-list
-        (for [game @games]
-         ^{:key (:_id game)} [battlebot-game game])]
-       [:div.active-game
-        (for [row (:initial-arena @active-game)]
-           ^{:key (rand 100)} [battlebot-board-row row])]])))
+       (if @user
+         (authed-homepage user games active-game)
+         unauthed-homepage)])))

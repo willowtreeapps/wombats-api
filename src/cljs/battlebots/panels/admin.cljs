@@ -37,12 +37,16 @@
   "renders games table"
   []
   (let [games (re-frame/subscribe [:games])]
-    (sortable-table {:class-name "game-panel"
-                     :collection (map #(dissoc % :initial-arena) @games)
-                     :record-id-key :_id
-                     :aliases {:_id "Game ID"}
-                     :formatters {:remove (fn [record]
-                                            [:button {:on-click #(re-frame/dispatch [:remove-game (:_id record)])} "Remove Game"])}})))
+    [:div
+     [:input.btn {:type "button"
+                  :value "Add Game"
+                  :on-click #(re-frame/dispatch [:create-game])}]
+     (sortable-table {:class-name "game-panel"
+                      :collection (map #(dissoc % :initial-arena) @games)
+                      :record-id-key :_id
+                      :aliases {:_id "Game ID"}
+                      :formatters {:remove (fn [record]
+                                             [:button {:on-click #(re-frame/dispatch [:remove-game (:_id record)])} "Remove Game"])}})]))
 
 (defn show-active-panel
   []
