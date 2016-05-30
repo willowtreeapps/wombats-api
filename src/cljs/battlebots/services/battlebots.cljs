@@ -53,6 +53,15 @@
                         :handler on-success
                         :error-handler on-error}))
 
+(defn post-game-user
+  "adds a user record to a game"
+  [game-id user-id on-success on-error]
+  (POST (str "/api/v1/game/" game-id "/player/" user-id) {:response-format :json
+                                                          :keywords? true
+                                                          :headers (add-auth-header {})
+                                                          :handler on-success
+                                                          :error-handler on-error}))
+
 (defn del-game
   "deletes a game record"
   [_id on-success on-error]

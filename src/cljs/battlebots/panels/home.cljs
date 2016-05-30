@@ -3,11 +3,16 @@
 
 (defn battlebot-game
   "renders available games"
-  [game]
-  (fn []
-    [:li
-     [:button {:on-click #(re-frame/dispatch [:set-active-game game])}
-      (:_id game)]]))
+  [game user]
+  (let [game-id (:_id game)
+        user-id (:_id user)
+        isRegistered? (first (filter #(= user-id (:_id %)) (:players game)))]
+    (fn []
+      [:li
+       [:button {:on-click #(re-frame/dispatch [:set-active-game game])} game-id]
+       (if (not isRegistered?)
+         [:button {:on-click #(re-frame/dispatch [:register-user-in-game game-id user-id])} "Register"]
+         [:p "Registered"])])))
 
 (defn battlebot-board-cell
   "renders a cell of a game board"
@@ -26,13 +31,13 @@
 (defn authed-homepage
   [user games active-game]
   [:div
-   [:h3 (str "Welcome back " (:username @user) "!")]
+   [:h3 (str "Welcome back " (:username user) "!")]
    [:p "Game ids"]
    [:ul.game-list
-    (for [game @games]
-      ^{:key (:_id game)} [battlebot-game game])]
+    (doall (for [game games]
+       ^{:key (:_id game)} [battlebot-game game user]))]
    [:div.active-game
-    (for [row (:initial-arena @active-game)]
+    (for [row (:initial-arena active-game)]
       ^{:key (rand 100)} [battlebot-board-row row])]])
 
 (def unauthed-homepage
@@ -52,5 +57,5 @@
       [:div.panel-home
        [:h1 "Battlebots"]
        (if @user
-         (authed-homepage user games active-game)
+         (authed-homepage @user @games @active-game)
          unauthed-homepage)])))

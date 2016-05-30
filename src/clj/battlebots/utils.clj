@@ -1,6 +1,6 @@
 (ns battlebots.utils)
 
-(defn in? 
+(defn in?
   "true if coll contains elm"
-  [coll elm]  
+  [coll elm]
   (some #(= elm %) coll))

@@ -1,6 +1,7 @@
 (ns battlebots.router
   (:require [compojure.core :refer [GET POST DELETE context defroutes]]
             [compojure.route :refer [not-found resources]]
+            [clojure.string :refer [includes?]]
             [buddy.auth :refer [authenticated?]]
             [buddy.auth.accessrules :refer [wrap-access-rules success error]]
             [battlebots.middleware :refer [wrap-middleware]]
@@ -13,6 +14,11 @@
 ;;
 ;; Helper functions
 ;;
+(defn get-user-id
+  "Pull the user id out of the identity map"
+  [request]
+  (get-in request [:identity :_id]))
+
 (defn get-roles
   "Pulls rolls out of a request object"
   [request]
@@ -42,10 +48,25 @@
   (contains-role? request "user"))
 
 (defn is-admin?
-  "Detemins if a given request is from an authorized admin"
+  "Determins if a given request is from an authorized admin"
   [request]
   (contains-role? request "admin"))
 
+(defn isCurrentUser?
+  "Determins if the user making the request is altering their own resource(s)
+
+  TODO This is not the best, however it get's the job done for now.
+
+  We return true if one of the following holds true
+
+  1. The users id is contained in the URI
+  2. The users id is contained in the body map as `_id`
+  "
+  [request]
+  (let [user-id (get-user-id request)
+        contains-id-in-uri? (includes? (:uri request) user-id)
+        contains-id-in-params? (= user-id (get-in request [:params :_id]))]
+    (or contains-id-in-uri? contains-id-in-params?)))
 ;;
 ;; Access Rules
 ;;
@@ -66,6 +87,10 @@
                            {:pattern #"^/api/v1/game/.*"
                             :handler is-admin?
                             :request-method :delete}
+
+                           {:uri "/api/v1/game/:game-id{\\w+}/player/:player-id{\\w+}"
+                            :handler isCurrentUser?
+                            :request-method :post}
 
                            {:pattern #"^/api/v1/game.*"
                             :handler authenticated-user}
@@ -98,10 +123,10 @@
 
         (context "/player" []
           (GET "/" [] (games/get-players game-id))
-          (POST "/" [] (games/add-player game-id))
 
           (context "/:player-id" [player-id]
-            (GET "/" [] (games/get-players game-id player-id))))))
+            (GET "/" [] (games/get-players game-id player-id))
+            (POST "/" req (games/add-player game-id (:identity req)))))))
 
     (context "/player" []
       (GET "/" []  (players/get-players))

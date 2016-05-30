@@ -45,7 +45,9 @@
                       :collection (map #(dissoc % :initial-arena) @games)
                       :record-id-key :_id
                       :aliases {:_id "Game ID"}
-                      :formatters {:remove (fn [record]
+                      :formatters {:players (fn [record]
+                                              [:div])
+                                   :remove (fn [record]
                                              [:button {:on-click #(re-frame/dispatch [:remove-game (:_id record)])} "Remove Game"])}})]))
 
 (defn show-active-panel
