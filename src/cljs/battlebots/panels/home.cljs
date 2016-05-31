@@ -6,11 +6,11 @@
   [game user]
   (let [game-id (:_id game)
         user-id (:_id user)
-        isRegistered? (first (filter #(= user-id (:_id %)) (:players game)))]
+        is-registered? (boolean (first (filter #(= user-id (:_id %)) (:players game))))]
     (fn []
       [:li
        [:button {:on-click #(re-frame/dispatch [:set-active-game game])} game-id]
-       (if (not isRegistered?)
+       (if (not is-registered?)
          [:button {:on-click #(re-frame/dispatch [:register-user-in-game game-id user-id])} "Register"]
          [:p "Registered"])])))
 
@@ -35,7 +35,7 @@
    [:p "Game ids"]
    [:ul.game-list
     (doall (for [game games]
-       ^{:key (:_id game)} [battlebot-game game user]))]
+             ^{:key (str (:_id game) "-" (count (:players game)))} [battlebot-game game user]))]
    [:div.active-game
     (for [row (:initial-arena active-game)]
       ^{:key (rand 100)} [battlebot-board-row row])]])
