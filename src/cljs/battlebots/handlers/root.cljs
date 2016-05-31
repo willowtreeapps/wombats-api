@@ -6,10 +6,10 @@
               [battlebots.handlers.games]
               [battlebots.handlers.routing]
               [battlebots.handlers.ui]
+              [battlebots.handlers.users]
 
               [battlebots.db :as db]
-              [battlebots.services.battlebots :refer [get-games
-                                                      get-current-user]]))
+              [battlebots.services.battlebots :refer [get-current-user]]))
 
 (defn initialize-app-state
   "initializes application state on bootstrap"
@@ -22,10 +22,6 @@
 
   (get-current-user
     #(re-frame/dispatch [:update-user %])
-    #(re-frame/dispatch [:update-errors %]))
-
-  (get-games
-    #(re-frame/dispatch [:update-games %])
     #(re-frame/dispatch [:update-errors %]))
 
   (assoc db :bootstrapping? true))

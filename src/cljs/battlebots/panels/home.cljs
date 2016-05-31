@@ -3,13 +3,16 @@
 
 (defn battlebot-game
   "renders available games"
-  [game]
-  (fn []
-    [:li
-     [:button {:on-click #(re-frame/dispatch [:set-active-game game])}
-      (:_id game)]
-     [:button {:on-click #(re-frame/dispatch [:remove-game game])}
-      "Remove Game"]]))
+  [game user]
+  (let [game-id (:_id game)
+        user-id (:_id user)
+        is-registered? (boolean (first (filter #(= user-id (:_id %)) (:players game))))]
+    (fn []
+      [:li
+       [:button {:on-click #(re-frame/dispatch [:set-active-game game])} game-id]
+       (if (not is-registered?)
+         [:button {:on-click #(re-frame/dispatch [:register-user-in-game game-id user-id])} "Register"]
+         [:p "Registered"])])))
 
 (defn battlebot-board-cell
   "renders a cell of a game board"
@@ -25,22 +28,34 @@
      (for [cell row]
        ^{:key (rand 100)} [battlebot-board-cell cell])]))
 
+(defn authed-homepage
+  [user games active-game]
+  [:div
+   [:h3 (str "Welcome back " (:username user) "!")]
+   [:p "Game ids"]
+   [:ul.game-list
+    (doall (for [game games]
+             ^{:key (str (:_id game) "-" (count (:players game)))} [battlebot-game game user]))]
+   [:div.active-game
+    (for [row (:initial-arena active-game)]
+      ^{:key (rand 100)} [battlebot-board-row row])]])
+
+(def unauthed-homepage
+  [:div
+   [:p
+    [:a {:href "#/signup"} "Signup"]
+    " or "
+    [:a {:href "#/signin"} "Signin"]
+    " now!"]])
+
 (defn home-panel []
+  (re-frame/dispatch [:fetch-games])
   (let [active-game (re-frame/subscribe [:active-game])
         games (re-frame/subscribe [:games])
         user (re-frame/subscribe [:user])]
     (fn []
       [:div.panel-home
        [:h1 "Battlebots"]
-       (when @user 
-         [:h3 (str "Welcome back " (:username @user) "!")])
-       [:input.btn {:type "button"
-                    :value "Add Game"
-                    :on-click #(re-frame/dispatch [:create-game])}]
-       [:p "Game ids"]
-       [:ul.game-list
-        (for [game @games]
-         ^{:key (:_id game)} [battlebot-game game])]
-       [:div.active-game
-        (for [row (:initial-arena @active-game)]
-           ^{:key (rand 100)} [battlebot-board-row row])]])))
+       (if @user
+         (authed-homepage @user @games @active-game)
+         unauthed-homepage)])))

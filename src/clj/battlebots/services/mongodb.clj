@@ -3,7 +3,21 @@
             [monger.collection :as mc])
   (:import org.bson.types.ObjectId))
 
-(def conn (atom (mg/connect-via-uri "mongodb://127.0.0.1/battlebots")))
+(defn setup-db
+  "Ensures collection indexes exist"
+  [db]
+  (let [players "players"]
+
+    ;; Player indexes
+    (mc/ensure-index db players (array-map :username 1) {:unique true})))
+
+(def connection-uri "mongodb://127.0.0.1/battlebots")
+
+(def conn
+  (let [conn (atom (mg/connect-via-uri connection-uri))
+        db (:db @conn)]
+    (setup-db db)
+    conn))
 
 (defn get-db [] (:db @conn))
 
@@ -12,7 +26,7 @@
   [collection-name _id]
   (mc/find-one-as-map (get-db) collection-name {:_id (ObjectId. _id)}))
 
-(defn find-one-by 
+(defn find-one-by
   "finds a record by looking it up in a given collection by a given parameter"
   [collection-name param value]
   (mc/find-one-as-map (get-db) collection-name {param value}))
