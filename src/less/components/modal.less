@@ -1,0 +1,41 @@
+@import "../variables/colors";
+@import "../base/buttons";
+@import "../defaults/spacing";
+
+@modal-height: 80%;
+@modal-width: 80%;
+
+.modal-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: @modal-underlay-bg;
+
+    .modal-component {
+        width: @modal-width;
+        height: @modal-height;
+
+        background-color: @modal-component-bg;
+
+        * {
+            padding: @base-spacing-unit;
+        }
+
+        .clear-modal-btn {
+            .button-link-mixin();
+
+            position: absolute;
+            padding: 0;
+
+            top: @base-spacing-unit;
+            right: @base-spacing-unit;
+        }
+    }
+}

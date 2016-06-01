@@ -50,7 +50,9 @@
     (response {})))
 
 (defn add-player
-  "add a new player to a given game"
+  "add a new player to a given game
+
+  TODO: find-and-modify would prevent an additional database query"
   [game-id identity]
   (let [user-id (:_id identity)
         game (db/find-one games-coll game-id)

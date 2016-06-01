@@ -3,7 +3,8 @@
   (:require [re-frame.core :as re-frame]
             [battlebots.subs.user]
             [battlebots.subs.game]
-            [battlebots.subs.routing]))
+            [battlebots.subs.routing]
+            [battlebots.subs.ui]))
 
 (re-frame/register-sub
   :auth-token

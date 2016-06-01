@@ -1,5 +1,6 @@
 (ns battlebots.panels.home
-  (:require [re-frame.core :as re-frame]))
+  (:require [re-frame.core :as re-frame]
+            [battlebots.components.arena :refer [render-arena]]))
 
 (defn battlebot-game
   "renders available games"
@@ -14,20 +15,6 @@
          [:button {:on-click #(re-frame/dispatch [:register-user-in-game game-id user-id])} "Register"]
          [:p "Registered"])])))
 
-(defn battlebot-board-cell
-  "renders a cell of a game board"
-  [cell]
-  (fn []
-    [:li.cell cell]))
-
-(defn battlebot-board-row
-  "renders a row of a game board"
-  [row]
-  (fn []
-    [:ul.row
-     (for [cell row]
-       ^{:key (rand 100)} [battlebot-board-cell cell])]))
-
 (defn authed-homepage
   [user games active-game]
   [:div
@@ -36,9 +23,7 @@
    [:ul.game-list
     (doall (for [game games]
              ^{:key (str (:_id game) "-" (count (:players game)))} [battlebot-game game user]))]
-   [:div.active-game
-    (for [row (:initial-arena active-game)]
-      ^{:key (rand 100)} [battlebot-board-row row])]])
+   (render-arena active-game)])
 
 (def unauthed-homepage
   [:div

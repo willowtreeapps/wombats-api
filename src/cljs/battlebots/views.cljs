@@ -5,7 +5,8 @@
             [battlebots.panels.admin :as admin]
             [battlebots.panels.signin :as signin]
             [battlebots.panels.signup :as signup]
-            [battlebots.components.navbar :as navbar]))
+            [battlebots.components.navbar :as navbar]
+            [battlebots.components.ui :as ui]))
 
 (defmulti panels identity)
 (defmethod panels :home-panel [] [home/home-panel])
@@ -20,9 +21,13 @@
   [panels panel-name])
 
 (defn main-panel []
-  (let [active-panel (re-frame/subscribe [:active-panel])]
+  (let [active-panel (re-frame/subscribe [:active-panel])
+        active-modal (re-frame/subscribe [:active-modal])
+        active-alert (re-frame/subscribe [:active-alert])]
     (fn []
       [:div
-        [navbar/root]
-        [:div.main-container
-         [show-panel @active-panel]]])))
+       [navbar/root]
+       [ui/render-modal @active-modal]
+       [ui/render-alert @active-alert]
+       [:div.main-container
+        [show-panel @active-panel]]])))
