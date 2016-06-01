@@ -18,6 +18,14 @@
 ;;
 ;; Table configurations
 ;;
+(defn remove-user-action
+  "determin if a user should be removed"
+  [record]
+  (re-frame/dispatch [:display-alert
+                      {:title (str "Are you sure you want to remove " (:username record) "?")
+                       :confirmed #(re-frame/dispatch [:remove-user (:_id record)])
+                       :type :option}]))
+
 (defn render-users
   "renders users table"
   []
@@ -31,7 +39,15 @@
                                :roles "User Roles"
                                :remove "Remove User"}
                      :formatters {:remove (fn [record]
-                                            [:button {:on-click #(re-frame/dispatch [:remove-user (:_id record)])} "Remove User"])}})))
+                                            [:button {:on-click #(remove-user-action record)} "Remove User"])}})))
+
+(defn remove-game-action
+  "determin if a game should be removed"
+  [record]
+  (re-frame/dispatch [:display-alert
+                      {:title (str "Are you sure you want to remove " (:_id record) "?")
+                       :confirmed #(re-frame/dispatch [:remove-game (:_id record)])
+                       :type :option}]))
 
 (defn render-games
   "renders games table"
@@ -48,7 +64,7 @@
                       :formatters {:players (fn [record]
                                               [:div])
                                    :remove (fn [record]
-                                             [:button {:on-click #(re-frame/dispatch [:remove-game (:_id record)])} "Remove Game"])}})]))
+                                             [:button {:on-click #(remove-game-action record)} "Remove Game"])}})]))
 
 (defn show-active-panel
   []

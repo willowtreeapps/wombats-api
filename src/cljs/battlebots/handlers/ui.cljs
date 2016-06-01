@@ -15,8 +15,9 @@
 
 (defn display-alert
   "sets a new active alert"
-  [db [_ alert]]
-  (assoc db :active-alert alert))
+  [db [_ alert-config]]
+  (println alert-config)
+  (assoc db :active-alert alert-config))
 
 (defn clear-modal
   "clears an active modal"
