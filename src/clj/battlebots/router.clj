@@ -84,6 +84,9 @@
                             :handler any-access}
 
                            ;; Games
+                           {:uris ["/api/v1/game/:game-id{\\w+}/start"]
+                            :handler is-admin?}
+
                            {:pattern #"^/api/v1/game/.*"
                             :handler is-admin?
                             :request-method :delete}
@@ -113,6 +116,7 @@
       (context "/:game-id" [game-id]
         (GET "/" [] (games/get-games game-id))
         (DELETE "/" [] (games/remove-game game-id))
+        (POST "/initialize" [] (games/initialize-game game-id))
 
         (context "/round" []
           (GET "/" [] (games/get-rounds game-id))

@@ -7,4 +7,5 @@
   "game schema"
   {:_id s/Int
    :rounds [Round]
-   :players [Player]})
+   :players [Player]
+   :state s/String})

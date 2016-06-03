@@ -4,7 +4,7 @@
   "renders a cell of a game board"
   [cell]
   (fn []
-    [:li.cell cell]))
+    [:li.cell (:display cell)]))
 
 (defn render-row
   "renders a row of a game board"

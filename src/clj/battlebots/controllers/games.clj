@@ -2,6 +2,7 @@
   (:require [ring.util.response :refer [response]]
             [battlebots.services.mongodb :as db]
             [battlebots.arena :as arena]
+            [battlebots.game :as game]
             [monger.collection :as mc]
             [monger.operators :refer [$push]])
   (:import org.bson.types.ObjectId))
@@ -21,8 +22,18 @@
   (let [arena (arena/new-arena arena/large-arena)
         game {:initial-arena arena
               :rounds []
-              :players []}]
+              :players []
+              :state "pending"}]
     (response (db/insert-one games-coll game))))
+
+(defn initialize-game
+  "starts a game"
+  ;; TODO implement FSM to handle game state transitions
+  [game-id]
+  (let [game (db/find-one games-coll game-id)
+        initialized-arena (game/add-players (:players game) (:initial-arena game))
+        updated-game (assoc game :initial-arena initialized-arena :state "initialized")]
+    (response (db/update-one-by-id games-coll game-id updated-game))))
 
 (defn remove-game
   "removes a game"
