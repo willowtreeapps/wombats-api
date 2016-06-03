@@ -1,11 +1,16 @@
 (ns battlebots.arena)
 
 ;; map of possible arena values
-(def arena-key {:open " "
-                :bot "@"
-                :block "X"
-                :food "+"
-                :poison "-"})
+(def arena-key {:open   {:type "open"
+                         :display " "}
+                :bot    {:type "bot"
+                         :display "@"}
+                :block  {:type "block"
+                         :display "X"}
+                :food   {:type "food"
+                         :display "+"}
+                :poison {:type "poison"
+                         :display "-"}})
 
 ;; ----------------------------------
 ;; MAP GENERATION HELPERS
@@ -52,7 +57,7 @@
 (defn replacer
   "replaces an empty cell with a value in a given arena"
   [arena item]
-    (update-cell (find-random-open-space arena) item arena))
+  (update-cell (find-random-open-space arena) item arena))
 
 (defn sprinkle
   "sprinkles given items into an arena"
@@ -77,20 +82,20 @@
 ;; randomly, this may not be desirable for all items but works for now.
 
 (defn blocks
-  "sprinkle blocks around the arena argument and return a new arena
+  "sprinkle blocks around the arena and return a new arena
   make sure there are no inaccessible areas"
   [frequency config arena]
   (let [amount (get-number-of-items frequency arena)]
     (place-walls amount arena config)))
 
 (defn food
-  "sprinkle food around the arena argument and return a new arena"
+  "sprinkle food around the arena and return a new arena"
   [frequency config arena]
   (let [amount (get-number-of-items frequency arena)]
     (sprinkle amount (:food arena-key) arena)))
 
 (defn poison
-  "sprinkle poison around the arena argument and return a new arena"
+  "sprinkle poison around the arena and return a new arena"
   [frequency config arena]
   (let [amount (get-number-of-items frequency arena)]
     (sprinkle amount (:poison arena-key) arena)))

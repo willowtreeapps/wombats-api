@@ -36,6 +36,11 @@
   [collection-name]
   (mc/find-maps (get-db) collection-name))
 
+(defn update-one-by-id
+  "udpates a single record"
+  [collection-name _id document]
+  (mc/update-by-id (get-db) collection-name (ObjectId. _id) document))
+
 (defn insert-one
   "inserts a single record into a given collection"
   [collection-name record]

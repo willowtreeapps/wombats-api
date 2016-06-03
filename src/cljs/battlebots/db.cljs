@@ -8,5 +8,7 @@
    :users []
    :active-game {}
    :active-panel nil
+   :active-modal nil
+   :active-alert nil
    :games []
    :errors []})
