@@ -69,7 +69,7 @@
   (let [user-id (:_id identity)
         game (db/find-one games-coll game-id)
         player-not-registered? (empty? (filter #(= (:_id %) user-id) (:players game)))
-        player (select-keys identity [:_id])
+        player (select-keys identity [:_id :login])
         update (if player-not-registered?
                  (mc/update (db/get-db) games-coll {:_id (ObjectId. game-id)} {$push {:players player}}))]
     (if player-not-registered?
