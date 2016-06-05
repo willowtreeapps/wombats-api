@@ -33,7 +33,8 @@
   (let [game (db/find-one games-coll game-id)
         initialized-arena (game/add-players (:players game) (:initial-arena game))
         updated-game (assoc game :initial-arena initialized-arena :state "initialized")]
-    (response (db/update-one-by-id games-coll game-id updated-game))))
+    (db/update-one-by-id games-coll game-id updated-game)
+    (response updated-game)))
 
 (defn remove-game
   "removes a game"
@@ -68,7 +69,7 @@
   (let [user-id (:_id identity)
         game (db/find-one games-coll game-id)
         player-not-registered? (empty? (filter #(= (:_id %) user-id) (:players game)))
-        player (select-keys identity [:username :bot-repo :_id])
+        player (select-keys identity [:_id])
         update (if player-not-registered?
                  (mc/update (db/get-db) games-coll {:_id (ObjectId. game-id)} {$push {:players player}}))]
     (if player-not-registered?

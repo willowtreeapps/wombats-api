@@ -4,7 +4,9 @@
   "renders a cell of a game board"
   [cell]
   (fn []
-    [:li.cell (:display cell)]))
+    (if (:_id cell)
+      [:li.cell.player]
+      [:li.cell (:display cell)])))
 
 (defn render-row
   "renders a row of a game board"

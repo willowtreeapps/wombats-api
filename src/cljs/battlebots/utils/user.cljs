@@ -4,9 +4,9 @@
 (defn isAdmin?
   "tests if a user object contains the admin role"
   [user]
-  (in? (:roles user) "admin"))
+  (:admin user))
 
 (defn isUser?
   "tests if a user is logged in"
   [user]
-  (in? (:roles user) "user"))
+  (boolean (:_id user)))

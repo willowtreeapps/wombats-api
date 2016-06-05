@@ -7,6 +7,7 @@
             [ring.middleware.json :refer [wrap-json-response]]
             [ring.middleware.transit :refer [wrap-transit-params]]
             [ring.middleware.reload :refer [wrap-reload]]
+            [battlebots.services.mongodb :as db]
             [monger.json]))
 
 ;; https://blog.8thlight.com/mike-knepper/2015/05/19/handling-exceptions-with-middleware-in-clojure.html
@@ -18,9 +19,13 @@
       (catch Exception e
         {:status 400 :body (.getMessage e)}))))
 
-;; TODO pull secret from ENV
-(def secret "mysecret")
-(def backend (backends/jws {:secret secret}))
+(defn auth-user
+  "attaches a user object to a req"
+  [request token]
+  (let [user (db/find-one-by "players" :access-token token)]
+    (merge user {:_id (str (:_id user))})))
+
+(def backend (backends/token {:authfn auth-user}))
 
 (defn wrap-middleware [handler]
   (-> handler
