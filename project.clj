@@ -8,6 +8,7 @@
                  [ring-server "0.4.0"]
                  [buddy/buddy-auth "0.13.0"]
                  [buddy/buddy-hashers "0.14.0"]
+                 [http-kit "2.1.19"]
                  [reagent "0.5.1" :exclusions [org.clojure/tools.reader]]
                  [reagent-forms "0.5.22"]
                  [reagent-utils "0.1.7"]
@@ -27,11 +28,13 @@
                  [alandipert/storage-atom "2.0.1"]
                  [secretary "1.2.3"]
                  [venantius/accountant "0.1.7" :exclusions [org.clojure/tools.reader]]
+                 [com.cemerick/url "0.1.1"]
                  [re-frame "0.7.0"]]
 
   :plugins [[lein-environ "1.0.2"]
             [lein-cljsbuild "1.1.1"]
             [lein-less "1.7.5"]
+            [jonase/eastwood "0.2.3"]
             [lein-asset-minifier "0.2.7" :exclusions [org.clojure/clojure]]]
 
   :less {:source-paths ["src/less"]

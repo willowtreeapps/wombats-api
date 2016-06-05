@@ -14,20 +14,10 @@
 ;;
 ;; Helper functions
 ;;
-(defn get-user-id
+(defn get-user
   "Pull the user id out of the identity map"
   [request]
-  (get-in request [:identity :_id]))
-
-(defn get-roles
-  "Pulls rolls out of a request object"
-  [request]
-  (get-in request [:identity :roles]))
-
-(defn contains-role?
-  "Determins if a given role is present in a users role vector"
-  [request role]
-  (in? (get-roles request) role))
+  (:identity request))
 
 ;;
 ;; Access Handlers
@@ -45,12 +35,11 @@
 (defn is-user?
   "Determins if a give request is from an authorized user"
   [request]
-  (contains-role? request "user"))
+  (boolean (get-user request)))
 
 (defn is-admin?
-  "Determins if a given request is from an authorized admin"
   [request]
-  (contains-role? request "admin"))
+  (:admin (get-user request)))
 
 (defn isCurrentUser?
   "Determins if the user making the request is altering their own resource(s)
@@ -63,7 +52,7 @@
   2. The users id is contained in the body map as `_id`
   "
   [request]
-  (let [user-id (get-user-id request)
+  (let [user-id (:_id (get-user request))
         contains-id-in-uri? (includes? (:uri request) user-id)
         contains-id-in-params? (= user-id (get-in request [:params :_id]))]
     (or contains-id-in-uri? contains-id-in-params?)))
@@ -140,9 +129,10 @@
         (DELETE "/" [] (players/remove-player player-id))))
 
     (context "/auth" []
-      (GET "/account-details" req (auth/account-details req))
-      (POST "/signup" req (auth/signup (:params req)))
-      (POST "/login" req (auth/login (:params req)))))
+      (GET "/account-details" req (auth/account-details req))))
+
+  (GET "/signin/github" [] (auth/signin))
+  (GET "/signin/github/callback" req (auth/process-user (:params req)))
 
   ;; Main view
   (GET "/" [] index)
@@ -151,6 +141,6 @@
   (resources "/")
 
   ;; No resource found
-  (not-found "Not Found")
+  (not-found "Not Found"))
 
-  (def app (wrap-middleware (wrap-access-rules #'routes access-rules))))
+(def app (wrap-middleware (wrap-access-rules #'routes access-rules)))

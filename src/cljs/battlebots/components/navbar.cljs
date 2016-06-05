@@ -7,13 +7,13 @@
 
 (defn authenticated-links [user]
   [{:on-click #(println "TODO: toggle menu")
-    :display (:username user)
+    :display (:login user)
     :class-name "user-menu-button"
     :children [:ul.user-menu
                [:li.user-menu-link
                 [:a {:href "#/signout"} "Sign out"]]]}])
 
-(def unauthenticated-links [{:path "#/signin"
+(def unauthenticated-links [{:path "/signin/github"
                              :display "Signin"}])
 
 (def common-links [{:path "#/"

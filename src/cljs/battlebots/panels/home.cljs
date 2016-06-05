@@ -11,9 +11,8 @@
     (fn []
       [:li
        [:button {:on-click #(re-frame/dispatch [:set-active-game game])} game-id]
-       (if (not is-registered?)
-         [:button {:on-click #(re-frame/dispatch [:register-user-in-game game-id user-id])} "Register"]
-         [:p "Registered"])])))
+       (if (and (not is-registered?) (= (:state game) "pending"))
+         [:button {:on-click #(re-frame/dispatch [:register-user-in-game game-id user-id])} "Join Game"])])))
 
 (defn authed-homepage
   [user games active-game]
@@ -28,10 +27,8 @@
 (def unauthed-homepage
   [:div
    [:p
-    [:a {:href "#/signup"} "Signup"]
-    " or "
-    [:a {:href "#/signin"} "Signin"]
-    " now!"]])
+    [:a {:href "/signin/github"} "Signup"]
+    " and get started!"]])
 
 (defn home-panel []
   (re-frame/dispatch [:fetch-games])
