@@ -15,7 +15,7 @@ Each player writes their own bot in clojure (other language support may become a
 
 #### Getting Started (Development)
 
-1. [Register](https://github.com/settings/applications/new) a new GitHub OAuth Application
+1. [Register](https://github.com/settings/applications/new) a new GitHub OAuth Application NOTE: This step will be removed when we get a WillowTree GitHub App.
 1. Add the following ENV variable to your path
    - **WT_BATTLEBOTS_GITHUB_CLIENT_ID_DEV** (GitHub Client ID)
    - **WT_BATTLEBOTS_GITHUB_CLIENT_SECRET_DEV** (GitHub Client Secret)
