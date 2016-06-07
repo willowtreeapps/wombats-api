@@ -49,13 +49,18 @@
                        :confirmed #(re-frame/dispatch [:remove-game (:_id record)])
                        :type :option}]))
 
-(defn start-game-action
-  "starts a game"
+(defn initialize-game-action
+  "initializes a game"
   [record]
   (re-frame/dispatch [:display-alert
                       {:title (str "Are you sure you want to initialize this game?")
                        :confirmed #(re-frame/dispatch [:initialize-game (:_id record)])
                        :type :option}]))
+
+(defn start-game-action
+  "starts a game"
+  [record]
+  (println "TODO: Start game"))
 
 (defn render-games
   "renders games table"
@@ -75,8 +80,11 @@
                                    :remove (fn [record]
                                              [:button {:on-click #(remove-game-action record)} "Remove Game"])
                                    :game-action (fn [record]
-                                                  (if (= (:state record) "pending")
-                                                    [:button {:on-click #(start-game-action record)} "Initialize Game"]))}})]))
+                                                  (cond 
+                                                   (= (:state record) "pending")
+                                                   [:button {:on-click #(initialize-game-action record)} "Initialize Game"]
+                                                   (= (:state record) "initialized")
+                                                   [:button {:on-click #(start-game-action record)} "Start Game"]))}})]))
 
 (defn show-active-panel
   []
