@@ -6,10 +6,10 @@
                    :display "Admin Center"}])
 
 (defn authenticated-links [user]
-  [{:on-click #(println "TODO: toggle menu")
+  [{:on-click #(println "TODO toggle menu")
     :display (:login user)
     :class-name "user-menu-button"
-    :children [:ul.user-menu
+    :children [:ul.user-menu {:class-name "open"}
                [:li.user-menu-link
                 [:a {:href "#/signout"} "Sign out"]]]}])
 
@@ -17,7 +17,8 @@
                              :display "Signin"}])
 
 (def common-links [{:path "#/"
-                    :display "Home"}
+                    :display "Battlebots"
+                    :class-name "home-link"}
                    {:path "#/about"
                     :display "About"}])
 

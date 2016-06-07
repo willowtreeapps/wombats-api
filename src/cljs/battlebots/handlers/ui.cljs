@@ -14,7 +14,7 @@
   (assoc db :active-modal modal))
 
 (defn display-alert
-  "sets a new active alert"
+   "sets a new active alert"
   [db [_ alert-config]]
   (assoc db :active-alert alert-config))
 
