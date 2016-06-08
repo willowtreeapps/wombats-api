@@ -27,11 +27,8 @@
   (defroute "/admin" []
     (re-frame/dispatch [:set-active-panel :admin-panel]))
 
-  (defroute "/signin" []
-    (re-frame/dispatch [:set-active-panel :signin-panel]))
-
-  (defroute "/signup" []
-    (re-frame/dispatch [:set-active-panel :signup-panel]))
+  (defroute "/my-settings" []
+    (re-frame/dispatch [:set-active-panel :my-settings-panel]))
 
   (defroute "/signout" []
     (re-frame/dispatch [:sign-out])

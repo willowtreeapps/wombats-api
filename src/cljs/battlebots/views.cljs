@@ -3,17 +3,15 @@
             [battlebots.panels.home :as home]
             [battlebots.panels.about :as about]
             [battlebots.panels.admin :as admin]
-            [battlebots.panels.signin :as signin]
-            [battlebots.panels.signup :as signup]
+            [battlebots.panels.my-settings :as my-settings]
             [battlebots.components.navbar :as navbar]
             [battlebots.components.ui :as ui]))
 
 (defmulti panels identity)
 (defmethod panels :home-panel [] [home/home-panel])
 (defmethod panels :about-panel [] [about/about-panel])
+(defmethod panels :my-settings-panel [] [my-settings/my-settings-panel])
 (defmethod panels :admin-panel [] [admin/admin-panel])
-(defmethod panels :signin-panel [] [signin/signin-panel])
-(defmethod panels :signup-panel [] [signup/signup-panel])
 (defmethod panels :default [] [:div])
 
 (defn show-panel

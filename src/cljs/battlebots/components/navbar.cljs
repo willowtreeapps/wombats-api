@@ -11,6 +11,7 @@
     :class-name "user-menu-button"
     :children [:ul.user-menu {:class-name "open"}
                [:li.user-menu-link
+                [:a {:href "#/my-settings"} "Settings"]
                 [:a {:href "#/signout"} "Sign out"]]]}])
 
 (def unauthenticated-links [{:path "/signin/github"
