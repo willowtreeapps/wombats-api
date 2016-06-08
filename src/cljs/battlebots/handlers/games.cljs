@@ -6,7 +6,8 @@
                                                       post-game
                                                       del-game
                                                       post-game-user
-                                                      post-game-initialize]]))
+                                                      post-game-initialize
+                                                      post-game-start]]))
 
 (defn update-games
   "updates all games in state"
@@ -74,6 +75,14 @@
     #(re-frame/dispatch [:update-errors %]))
   db)
 
+(defn start-game
+  "starts a game"
+  [db [_ game-id]]
+  (post-game-start game-id
+    #(re-frame/dispatch [:update-game %])
+    #(re-frame/dispatch [:update-errors %]))
+  db)
+
 (re-frame/register-handler :update-games update-games)
 (re-frame/register-handler :update-game update-game)
 (re-frame/register-handler :create-game create-game)
@@ -84,3 +93,4 @@
 (re-frame/register-handler :fetch-games fetch-games)
 (re-frame/register-handler :register-user-in-game register-user-in-game)
 (re-frame/register-handler :initialize-game initialize-game)
+(re-frame/register-handler :start-game start-game)

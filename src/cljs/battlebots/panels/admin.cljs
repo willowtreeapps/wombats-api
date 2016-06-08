@@ -60,7 +60,10 @@
 (defn start-game-action
   "starts a game"
   [record]
-  (println "TODO: Start game"))
+  (re-frame/dispatch [:display-alert
+                      {:title (str "Are you sure you want to start this game?")
+                       :confirmed #(re-frame/dispatch [:start-game (:_id record)])
+                       :type :option}]))
 
 (defn render-games
   "renders games table"
@@ -80,7 +83,7 @@
                                    :remove (fn [record]
                                              [:button {:on-click #(remove-game-action record)} "Remove Game"])
                                    :game-action (fn [record]
-                                                  (cond 
+                                                  (cond
                                                    (= (:state record) "pending")
                                                    [:button {:on-click #(initialize-game-action record)} "Initialize Game"]
                                                    (= (:state record) "initialized")
