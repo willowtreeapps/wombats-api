@@ -17,7 +17,7 @@
 (defn authed-homepage
   [user games active-game]
   [:div
-   [:h3 (str "Welcome back " (:username user) "!")]
+   [:h3 (str "Welcome back " (:login user) "!")]
    [:p "Game ids"]
    [:ul.game-list
     (doall (for [game games]
@@ -37,7 +37,6 @@
         user (re-frame/subscribe [:user])]
     (fn []
       [:div.panel-home
-       [:h1 "Battlebots"]
        (if @user
          (authed-homepage @user @games @active-game)
          unauthed-homepage)])))

@@ -106,6 +106,8 @@
         (GET "/" [] (games/get-games game-id))
         (DELETE "/" [] (games/remove-game game-id))
         (POST "/initialize" [] (games/initialize-game game-id))
+        (POST "/start" [] (games/start-game game-id))
+
 
         (context "/round" []
           (GET "/" [] (games/get-rounds game-id))

@@ -1,11 +1,18 @@
-(ns battlebots.components.arena)
+(ns battlebots.components.arena
+  (:require [re-frame.core :as re-frame]))
+
+(defn show-cell-details
+  "Renders a cells details"
+  [cell]
+  (println cell)
+  (re-frame/dispatch [:display-modal [:div (str cell)]]))
 
 (defn render-cell
   "renders a cell of a game board"
   [cell]
   (fn []
     (if (:_id cell)
-      [:li.cell.player]
+      [:li.cell.player {:on-click #(show-cell-details cell)}]
       [:li.cell (:display cell)])))
 
 (defn render-row
