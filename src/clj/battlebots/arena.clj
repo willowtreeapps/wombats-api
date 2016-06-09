@@ -99,6 +99,11 @@
   [frequency config arena]
   (let [amount (get-number-of-items frequency arena)]
     (sprinkle amount (:poison arena-key) arena)))
+
+(defn add-players
+  "place players around the arena and return a new arean"
+  [players arena]
+  (reduce replacer arena players))
 ;; ----------------------------------
 ;; END ITEM DROP
 ;; ----------------------------------

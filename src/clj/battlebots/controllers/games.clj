@@ -32,7 +32,7 @@
   ;; TODO implement FSM to handle game state transitions
   [game-id]
   (let [game (db/find-one games-coll game-id)
-        initialized-arena (game/add-players (:players game) (:initial-arena game))
+        initialized-arena (arena/add-players (:players game) (:initial-arena game))
         updated-game (assoc game :initial-arena initialized-arena :state "initialized")
         update (db/update-one-by-id games-coll game-id updated-game)]
     (if (mr/acknowledged? update)
