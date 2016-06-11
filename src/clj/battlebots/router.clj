@@ -56,6 +56,7 @@
         contains-id-in-uri? (includes? (:uri request) user-id)
         contains-id-in-params? (= user-id (get-in request [:params :_id]))]
     (or contains-id-in-uri? contains-id-in-params?)))
+
 ;;
 ;; Access Rules
 ;;
@@ -107,7 +108,6 @@
         (DELETE "/" [] (games/remove-game game-id))
         (POST "/initialize" [] (games/initialize-game game-id))
         (POST "/start" [] (games/start-game game-id))
-
 
         (context "/round" []
           (GET "/" [] (games/get-rounds game-id))

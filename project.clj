@@ -52,7 +52,6 @@
                  ;; Clojure & React
                  [re-frame "0.7.0"]
                  [reagent "0.5.1" :exclusions [org.clojure/tools.reader]]
-;;                 [reagent-forms "0.5.22"]
                  [reagent-utils "0.1.7"]
 
                  ;; Routing
