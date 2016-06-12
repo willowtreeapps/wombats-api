@@ -1,23 +1,12 @@
-(ns battlebots.arena)
-
-;; map of possible arena values
-(def arena-key {:open   {:type "open"
-                         :display " "}
-                :bot    {:type "bot"
-                         :display "@"}
-                :block  {:type "block"
-                         :display "X"}
-                :food   {:type "food"
-                         :display "+"}
-                :poison {:type "poison"
-                         :display "-"}})
+(ns battlebots.arena
+  (:require [battlebots.constants.arena :refer [arena-key]]))
 
 ;; ----------------------------------
 ;; MAP GENERATION HELPERS
 ;; ----------------------------------
 
 (defn get-arena-dimensions
-  "returns the dimensions of a given arena"
+  "returns the dimensions of a given arena (NOTE: Not 0 based)"
   [arena]
   (let [x (count arena)
         y ((comp count first) arena)]

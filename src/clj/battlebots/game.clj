@@ -1,10 +1,37 @@
 (ns battlebots.game
   (:require [battlebots.arena :as arena]
+            [battlebots.constants.arena :refer [arena-key]]
             [battlebots.sample-bots.bot-one :as bot-one]))
 
 ;;
 ;; HELPER FUNCTIONS
 ;;
+
+(defn get-arena-row-cell-length
+  "Similar to arena/get-arena-dimensions except that it is zero based"
+  [arena]
+  (let [x (count arena)
+        y ((comp count first) arena)]
+    [(dec x) (dec y)]))
+
+;; Modified from
+;; http://stackoverflow.com/questions/4830900/how-do-i-find-the-index-of-an-item-in-a-vector
+(defn position
+  [pred coll]
+  (first (keep-indexed (fn [idx x]
+                         (when (pred x)
+                           idx))
+                       coll)))
+
+(defn get-player
+  "Grabs a player by id"
+  [id collection]
+  (first (filter #(= (:_id %) id) collection)))
+
+(defn get-item
+  "gets an item based off of given coords"
+  [coords arena]
+  (get-in arena coords))
 
 (defn randomize-players
   "Randomizes player ids"
@@ -16,15 +43,57 @@
   [decisions execution-order]
   (map #(get-player % decisions) execution-order))
 
-(defn get-player
-  "Grabs a player by id"
-  [id collection]
-  (first (filter #(= (:_id %) id) collection)))
-
 (defn get-player-coords
-  [_id arena]
+  "Returns a tuple of a given players coords
 
-  )
+  TODO: There's most likely a better way to accomplish this"
+  [_id arena]
+  (:coords (reduce (fn [memo row]
+                     (if (:coords memo)
+                       memo
+                       (let [idx (position #(= (:_id %) _id) row)
+                             row-number (:row memo)]
+                         (if idx
+                           {:row (+ 1 row-number)
+                            :coords [row-number idx]}
+                           {:row (+ 1 row-number)}))))
+                   {:row 0} arena)))
+
+(defn wrap-coords
+  "wraps the coords around to the other side of the arena"
+  [[c-x c-y] [d-x d-y]]
+  (let [x (cond
+           (< c-x 0) d-x
+           (> c-x d-x) 0
+           :else c-x)
+        y (cond
+           (< c-y 0) d-y
+           (> c-y d-y) 0
+           :else c-y)]
+    [x y]))
+
+(defn adjust-coords
+  "Returns a new set of coords based off of an applied direction.
+
+  0 1 2
+  7   3
+  6 5 4
+
+  "
+  [coords direction dimensions]
+  (let [
+        updater (cond
+                 (= direction 0) [dec dec]
+                 (= direction 1) [dec identity]
+                 (= direction 2) [dec inc]
+                 (= direction 3) [identity inc]
+                 (= direction 4) [inc inc]
+                 (= direction 5) [inc identity]
+                 (= direction 6) [inc dec]
+                 (= direction 7) [identity dec]
+                 :else [identity identity])
+        coords (map #(%1 %2) updater coords)]
+    (wrap-coords coords dimensions)))
 
 ;;
 ;; DECISION FUNCTIONS
@@ -34,10 +103,15 @@
 ;; function will return a modifed game-state (:dirty-arena)
 
 (defn move-player
-  [_id {:keys [metadata] :as decision} {:keys [dirty-arena] :as game-state}]
-  (let [player-coords (get-player-coords _id dirty-arena)])
-  )
+  [_id {:keys [direction] :as metadata} {:keys [dirty-arena] :as game-state}]
+  (let [player-coords (get-player-coords _id dirty-arena)
+        dimensions (get-arena-row-cell-length dirty-arena)
+        desired-coords (adjust-coords player-coords direction dimensions)
+        desired-space-contents (get-item desired-coords dirty-arena)]
+    (println desired-space-contents)
+    game-state))
 
+;;
 ;; GAME STATE UPDATE HELPERS
 ;;
 
@@ -47,7 +121,7 @@
   (let [type (:type decision)
         metadata (:metadata decision)
         updated-game-state (cond
-                            (= type "MOVE") (move-player _id decision game-state)
+                            (= type "MOVE") (move-player _id metadata game-state)
                             (= type "SHOOT" game-state) ;; TODO
                             (= type "HEAL" game-state) ;;
                             :else game-state)]
