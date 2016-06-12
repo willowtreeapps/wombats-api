@@ -8,6 +8,11 @@
             [monger.operators :refer [$push]])
   (:import org.bson.types.ObjectId))
 
+;; TODO Remove when done testing
+(def test-players [{:_id 1 :login "AI1"}
+                   {:_id 2 :login "AI2"}
+                   {:_id 3 :login "AI2"}])
+
 (def games-coll "games")
 
 (defn get-games
@@ -23,7 +28,7 @@
   (let [arena (arena/new-arena arena/large-arena)
         game {:initial-arena arena
               :rounds []
-              :players []
+              :players test-players
               :state "pending"}]
     (response (db/insert-one games-coll game))))
 
