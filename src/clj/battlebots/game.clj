@@ -7,13 +7,6 @@
 ;; HELPER FUNCTIONS
 ;;
 
-(defn get-arena-row-cell-length
-  "Similar to arena/get-arena-dimensions except that it is zero based"
-  [arena]
-  (let [x (count arena)
-        y ((comp count first) arena)]
-    [(dec x) (dec y)]))
-
 ;; Modified from
 ;; http://stackoverflow.com/questions/4830900/how-do-i-find-the-index-of-an-item-in-a-vector
 (defn position
@@ -23,10 +16,22 @@
                            idx))
                        coll)))
 
+(defn get-arena-row-cell-length
+  "Similar to arena/get-arena-dimensions except that it is zero based"
+  [arena]
+  (let [x (count arena)
+        y ((comp count first) arena)]
+    [(dec x) (dec y)]))
+
 (defn get-player
   "Grabs a player by id"
   [id collection]
   (first (filter #(= (:_id %) id) collection)))
+
+(defn sanitized-player
+  "Sanitizes the full player object returning the partial used on the game map"
+  [player]
+  (select-keys player [:_id :login]))
 
 (defn get-item
   "gets an item based off of given coords"
@@ -37,6 +42,10 @@
   "Randomizes player ids"
   [players]
   (shuffle (map #(:_id %) players)))
+
+(defn sanitize-player
+  [player]
+  (dissoc player :bot :saved-state))
 
 (defn sort-decisions
   "Sorts player decisions based of of a provided execution-order"
@@ -95,6 +104,52 @@
         coords (map #(%1 %2) updater coords)]
     (wrap-coords coords dimensions)))
 
+(defn can-occupy-space?
+  "determins if a bot can occupy a given space"
+  [{:keys [type] :as space}]
+  (or
+   (= type "open")
+   (= type "food")
+   (= type "poison")))
+
+(defn determin-affects
+  "Determins how player stats should be affected"
+  [{:keys [type] :as space}]
+  (cond
+   (= type "open") {}
+   (= type "food") {:score #(+ % 10)}
+   (= type "poison") {:score #(- % 5)}))
+
+(defn apply-player-update
+  "Applies an update to a player object"
+  [player update]
+  (reduce (fn [player [prop update-fn]]
+            (assoc player prop (update-fn (get player prop)))) player update))
+
+(defn modify-player-stats
+  [player-id update players]
+  (map (fn [{:keys [_id] :as player}]
+         (if (= player-id _id)
+           (apply-player-update player update)
+           player)) players))
+
+(defn player-occupy-space
+  [coords player-id]
+  (fn [{:keys [dirty-arena players] :as game-state}]
+     (let [cell-contents (get-item coords dirty-arena)
+           player (get-player player-id players)
+           updated-arena (arena/update-cell coords (sanitized-player player) dirty-arena)
+           player-update (determin-affects cell-contents)
+           updated-players (modify-player-stats player-id player-update players)]
+       (merge game-state {:dirty-arena updated-arena
+                          :players updated-players}))))
+
+(defn clear-space
+  [coords]
+  (fn [{:keys [dirty-arena] :as game-state}]
+     (let [updated-arena (arena/update-cell coords (:open arena-key) dirty-arena)]
+       (merge game-state {:dirty-arena updated-arena}))))
+
 ;;
 ;; DECISION FUNCTIONS
 ;;
@@ -103,13 +158,16 @@
 ;; function will return a modifed game-state (:dirty-arena)
 
 (defn move-player
-  [_id {:keys [direction] :as metadata} {:keys [dirty-arena] :as game-state}]
+  [_id {:keys [direction] :as metadata} {:keys [dirty-arena players] :as game-state}]
   (let [player-coords (get-player-coords _id dirty-arena)
         dimensions (get-arena-row-cell-length dirty-arena)
         desired-coords (adjust-coords player-coords direction dimensions)
-        desired-space-contents (get-item desired-coords dirty-arena)]
-    (println desired-space-contents)
-    game-state))
+        desired-space-contents (get-item desired-coords dirty-arena)
+        take-space? (can-occupy-space? desired-space-contents)]
+    (if take-space?
+      (reduce #(%2 %1) game-state [(clear-space player-coords)
+                                   (player-occupy-space desired-coords _id)])
+      (reduce #(%2 %1) game-state []))))
 
 ;;
 ;; GAME STATE UPDATE HELPERS
@@ -119,13 +177,12 @@
   "Applies player decision to the current state of the game"
   [game-state {:keys [decision _id]}]
   (let [type (:type decision)
-        metadata (:metadata decision)
-        updated-game-state (cond
-                            (= type "MOVE") (move-player _id metadata game-state)
-                            (= type "SHOOT" game-state) ;; TODO
-                            (= type "HEAL" game-state) ;;
-                            :else game-state)]
-    game-state))
+        metadata (:metadata decision)]
+    (cond
+     (= type "MOVE") (move-player _id metadata game-state)
+     (= type "SHOOT" game-state) ;; TODO
+     (= type "HEAL" game-state) ;; TODO
+     :else game-state)))
 
 (defn resolve-player-decisions
   "Returns a vecor of player decisions based off of the logic provided by
@@ -169,20 +226,29 @@
 (defn initialize-game
   "Preps the game"
   [{:keys [initial-arena players] :as game}]
-  (merge game {:current-arena initial-arena
-               :players (initialize-players players)
-               :round 0}))
+  (merge game {:clean-arena initial-arena
+               :players (initialize-players players)}))
 
 (defn initialize-new-round
   "Preps game-state for a new round"
-  [{:keys [current-arena] :as game-state}]
-  (merge game-state {:clean-arena current-arena
-                     :dirty-arena current-arena}))
+  [{:keys [clean-arena] :as game-state}]
+  (merge game-state {:dirty-arena clean-arena}))
 
 (defn finalize-round
   "Modifies game state to close out a round"
-  [{:keys [round] :as game-state}]
-  (merge game-state {:round (+ 1 round)}))
+  [{:keys [rounds dirty-arena players] :as game-state}]
+  (let [formatted-round {:map dirty-arena
+                         :players (map sanitize-player players)}]
+    (merge game-state {:rounds (conj rounds formatted-round)
+                       :clean-arena dirty-arena})))
+
+(defn finalize-game
+  "Finializes game"
+  [{:keys [_id players] :as game-state}]
+  (merge (dissoc game-state
+                 :clean-arena
+                 :dirty-arena) {:state "finalized"
+                                :players (map sanitize-player players)}))
 
 ;;
 ;; MAIN GAME LOOP
@@ -191,11 +257,13 @@
 (defn start-game
   "Starts the game loop"
   [{:keys [players initial-arena] :as game}]
-  (let [initial-game-state (initialize-game game)]
-    (loop [{:keys [round] :as game-state} initial-game-state]
-      (when (< round 50)
-        (let [updated-game-state (reduce (fn [game-state update-function]
-                                           (update-function game-state))
-                                         (initialize-new-round game-state)
-                                         [resolve-player-turns])]
-          (recur (finalize-round updated-game-state)))))))
+  (let [initial-game-state (initialize-game game)
+        final-game-state (loop [{:keys [rounds] :as game-state} initial-game-state]
+                           (if (< (count rounds) 20)
+                             (let [updated-game-state (reduce (fn [game-state update-function]
+                                                                (update-function game-state))
+                                                              (initialize-new-round game-state)
+                                                              [resolve-player-turns])]
+                               (recur (finalize-round updated-game-state)))
+                             game-state))]
+    (finalize-game final-game-state)))

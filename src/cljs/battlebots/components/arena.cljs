@@ -24,7 +24,10 @@
        ^{:key (rand 100)} [render-cell cell])]))
 
 (defn render-arena
-  [game]
-  [:div.active-game
-   (for [row (:initial-arena game)]
-     ^{:key (rand 100)} [render-row row])])
+  [game round]
+  (let [arena (if (empty? round)
+                (:initial-arena game)
+                round)]
+    [:div.active-game
+     (for [row arena]
+       ^{:key (rand 100)} [render-row row])]))

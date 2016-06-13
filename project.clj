@@ -64,6 +64,9 @@
                  ;; XHR Support
                  [cljs-ajax "0.5.4"]
 
+                 ;; Promise Lib
+                 [funcool/promesa "1.3.1"]
+
                  ;; Makes working with URLS dead simple
                  [com.cemerick/url "0.1.1"]
 

@@ -1,6 +1,7 @@
 (ns battlebots.services.mongodb
   (:require [monger.core :as mg]
-            [monger.collection :as mc])
+            [monger.collection :as mc]
+            [monger.operators :refer :all])
   (:import org.bson.types.ObjectId))
 
 (defn setup-db
@@ -12,6 +13,8 @@
     (mc/ensure-index db players (array-map
                                  :github-id 1
                                  :access-token 1) {:unique true})))
+
+(def games-coll "games")
 
 (def connection-uri "mongodb://127.0.0.1/battlebots")
 
@@ -35,8 +38,8 @@
 
 (defn find-all
   "returns all records of a given collection"
-  [collection-name]
-  (mc/find-maps (get-db) collection-name))
+  ([collection-name]
+   (mc/find-maps (get-db) collection-name)))
 
 (defn update-one-by-id
   "udpates a single record"
@@ -65,3 +68,31 @@
   "removes a single record by given id"
   [collection-name _id]
   (mc/remove-by-id (get-db) collection-name (ObjectId. _id)))
+
+;; TODO move all db operations below here
+
+
+;; GAME OPERATIONS
+(defn get-all-games
+  []
+  (find-all games-coll))
+
+(defn get-game
+  [game-id]
+  (find-one games-coll game-id))
+
+(defn add-game
+  [game]
+  (insert-one games-coll game))
+
+(defn update-game
+  [game-id update]
+  (update-one-by-id games-coll game-id update))
+
+(defn add-player-to-game
+  [game-id player]
+  (mc/update (get-db) games-coll {:_id (ObjectId. game-id)} {$push {:players player}}))
+
+(defn remove-game
+  [game-id]
+  (remove-one games-coll game-id))

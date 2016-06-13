@@ -82,6 +82,8 @@
                                               [:div])
                                    :remove (fn [record]
                                              [:button {:on-click #(remove-game-action record)} "Remove Game"])
+                                   :rounds (fn [record]
+                                             [:div])
                                    :game-action (fn [record]
                                                   (cond
                                                    (= (:state record) "pending")
