@@ -4,7 +4,6 @@
             [org.httpkit.client :as http]
             [cheshire.core :refer [parse-string]]
             [battlebots.services.mongodb :as db]
-            [battlebots.controllers.players :refer [players-coll]]
             [battlebots.schemas.player :refer [isPlayer]]))
 
 ;; GITHUB OAUTH
@@ -34,8 +33,8 @@
 (defn update-user
   "insert / updates a user record"
   [{:keys [github-id] :as profile}]
-  (let [user (merge (db/find-one-by players-coll :github-id github-id) profile)]
-    (db/save players-coll user)))
+  (let [player (merge (db/get-player-by-github-id github-id) profile)]
+    (db/add-or-update-player player)))
 
 (defn parse-profile
   "Parse user profile"

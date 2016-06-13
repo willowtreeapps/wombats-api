@@ -23,7 +23,6 @@
   []
   (let [arena (arena/new-arena arena/large-arena)
         game {:initial-arena arena
-              :rounds []
               :players test-players
               :state "pending"}]
     (response (db/add-game game))))

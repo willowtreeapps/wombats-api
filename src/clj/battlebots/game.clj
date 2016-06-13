@@ -227,6 +227,7 @@
   "Preps the game"
   [{:keys [initial-arena players] :as game}]
   (merge game {:clean-arena initial-arena
+               :rounds []
                :players (initialize-players players)}))
 
 (defn initialize-new-round
