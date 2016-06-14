@@ -4,32 +4,77 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [ring-server "0.4.0"]
-                 [buddy/buddy-auth "0.13.0"]
-                 [buddy/buddy-hashers "0.14.0"]
-                 [http-kit "2.1.19"]
-                 [reagent "0.5.1" :exclusions [org.clojure/tools.reader]]
-                 [reagent-forms "0.5.22"]
-                 [reagent-utils "0.1.7"]
-                 [prismatic/schema "1.1.1"]
-                 [com.stuartsierra/component "0.3.1"]
-                 [com.novemberain/monger "3.0.2"]
-                 [cheshire "5.1.1"]
+  :dependencies [;; Core
+                 [org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojurescript "1.8.40" :scope "provided"]
+
+                 ;;
+                 ;; API Libs
+                 ;;
+
+                 ;; Server / Server Middleware
                  [ring "1.4.0"]
                  [ring/ring-defaults "0.2.0"]
                  [ring-transit "0.1.4"]
                  [ring/ring-json "0.4.0"]
+                 [ring-server "0.4.0"]
+                 [http-kit "2.1.19"]
+
+                 ;; Routing
                  [compojure "1.5.0"]
-                 [hiccup "1.0.5"]
+
+                 ;; Authenication / Authorization
+                 [buddy/buddy-auth "0.13.0"]
+                 [buddy/buddy-hashers "0.14.0"]
+
+                 ;; Configuration using environment variables and EDN configuration files
                  [yogthos/config "0.8"]
-                 [org.clojure/clojurescript "1.8.40" :scope "provided"]
-                 [cljs-ajax "0.5.4"]
-                 [alandipert/storage-atom "2.0.1"]
+
+                 ;; Logging
+                 [com.taoensso/timbre "4.4.0"]
+
+                 ;; Socket Support
+                 [com.taoensso/sente "1.8.1"]
+
+                 ;; Schema / Validation
+                 [prismatic/schema "1.1.1"]
+
+                 ;; JSON Parsing
+                 [cheshire "5.1.1"]
+
+                 ;; Database Drivers
+                 [com.novemberain/monger "3.0.2"]
+
+                 ;; Lifecycle Service Management
+                 [com.stuartsierra/component "0.3.1"]
+
+                 ;;
+                 ;; Client Libs
+                 ;;
+
+                 ;; Clojure & React
+                 [re-frame "0.7.0"]
+                 [reagent "0.5.1" :exclusions [org.clojure/tools.reader]]
+                 [reagent-utils "0.1.7"]
+
+                 ;; Routing
                  [secretary "1.2.3"]
                  [venantius/accountant "0.1.7" :exclusions [org.clojure/tools.reader]]
+
+                 ;; Rendering HTML in ClojureScript
+                 [hiccup "1.0.5"]
+
+                 ;; XHR Support
+                 [cljs-ajax "0.5.4"]
+
+                 ;; Promise Lib
+                 [funcool/promesa "1.3.1"]
+
+                 ;; Makes working with URLS dead simple
                  [com.cemerick/url "0.1.1"]
-                 [re-frame "0.7.0"]]
+
+                 ;; LocalStorage Support
+                 [alandipert/storage-atom "2.0.1"]]
 
   :plugins [[lein-environ "1.0.2"]
             [lein-cljsbuild "1.1.1"]

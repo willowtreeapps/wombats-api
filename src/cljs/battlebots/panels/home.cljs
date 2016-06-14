@@ -11,8 +11,11 @@
     (fn []
       [:li
        [:button {:on-click #(re-frame/dispatch [:set-active-game game])} game-id]
-       (if (and (not is-registered?) (= (:state game) "pending"))
-         [:button {:on-click #(re-frame/dispatch [:register-user-in-game game-id user-id])} "Join Game"])])))
+       (cond
+        (and (not is-registered?) (= (:state game) "pending"))
+        [:button {:on-click #(re-frame/dispatch [:register-user-in-game game-id user-id])} "Join Game"]
+        (= (:state game) "finalized")
+        [:button {:on-click #(re-frame/dispatch [:play-game game-id])} "Play Game"])])))
 
 (defn authed-homepage
   [user games active-game]

@@ -35,6 +35,13 @@
   (let [games (:games db)]
     (assoc db :games (remove #(= game-id (:_id %)) games))))
 
+(defn play-game
+  "plays the game"
+  [db [_ game-id]]
+  (let [{:keys [rounds] :as game} (first (filter #(= game-id (:_id %)) (:games db)))])
+  (println "TODO Play game") ;; TODO
+  db)
+
 (defn create-game
   "creates a new game"
   [db _]
@@ -94,3 +101,4 @@
 (re-frame/register-handler :register-user-in-game register-user-in-game)
 (re-frame/register-handler :initialize-game initialize-game)
 (re-frame/register-handler :start-game start-game)
+(re-frame/register-handler :play-game play-game)
