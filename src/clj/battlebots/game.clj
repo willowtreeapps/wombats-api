@@ -1,6 +1,8 @@
 (ns battlebots.game
   (:require [battlebots.arena :as arena]
+            [battlebots.services.mongodb :as db]
             [battlebots.constants.arena :refer [arena-key]]
+            [battlebots.constants.game :refer [segment-length game-length]]
             [battlebots.sample-bots.bot-one :as bot-one]))
 
 ;;
@@ -15,6 +17,11 @@
                          (when (pred x)
                            idx))
                        coll)))
+
+(defn total-rounds
+  "Calculates the total number of rounds that have elapsed"
+  [rounds segments]
+  (+ (* segments segment-length) rounds))
 
 (defn get-arena-row-cell-length
   "Similar to arena/get-arena-dimensions except that it is zero based"
@@ -32,6 +39,13 @@
   "Sanitizes the full player object returning the partial used on the game map"
   [player]
   (select-keys player [:_id :login]))
+
+(defn save-segment
+  [{:keys [_id players rounds segment-count] :as game-state}]
+  (db/save-game-segment {:game-id _id
+                         :players (map sanitized-player players)
+                         :rounds rounds
+                         :segment segment-count}))
 
 (defn get-item
   "gets an item based off of given coords"
@@ -228,6 +242,8 @@
   [{:keys [initial-arena players] :as game}]
   (merge game {:clean-arena initial-arena
                :rounds []
+               :round-count 0
+               :segment-count 0
                :players (initialize-players players)}))
 
 (defn initialize-new-round
@@ -235,21 +251,36 @@
   [{:keys [clean-arena] :as game-state}]
   (merge game-state {:dirty-arena clean-arena}))
 
+(defn finalize-segment
+  "Batches a segment of rounds together, persists them, and returns a clean segment"
+  [{:keys [segment-count] :as game-state}]
+  (save-segment game-state)
+  (merge game-state {:round-count 0
+                     :segment-count (inc segment-count)
+                     :rounds []}))
+
 (defn finalize-round
   "Modifies game state to close out a round"
   [{:keys [rounds dirty-arena players] :as game-state}]
   (let [formatted-round {:map dirty-arena
-                         :players (map sanitize-player players)}]
-    (merge game-state {:rounds (conj rounds formatted-round)
-                       :clean-arena dirty-arena})))
+                         :players (map sanitize-player players)}
+        updated-game-state (merge game-state {:rounds (conj rounds formatted-round)
+                                              :clean-arena dirty-arena})]
+    (if (= (count (:rounds updated-game-state)) segment-length)
+      (finalize-segment updated-game-state)
+      updated-game-state)))
 
 (defn finalize-game
   "Finializes game"
-  [{:keys [_id players] :as game-state}]
+  [{:keys [players] :as game-state}]
+  (save-segment game-state)
   (merge (dissoc game-state
                  :clean-arena
-                 :dirty-arena) {:state "finalized"
-                                :players (map sanitize-player players)}))
+                 :dirty-arena
+                 :rounds
+                 :round-count
+                 :segment-count) {:state "finalized"
+                                  :players (map sanitize-player players)}))
 
 ;;
 ;; MAIN GAME LOOP
@@ -259,8 +290,8 @@
   "Starts the game loop"
   [{:keys [players initial-arena] :as game}]
   (let [initial-game-state (initialize-game game)
-        final-game-state (loop [{:keys [rounds] :as game-state} initial-game-state]
-                           (if (< (count rounds) 20)
+        final-game-state (loop [{:keys [round-count segment-count] :as game-state} initial-game-state]
+                           (if (< (total-rounds round-count segment-count) game-length)
                              (let [updated-game-state (reduce (fn [game-state update-function]
                                                                 (update-function game-state))
                                                               (initialize-new-round game-state)
