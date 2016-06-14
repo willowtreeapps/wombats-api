@@ -39,7 +39,6 @@
   "plays the game"
   [db [_ game-id]]
   (let [{:keys [rounds] :as game} (first (filter #(= game-id (:_id %)) (:games db)))])
-  (println "TODO Play game") ;; TODO
   db)
 
 (defn create-game

@@ -10,5 +10,6 @@
    :active-panel nil
    :active-modal nil
    :active-alert nil
+   :socket-connection nil
    :games []
    :errors []})

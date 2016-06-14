@@ -2,6 +2,8 @@
   (:require [compojure.core :refer [GET POST DELETE context defroutes]]
             [compojure.route :refer [not-found resources]]
             [clojure.string :refer [includes?]]
+            [taoensso.sente :as sente]
+            [taoensso.sente.server-adapters.http-kit :refer [get-sch-adapter]]
             [buddy.auth :refer [authenticated?]]
             [buddy.auth.accessrules :refer [wrap-access-rules success error]]
             [battlebots.middleware :refer [wrap-middleware]]
@@ -93,6 +95,21 @@
                             :handler is-admin?}]})
 
 ;;
+;; Web Socket Server
+;;
+
+(let [{:keys [ch-recv send-fn connected-uids
+              ajax-post-fn ajax-get-or-ws-handshake-fn]}
+      (sente/make-channel-socket! (get-sch-adapter) {:type :auto})]
+
+  (def ring-ajax-post                ajax-post-fn)
+  (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
+  (def ch-chsk                       ch-recv) ; ChannelSocket's receive channel
+  (def chsk-send!                    send-fn) ; ChannelSocket's send API fn
+  (def connected-uids                connected-uids) ; Watchable, read-only atom
+  )
+
+;;
 ;; Route Deffinitions
 ;;
 (defroutes
@@ -135,6 +152,10 @@
 
   (GET "/signin/github" [] (auth/signin))
   (GET "/signin/github/callback" req (auth/process-user (:params req)))
+
+  ;; Websoket Connection
+  (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
+  (POST "/chsk" req (ring-ajax-post req))
 
   ;; Main view
   (GET "/" [] index)

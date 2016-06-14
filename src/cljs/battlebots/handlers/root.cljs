@@ -11,7 +11,8 @@
               [battlebots.db :as db]
               [battlebots.services.utils :refer [set-item! get-item]]
               [battlebots.services.battlebots :refer [get-current-user]]
-              [cemerick.url :as url]))
+              [cemerick.url :as url]
+              [taoensso.sente :as sente :refer [cb-success?]]))
 
 (defn initialize-app-state
   "initializes application state on bootstrap"
@@ -33,6 +34,14 @@
    #(re-frame/dispatch [:update-user %])
    #(re-frame/dispatch [:update-errors %])))
 
+(defn initialize-socket-conneciton
+  [db _]
+  (let [{:keys [chsk ch-recv send-fn state]} (sente/make-channel-socket! "/chsk" {})]
+    (assoc db :socket-connection {:chsk chsk
+                                  :ch-chsk ch-recv
+                                  :chsk-send! send-fn
+                                  :chsk-state state})))
+
 (defn bootstrap
   "makes all necessary requests to initially bootstrap an application"
   [db _]
@@ -53,3 +62,4 @@
 
 (re-frame/register-handler :initialize-app initialize-app-state)
 (re-frame/register-handler :bootstrap-app bootstrap)
+(re-frame/register-handler :initialize-socket-connection initialize-socket-conneciton)

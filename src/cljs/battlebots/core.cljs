@@ -18,4 +18,5 @@
   (routes/app-routes)
   (re-frame/dispatch-sync [:initialize-app])
   (re-frame/dispatch [:bootstrap-app])
+  (re-frame/dispatch [:initialize-socket-connection])
   (mount-root))
