@@ -38,7 +38,9 @@
 (defn play-game
   "plays the game"
   [db [_ game-id]]
-  (let [{:keys [rounds] :as game} (first (filter #(= game-id (:_id %)) (:games db)))])
+  (let [{:keys [rounds] :as game} (first (filter #(= game-id (:_id %)) (:games db)))
+        {:keys [chsk-send!]} (:socket-connection db)]
+    (chsk-send! [:game/play]))
   db)
 
 (defn create-game

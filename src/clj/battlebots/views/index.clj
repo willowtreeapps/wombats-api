@@ -18,5 +18,6 @@
               :content "width=device-width, initial-scale=1"}]
       (include-css (if (env :dev) "/css/main.css" "/css/main.min.css"))]
     [:body
+     [:div {:id "output"}]
       mount-target
       (include-js "/js/app.js")]))

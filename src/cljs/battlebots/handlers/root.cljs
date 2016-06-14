@@ -7,6 +7,7 @@
               [battlebots.handlers.routing]
               [battlebots.handlers.ui]
               [battlebots.handlers.users]
+              [battlebots.socket-handler :refer [initialize-sente-router]]
 
               [battlebots.db :as db]
               [battlebots.services.utils :refer [set-item! get-item]]
@@ -36,11 +37,13 @@
 
 (defn initialize-socket-conneciton
   [db _]
-  (let [{:keys [chsk ch-recv send-fn state]} (sente/make-channel-socket! "/chsk" {})]
-    (assoc db :socket-connection {:chsk chsk
-                                  :ch-chsk ch-recv
-                                  :chsk-send! send-fn
-                                  :chsk-state state})))
+  (let [{:keys [chsk ch-recv send-fn state]} (sente/make-channel-socket! "/chsk" {})
+        sente-connection {:chsk chsk
+                          :ch-chsk ch-recv
+                          :chsk-send! send-fn
+                          :chsk-state state}]
+    (initialize-sente-router sente-connection)
+    (assoc db :socket-connection sente-connection)))
 
 (defn bootstrap
   "makes all necessary requests to initially bootstrap an application"
