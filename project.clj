@@ -27,11 +27,14 @@
                  [buddy/buddy-auth "0.13.0"]
                  [buddy/buddy-hashers "0.14.0"]
 
-                 ;; Cconfiguration using environment variables and EDN configuration files
+                 ;; Configuration using environment variables and EDN configuration files
                  [yogthos/config "0.8"]
 
                  ;; Logging
                  [com.taoensso/timbre "4.4.0"]
+
+                 ;; Socket Support
+                 [com.taoensso/sente "1.8.1"]
 
                  ;; Schema / Validation
                  [prismatic/schema "1.1.1"]
