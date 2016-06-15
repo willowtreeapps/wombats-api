@@ -27,7 +27,7 @@
 (defn set-active-game
   "sets active game"
   [db [_ game]]
-  (assoc db :active-game game))
+  (assoc db :active-game game :active-round nil))
 
 (defn filter-game
   "filters a game out of state"
@@ -42,6 +42,11 @@
         {:keys [chsk-send!]} (:socket-connection db)]
     (chsk-send! [:game/play {:game-id game-id}]))
   db)
+
+(defn display-round
+  "updates the displayed round"
+  [db [_ round]]
+  (assoc db :active-round round))
 
 (defn create-game
   "creates a new game"
@@ -103,3 +108,4 @@
 (re-frame/register-handler :initialize-game initialize-game)
 (re-frame/register-handler :start-game start-game)
 (re-frame/register-handler :play-game play-game)
+(re-frame/register-handler :game/display-round display-round)

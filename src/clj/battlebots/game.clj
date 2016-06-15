@@ -3,7 +3,10 @@
             [battlebots.services.mongodb :as db]
             [battlebots.constants.arena :refer [arena-key]]
             [battlebots.constants.game :refer [segment-length game-length]]
-            [battlebots.sample-bots.bot-one :as bot-one]))
+            [battlebots.sample-bots.bot-one :as bot-one]     ;; TODO Remove sample bots when users can register
+            [battlebots.sample-bots.bot-two :as bot-two]
+            [battlebots.sample-bots.bot-three :as bot-three]
+            [battlebots.sample-bots.bot-four :as bot-four]))
 
 ;;
 ;; HELPER FUNCTIONS
@@ -233,9 +236,12 @@
   the one that is contained inside of the arena and will contain private data
   including scores, decision logic, and saved state."
   [players]
-  (map #(merge % {:score 0
-                  :bot bot-one/run
-                  :saved-state {}}) players))
+
+  ;; TODO implement user specified bots
+  (let [bots [bot-one/run bot-two/run bot-three/run bot-four/run]]
+    (map #(merge % {:score 0
+                    :bot (rand-nth bots)
+                    :saved-state {}}) players)))
 
 (defn initialize-game
   "Preps the game"

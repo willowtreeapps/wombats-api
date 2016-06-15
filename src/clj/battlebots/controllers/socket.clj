@@ -71,22 +71,25 @@
              next-segement second-segment
              current-round 0]
         (cond
+         ;; When the game is over break out of the loop
          (game-over? current-segment next-segement current-round)
          (do)
 
+         ;; When a segment of rounds has been passed to the client, move
+         ;; to the next segment and fetch the next segment
          (segment-over? current-segment current-round)
          (do
            (recur
             next-segement
-            (db/get-game-segment game-id (inc (:segment next-segement)))
+            @(future (db/get-game-segment game-id (inc (:segment next-segement))))
             0))
 
+         ;; Pass the next round and sleep the thread in between each
          :else
          (do
-           (Thread/sleep 60)
+           (Thread/sleep 40) ;; TODO Once client side rendering has improved, adjust this value
            (chsk-send! uid [:game/display-round (nth (:rounds current-segment) current-round)])
-           ;; (recur current-segment next-segement (inc current-round))
-           ))))))
+           (recur current-segment next-segement (inc current-round))))))))
 
 (defonce router_ (atom nil))
 (defn  stop-router! [] (when-let [stop-fn @router_] (stop-fn)))
