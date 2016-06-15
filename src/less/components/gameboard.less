@@ -1,22 +1,63 @@
 .active-game {
-  .row {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 
-    list-style: none;
-    margin: 0px;
+  .arena {
+      width: 50%;
 
-    .cell {
-      font-size: 8px;
-      width: 10px;
-      height: 10px;
+      .row {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
 
-      display: inline-block;
+          list-style: none;
+          margin: 0px;
 
-      &.player {
-          background: red;
+          .cell {
+              font-size: 8px;
+              width: 10px;
+              height: 10px;
+
+              display: inline-block;
+
+              &.player {
+                  background: red;
+              }
+          }
       }
-    }
+  }
+
+  .score-board {
+      width: 50%;
+
+      .header {
+          display: inline-block;
+
+          &.name {
+              width: 100px;
+          }
+      }
+
+      .player-stats {
+          list-style: none;
+          margin: 0;
+
+          .player-row {
+              margin: 0;
+
+              .name {
+                  display: inline-block;
+                  width: 100px;
+                  margin: 0 10px 0 0;
+              }
+
+              .score {
+                  display: inline-block;
+                  margin: 0;
+              }
+          }
+      }
   }
 }

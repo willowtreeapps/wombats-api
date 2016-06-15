@@ -7,11 +7,13 @@
               [battlebots.handlers.routing]
               [battlebots.handlers.ui]
               [battlebots.handlers.users]
+              [battlebots.socket-handler :refer [initialize-sente-router]]
 
               [battlebots.db :as db]
               [battlebots.services.utils :refer [set-item! get-item]]
               [battlebots.services.battlebots :refer [get-current-user]]
-              [cemerick.url :as url]))
+              [cemerick.url :as url]
+              [taoensso.sente :as sente :refer [cb-success?]]))
 
 (defn initialize-app-state
   "initializes application state on bootstrap"
@@ -33,6 +35,22 @@
    #(re-frame/dispatch [:update-user %])
    #(re-frame/dispatch [:update-errors %])))
 
+(defn initialize-socket-connection
+  [db _]
+  (let [{:keys [chsk
+                ch-recv
+                send-fn
+                state]} (sente/make-channel-socket! "/chsk" {:type :auto
+                                                                    :packer :edn
+                                                                    :params {:access-token (get-item "token")}
+                                                                    :wrap-recv-envs false})
+        sente-connection {:chsk chsk
+                          :ch-chsk ch-recv
+                          :chsk-send! send-fn
+                          :chsk-state state}]
+    (initialize-sente-router sente-connection)
+    (assoc db :socket-connection sente-connection)))
+
 (defn bootstrap
   "makes all necessary requests to initially bootstrap an application"
   [db _]
@@ -43,13 +61,15 @@
       ;; sanitize the URL, and then load user.
       (do
         (set-item! "token" access-token)
-        (load-user)
         (strip-access-token))
       ;; User has a token in storage. Load user.
       (if (get-item "token")
-        (load-user))))
+        (do
+          (load-user)
+          (re-frame/dispatch [:initialize-socket-connection])))))
 
   (assoc db :bootstrapping? true))
 
 (re-frame/register-handler :initialize-app initialize-app-state)
 (re-frame/register-handler :bootstrap-app bootstrap)
+(re-frame/register-handler :initialize-socket-connection initialize-socket-connection)

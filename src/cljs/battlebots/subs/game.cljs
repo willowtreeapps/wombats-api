@@ -3,11 +3,16 @@
     (:require [re-frame.core :as re-frame]))
 
 (re-frame/register-sub
-  :games
-  (fn [db _]
-    (reaction (:games @db))))
+ :games
+ (fn [db _]
+   (reaction (:games @db))))
 
 (re-frame/register-sub
-  :active-game
-  (fn [db _]
-    (reaction (:active-game @db))))
+ :active-game
+ (fn [db _]
+   (reaction (:active-game @db))))
+
+(re-frame/register-sub
+ :active-round
+ (fn [db _]
+   (reaction (:active-round @db))))

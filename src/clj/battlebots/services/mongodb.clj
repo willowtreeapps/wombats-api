@@ -26,6 +26,7 @@
 (defn get-db [] (:db @conn))
 
 (def games-coll "games")
+(def rounds-coll "rounds")
 (def game-fields [:initial-arena
                   :players
                   :state])
@@ -58,8 +59,21 @@
 
 (defn remove-game
   [game-id]
+  (mc/remove (get-db) rounds-coll {:game-id (ObjectId. game-id)})
   (mc/remove-by-id (get-db) games-coll (ObjectId. game-id)))
 
+(defn save-game-segment
+  [game-segment]
+  (mc/insert (get-db) rounds-coll game-segment))
+
+(defn get-game-segment-count
+  [game-id]
+  (mc/count (get-db) rounds-coll {:game-id (ObjectId. game-id)}))
+
+(defn get-game-segment
+  [game-id segment-number]
+  (mc/find-one-as-map (get-db) rounds-coll {:game-id (ObjectId. game-id)
+                                            :segment segment-number}))
 ;; PLAYER OPERATIONS
 
 (def player-coll "players")

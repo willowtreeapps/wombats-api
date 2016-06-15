@@ -4,11 +4,13 @@
             [clojure.string :refer [includes?]]
             [buddy.auth :refer [authenticated?]]
             [buddy.auth.accessrules :refer [wrap-access-rules success error]]
+            [battlebots.services.mongodb :as db]
             [battlebots.middleware :refer [wrap-middleware]]
             [battlebots.controllers.games :as games]
             [battlebots.controllers.players :as players]
             [battlebots.controllers.authenication :as auth]
             [battlebots.views.index :refer [index]]
+            [battlebots.controllers.socket :as ws]
             [battlebots.utils :refer [in?]]))
 
 ;;
@@ -90,7 +92,11 @@
 
                            ;; Players
                            {:pattern #"^/api/v1/player.*"
-                            :handler is-admin?}]})
+                            :handler is-admin?}
+
+                           ;; Web Socket
+                           {:uri "/chsk"
+                            :handler any-access}]})
 
 ;;
 ;; Route Deffinitions
@@ -136,6 +142,10 @@
   (GET "/signin/github" [] (auth/signin))
   (GET "/signin/github/callback" req (auth/process-user (:params req)))
 
+  ;; Websoket Connection
+  (GET "/chsk" req (ws/ring-ajax-get-or-ws-handshake req))
+  (POST "/chsk" req (ws/ring-ajax-post req))
+
   ;; Main view
   (GET "/" [] index)
 
@@ -145,4 +155,5 @@
   ;; No resource found
   (not-found "Not Found"))
 
+(ws/start-router!) ;; Websocket
 (def app (wrap-middleware (wrap-access-rules #'routes access-rules)))

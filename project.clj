@@ -34,7 +34,8 @@
                  [com.taoensso/timbre "4.4.0"]
 
                  ;; Socket Support
-                 [com.taoensso/sente "1.8.1"]
+                 [com.taoensso/sente "1.9.0-beta2"]
+                 ;; [com.taoensso/sente "1.8.1"]
 
                  ;; Schema / Validation
                  [prismatic/schema "1.1.1"]
