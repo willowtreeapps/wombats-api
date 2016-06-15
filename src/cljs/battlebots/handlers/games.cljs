@@ -40,7 +40,7 @@
   [db [_ game-id]]
   (let [{:keys [rounds] :as game} (first (filter #(= game-id (:_id %)) (:games db)))
         {:keys [chsk-send!]} (:socket-connection db)]
-    (chsk-send! [:game/play]))
+    (chsk-send! [:game/play {:game-id game-id}]))
   db)
 
 (defn create-game

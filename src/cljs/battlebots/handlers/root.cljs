@@ -35,9 +35,15 @@
    #(re-frame/dispatch [:update-user %])
    #(re-frame/dispatch [:update-errors %])))
 
-(defn initialize-socket-conneciton
+(defn initialize-socket-connection
   [db _]
-  (let [{:keys [chsk ch-recv send-fn state]} (sente/make-channel-socket! "/chsk" {})
+  (let [{:keys [chsk
+                ch-recv
+                send-fn
+                state]} (sente/make-channel-socket! "/chsk" {:type :auto
+                                                                    :packer :edn
+                                                                    :params {:access-token (get-item "token")}
+                                                                    :wrap-recv-envs false})
         sente-connection {:chsk chsk
                           :ch-chsk ch-recv
                           :chsk-send! send-fn
@@ -55,14 +61,15 @@
       ;; sanitize the URL, and then load user.
       (do
         (set-item! "token" access-token)
-        (load-user)
         (strip-access-token))
       ;; User has a token in storage. Load user.
       (if (get-item "token")
-        (load-user))))
+        (do
+          (load-user)
+          (re-frame/dispatch [:initialize-socket-connection])))))
 
   (assoc db :bootstrapping? true))
 
 (re-frame/register-handler :initialize-app initialize-app-state)
 (re-frame/register-handler :bootstrap-app bootstrap)
-(re-frame/register-handler :initialize-socket-connection initialize-socket-conneciton)
+(re-frame/register-handler :initialize-socket-connection initialize-socket-connection)

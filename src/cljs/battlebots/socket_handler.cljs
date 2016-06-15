@@ -11,12 +11,9 @@
         args (mapv nil->str args)]
     (apply gstr/format fmt args)))
 
-(def output-el (.getElementById js/document "output"))
 (defn ->output! [fmt & args]
   (let [msg (apply format fmt args)]
-    (timbre/debug msg)
-    (aset output-el "value" (str "• " (.-value output-el) "\n" msg))
-    (aset output-el "scrollTop" (.-scrollHeight output-el))))
+    (timbre/debug msg)))
 
 ;; Sente event handlers
 
@@ -42,13 +39,21 @@
     (->output! "Channel socket state change: %s" ?data)))
 
 (defmethod -event-msg-handler :chsk/recv
-  [{:as ev-msg :keys [?data]}]
-  (->output! "Push event from server: %s" ?data))
+  [{:as ev-msg :keys [id ?data event]}]
+  ;; NOTE this is useful for debugging, however some of the socket endoints
+  ;; are very large and will slow down the app to print the payloads
+  ;; (->output! "Push event from server: %s" ?data)
+
+)
 
 (defmethod -event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
   (let [[?uid ?csrf-token ?handshake-data] ?data]
     (->output! "Handshake: %s" ?data)))
+
+(defmethod -event-msg-handler :game/display-round
+  [{:as ev-msg :keys [?data]}]
+  (->output! "test"))
 
 (defonce router_ (atom nil))
 (defn stop-router! [] (when-let [stop-f @router_] (stop-f)))
