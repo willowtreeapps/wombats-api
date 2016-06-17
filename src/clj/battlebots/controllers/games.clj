@@ -1,6 +1,7 @@
 (ns battlebots.controllers.games
   (:require [ring.util.response :refer [response]]
             [battlebots.services.mongodb :as db]
+            [battlebots.constants.arena :refer [small-arena large-arena]]
             [battlebots.arena :as arena]
             [battlebots.game :as game]
             [monger.result :as mr])
@@ -30,7 +31,7 @@
 (defn add-game
   "adds a new game"
   []
-  (let [arena (arena/new-arena arena/large-arena)
+  (let [arena (arena/new-arena small-arena)
         game {:initial-arena arena
               :players test-players
               :state "pending"}]

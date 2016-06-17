@@ -1,5 +1,7 @@
 (ns battlebots.utils
-  (:require [battlebots.arena :refer :all]))
+  (:require [battlebots.arena :refer [get-arena-dimensions
+                                      empty-arena
+                                      update-cell]]))
 
 (defn in?
   "true if coll contains elm"
