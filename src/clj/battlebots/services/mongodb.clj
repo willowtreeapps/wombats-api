@@ -5,7 +5,19 @@
             [monger.operators :refer :all])
   (:import org.bson.types.ObjectId))
 
-(def connection-uri "mongodb://127.0.0.1/battlebots")
+(def is-production? (= (System/getenv "CLJ_ENV") "production"))
+(def db-username (System/getenv "WT_BATTLEBOTS_MONGOD_USER_NAME"))
+(def db-password (System/getenv "WT_BATTLEBOTS_MONGOD_USER_PW"))
+(def db-host (System/getenv "WT_BATTLEBOTS_MONGOD_HOST_LIST"))
+
+;; Throw Exception if running in Prod with no database environment variables
+(if is-production?
+  (if (not (and db-username db-password db-host))
+    (throw (Exception. "Missing Database Environment Variable"))))
+
+(def connection-uri (if is-production?
+                      (str "mongodb://" db-username ":" db-password "@" db-host "/battlebots")
+                      "mongodb://127.0.0.1/battlebots"))
 
 (defn setup-db
   "Ensures collection indexes exist"
