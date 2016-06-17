@@ -1,13 +1,17 @@
 (ns battlebots.constants.arena)
 
-;; map of possible arena values
 (def arena-key {:open   {:type "open"
-                         :display " "}
+                         :display " "
+                         :transparent true}
                 :bot    {:type "bot"
-                         :display "@"}
+                         :display "@"
+                         :transparent false}
                 :block  {:type "block"
-                         :display "X"}
+                         :display "X"
+                         :transparent false}
                 :food   {:type "food"
-                         :display "+"}
+                         :display "+"
+                         :transparent false}
                 :poison {:type "poison"
-                         :display "-"}})
+                         :display "-"
+                         :transparent false}})

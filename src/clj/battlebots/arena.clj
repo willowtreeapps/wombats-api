@@ -1,6 +1,10 @@
 (ns battlebots.arena
   (:require [battlebots.constants.arena :refer [arena-key]]))
 
+(defn arena-icon
+  [key]
+  (:display (key arena-key)))
+
 ;; ----------------------------------
 ;; MAP GENERATION HELPERS
 ;; ----------------------------------
@@ -38,15 +42,17 @@
         (recur (generate-random-coords arena-dimensions))))))
 
 (defn update-cell
-  "updates a cell with a specified value"
-  [[x y] new-value arena]
-  (let [row (get arena x)]
-    (assoc arena x (assoc row y new-value))))
+  "set the value of an arena cell to the value provided"
+  [arena [x y] v]
+  (let [[xdim ydim] (get-arena-dimensions arena)]
+    (if (or (>= x xdim) (>= y ydim))
+      arena
+      (assoc-in arena [x y] v))))
 
 (defn replacer
   "replaces an empty cell with a value in a given arena"
   [arena item]
-  (update-cell (find-random-open-space arena) item arena))
+  (update-cell arena (find-random-open-space arena) item))
 
 (defn sprinkle
   "sprinkles given items into an arena"
