@@ -8,6 +8,9 @@
                  [org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.8.40" :scope "provided"]
 
+                 ;; Tests
+                 [speclj "3.3.2"]
+
                  ;;
                  ;; API Libs
                  ;;
@@ -81,7 +84,8 @@
             [lein-cljsbuild "1.1.1"]
             [lein-less "1.7.5"]
             [jonase/eastwood "0.2.3"]
-            [lein-asset-minifier "0.2.7" :exclusions [org.clojure/clojure]]]
+            [lein-asset-minifier "0.2.7" :exclusions [org.clojure/clojure]]
+            [speclj "3.3.0"]]
 
   :less {:source-paths ["src/less"]
          :target-path  "resources/public/css"}
@@ -99,7 +103,10 @@
                                                  [:cljsbuild :builds :app :compiler :output-to]]
 
   :source-paths ["src/clj" "src/cljc"]
+
   :resource-paths ["resources" "target/cljsbuild"]
+
+  :test-paths ["spec"]
 
   :minify-assets {:assets {"resources/public/css/site.min.css" "resources/public/css/site.css"}}
 
@@ -127,7 +134,8 @@
                                                                       org.clojure/tools.analyzer.jvm]]
                                   [org.clojure/tools.nrepl "0.2.12"]
                                   [com.cemerick/piggieback "0.2.1"]
-                                  [pjstadig/humane-test-output "0.8.0"]]
+                                  [pjstadig/humane-test-output "0.8.0"]
+                                  [speclj "3.3.0"]]
 
                    :source-paths ["env/dev/clj"]
 
