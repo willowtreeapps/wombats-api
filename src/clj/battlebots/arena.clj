@@ -70,71 +70,6 @@
 ;; ----------------------------------
 
 ;; ----------------------------------
-;; FIELD OF VISION HELPERS
-;; ----------------------------------
-(defn get-area-in-range
-  "given an arena, a position, and fov radius return an arena subset within range"
-  [arena [posx posy] radius]
-  (let [dims (get-arena-dimensions arena)
-        x-bound (- (get dims 0) 1)
-        y-bound (- (get dims 1) 1)
-        x1 (min- posx radius 0)
-        x2 (max+ posx radius x-bound)
-        y1 (min- posy radius 0)
-        y2 (min- posy radius y-bound)]
-    (map #(subvec % y1 y2) (subvec arena x1 x2))))
-
-(defn min-
-  "subtract a number from another, returning min if the result is less than min"
-  [num1 num2 min]
-  (let [res (- num1 num2)]
-    (if (<= res min) min res)))
-
-(defn max+
-  "add a number to another, returning max if the result is greater than max"
-  [num1 num2 max]
-  (let [res (+ num1 num2)]
-    (if (>= res max) max res)))
-
-(defn draw-line
-  "Draw a line from x1,y1 to x2,y2 using Bresenham's Algorithm"
-  [x1 y1 x2 y2]
-  (let [dist-x (Math/abs (- x1 x2))
-        dist-y (Math/abs (- y1 y2))
-        steep (> dist-y dist-x)]
-    (let [[x1 y1 x2 y2] (if steep [y1 x1 y2 x2] [x1 y1 x2 y2])]
-      (let [[x1 y1 x2 y2] (if (> x1 x2) [x2 y2 x1 y1] [x1 y1 x2 y2])]
-        (let  [delta-x (- x2 x1)
-               delta-y (Math/abs (- y1 y2))
-               y-step (if (< y1 y2) 1 -1)]
-          (loop [x x1
-                 y y1
-                 error (Math/floor (/ delta-x 2))
-                 res []]
-            (let [pt (if steep
-                      [(int x) (int y)]
-                      [(int y) (int x)])]
-              (if (>= x x2)
-                res
-                ; Rather then rebind error, test that it is less than delta-y not 0
-                (if (< error delta-y)
-                  (recur (inc x) (+ y y-step) (+ error (- delta-x delta-y)) (conj res pt))
-                  (recur (inc x) y            (- error delta-y) (conj res pt)))))))))))
-
-(defn test-draw-line
-  [x1 y1 x2 y2]
-  (let [arena (empty-arena (+ 5 (max x1 x2)) (+ 5 (max y1 y2)))
-        line (draw-line x1 y1 x2 y2)
-        new-arena (reduce (fn [a p] (update-cell a p "*")) arena line)]))
-
-
-
-
-;; ----------------------------------
-;; END FIELD OF VISION HELPERS
-;; ----------------------------------
-
-;; ----------------------------------
 ;; ITEM DROP
 ;; ----------------------------------
 
@@ -175,7 +110,7 @@
 (defn empty-arena
   "returns an empty arena"
   [dimx dimy]
-  (vec (repeat dimx (vec (repeat dimy (arena-icon :open))))))
+  (vec (repeat dimx (vec (repeat dimy (:open arena-key))))))
 
 (defn new-arena
   "compose all arena building functions to make a fresh new arena"
