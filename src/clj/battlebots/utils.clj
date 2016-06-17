@@ -29,7 +29,27 @@
         x1 (min- posx radius 0)
         x2 (max+ posx radius x-bound)
         y1 (min- posy radius 0)
-        y2 (min- posy radius y-bound)]
+        y2 (max+ posy radius y-bound)]
+    (map #(subvec % y1 y2) (subvec arena x1 x2))))
+
+(defn get-wrapped-area-in-range
+  "given an arena, a position, and fov radius return an arena subset within range"
+  [arena [posx posy] radius]
+  (let [dims (get-arena-dimensions arena)
+        x-bound (- (get dims 0) 1)
+        y-bound (- (get dims 1) 1)
+        x1 (if (> radius posx)
+             (- posx (mod radius posx))
+             (- posx radius))
+        x2 (if (> (+ posx radius) x-bound)
+             (+ posx (mod (+ posx radius) x-bound))
+             (+ posx radius))
+        y1 (if (> radius posy)
+             (- posy (mod radius posy))
+             (- posy radius))
+        y2 (if (> (+ posy radius) y-bound)
+             (+ posy (mod (+ posy radius)) y-bound)
+             (+ posy radius))]
     (map #(subvec % y1 y2) (subvec arena x1 x2))))
 
 (defn draw-line
@@ -65,5 +85,5 @@
     res-arena))
 
 (defn pretty-print-arena
- [arena]
- (doseq [a arena] (println (map :display a))))
+  [arena]
+  (doseq [a (apply map vector arena)] (println (map :display a))))
