@@ -155,7 +155,7 @@
   (fn [{:keys [dirty-arena players] :as game-state}]
      (let [cell-contents (get-item coords dirty-arena)
            player (get-player player-id players)
-           updated-arena (arena/update-cell coords (sanitized-player player) dirty-arena)
+           updated-arena (arena/update-cell dirty-arena coords (sanitized-player player))
            player-update (determin-affects cell-contents)
            updated-players (modify-player-stats player-id player-update players)]
        (merge game-state {:dirty-arena updated-arena
@@ -164,7 +164,7 @@
 (defn clear-space
   [coords]
   (fn [{:keys [dirty-arena] :as game-state}]
-     (let [updated-arena (arena/update-cell coords (:open arena-key) dirty-arena)]
+     (let [updated-arena (arena/update-cell dirty-arena coords (:open arena-key))]
        (merge game-state {:dirty-arena updated-arena}))))
 
 ;;
