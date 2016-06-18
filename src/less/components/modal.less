@@ -6,11 +6,12 @@
 @modal-width: 80%;
 
 .modal-container {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
 
     display: flex;
+    justify-content: center;
     align-items: center;
 
     width: 100%;
@@ -19,6 +20,7 @@
     background-color: @modal-underlay-bg;
 
     .modal-component {
+        position: relative;
         width: @modal-width;
         height: @modal-height;
 
