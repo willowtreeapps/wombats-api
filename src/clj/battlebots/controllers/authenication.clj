@@ -16,6 +16,10 @@
 (def client-secret (System/getenv "WT_BATTLEBOTS_GITHUB_CLIENT_SECRET_DEV"))
 (def signing-secret (System/getenv "WT_BATTLEBOTS_OAUTH_SIGNING_SECRET"))
 
+;; The base player map ensure all new users will contain these values
+(def base-player
+  {:bots []})
+
 (defn account-details
   "returns the current logged in users player object"
   [request]
@@ -33,7 +37,7 @@
 (defn update-user
   "insert / updates a user record"
   [{:keys [github-id] :as profile}]
-  (let [player (merge (db/get-player-by-github-id github-id) profile)]
+  (let [player (merge base-player (merge (db/get-player-by-github-id github-id) profile))]
     (db/add-or-update-player player)))
 
 (defn parse-profile

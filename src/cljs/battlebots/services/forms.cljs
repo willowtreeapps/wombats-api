@@ -2,20 +2,20 @@
     (:require [re-frame.core :as re-frame]
               [reagent.core :refer [atom]]))
 
-;; 
+;;
 ;; Form Helpers
 ;;
-(defn initialize 
+(defn initialize
   "initializes a form object"
   [form-state]
   (atom {:doc form-state
          :errors []
          :submitted? false}))
 
-(defn on-submit 
+(defn on-submit
   "handles form submission"
   [{:keys [form validator dispatch]}]
-  (let [dispatch-fn #(re-frame/dispatch [dispatch (:doc @form)])]
+  (let [dispatch-fn #(re-frame/dispatch dispatch)]
     (if validator
       (when (validator form)
         (dispatch-fn))
