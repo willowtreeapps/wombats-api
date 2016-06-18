@@ -1,6 +1,10 @@
 (ns battlebots.handlers.account
   (:require [re-frame.core :as re-frame]
-            [battlebots.services.battlebots :refer [get-current-user post-credentials post-new-credentials]]
+            [battlebots.services.battlebots :refer [get-current-user
+                                                    post-credentials
+                                                    post-new-credentials
+                                                    post-new-bot
+                                                    delete-player-bot]]
             [battlebots.services.utils :refer [set-item! remove-item!]]))
 
 (defn update-user
@@ -13,10 +17,10 @@
   [db [_ auth-token]]
   (let [token (:token auth-token)]
     (set-item! "token" token)
-    
+
     ;; Fetch newly logged in user object
     (re-frame/dispatch [:get-user])
-    
+
     ;; Redirect Home
     (re-frame/dispatch [:set-active-panel :home-panel])
     (set! (-> js/window .-location .-hash) "#/")
@@ -56,6 +60,23 @@
     #(re-frame/dispatch [:update-errors %]))
   db)
 
+(defn add-bot
+  "adds a bot to a user account"
+  [db [_ bot player-id]]
+  (post-new-bot bot player-id
+   #(re-frame/dispatch [:update-user %])
+   #(re-frame/dispatch [:update-errors %]))
+  db)
+
+(defn remove-bot
+  "removes a bot"
+  [db [_ repo]]
+  (let [player-id (get-in db [:user :_id])]
+    (delete-player-bot repo player-id
+      #(re-frame/dispatch [:update-user %])
+      #(re-frame/dispatch [:update-errors %]))
+    db))
+
 (re-frame/register-handler :update-user update-user)
 (re-frame/register-handler :update-auth-token update-auth-token)
 
@@ -63,3 +84,5 @@
 (re-frame/register-handler :sign-up sign-up)
 (re-frame/register-handler :sign-out sign-out)
 (re-frame/register-handler :get-user get-user)
+(re-frame/register-handler :add-bot add-bot)
+(re-frame/register-handler :remove-bot remove-bot)

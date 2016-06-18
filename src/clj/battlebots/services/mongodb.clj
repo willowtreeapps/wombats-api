@@ -94,7 +94,8 @@
                     :email
                     :login
                     :github-id
-                    :name])
+                    :name
+                    :bots])
 
 (defn get-all-players
   []
@@ -108,6 +109,13 @@
            (find {:_id (ObjectId. player-id)})
            (limit 1)
            (fields player-fields))))
+
+(defn get-player-with-token
+  [player-id]
+  (first (with-collection (get-db) player-coll
+           (find {:_id (ObjectId. player-id)})
+           (limit 1)
+           (fields (conj player-fields :access-token)))))
 
 (defn add-or-update-player
   [player]
@@ -129,3 +137,11 @@
 (defn remove-player
   [player-id]
   (mc/remove-by-id (get-db) player-coll (ObjectId. player-id)))
+
+(defn add-player-bot
+  [player-id bot]
+  (mc/update (get-db) player-coll {:_id (ObjectId. player-id)} {$push {:bots bot}}))
+
+(defn remove-player-bot
+  [player-id repo]
+  (mc/update (get-db) player-coll {:_id (ObjectId. player-id)} {$pull {:bots {:repo repo}}}))

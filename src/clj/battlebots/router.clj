@@ -43,7 +43,7 @@
   [request]
   (:admin (get-user request)))
 
-(defn isCurrentUser?
+(defn is-current-user?
   "Determins if the user making the request is altering their own resource(s)
 
   TODO This is not the best, however it get's the job done for now.
@@ -84,11 +84,15 @@
                             :request-method :delete}
 
                            {:uri "/api/v1/game/:game-id{\\w+}/player/:player-id{\\w+}"
-                            :handler isCurrentUser?
+                            :handler is-current-user?
                             :request-method :post}
 
                            {:pattern #"^/api/v1/game.*"
                             :handler authenticated-user}
+
+                           {:uris ["/api/v1/player/:player-id{\\w+}/bot"
+                                   "/api/v1/player/:player-id{\\w+}/bot/:repo{\\w+}"]
+                            :handler is-current-user?}
 
                            ;; Players
                            {:pattern #"^/api/v1/player.*"
@@ -134,7 +138,13 @@
 
       (context "/:player-id" [player-id]
         (GET "/" [] (players/get-players player-id))
-        (DELETE "/" [] (players/remove-player player-id))))
+        (DELETE "/" [] (players/remove-player player-id))
+
+        (context "/bot" []
+          (POST "/" {:keys [transit-params]} (players/add-player-bot player-id transit-params))
+
+          (context "/:repo" [repo]
+            (DELETE "/" [] (players/remove-player-bot player-id repo))))))
 
     (context "/auth" []
       (GET "/account-details" req (auth/account-details req))))
@@ -142,7 +152,7 @@
   (GET "/signin/github" [] (auth/signin))
   (GET "/signin/github/callback" req (auth/process-user (:params req)))
 
-  ;; Websoket Connection
+  ;; Websocket Connection
   (GET "/chsk" req (ws/ring-ajax-get-or-ws-handshake req))
   (POST "/chsk" req (ws/ring-ajax-post req))
 
