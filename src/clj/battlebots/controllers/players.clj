@@ -34,9 +34,11 @@
   (is-bot? bot)
   (let [{:keys [bots access-token login] :as player} (db/get-player-with-token player-id)
         repo @(get-repo (:repo bot) login access-token)
-        bot-registered? (contains? (set bots) bot)]
+        bot-registered? (contains? (set bots) bot)
+        content-url (if repo (clojure.string/replace (:contents_url repo) #"\{\+path\}" "bot.clj"))
+        update (assoc bot :contents-url content-url)]
     (if (and (not bot-registered?) repo)
-      (if (mr/acknowledged? (db/add-player-bot player-id bot))
+      (if (mr/acknowledged? (db/add-player-bot player-id update))
         (response (db/get-player player-id)))
       (status (response "Failed to register bot") 400))))
 

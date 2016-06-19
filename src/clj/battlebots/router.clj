@@ -131,7 +131,7 @@
 
           (context "/:player-id" [player-id]
             (GET "/" [] (games/get-players game-id player-id))
-            (POST "/" req (games/add-player game-id (:identity req)))))))
+            (POST "/" req (games/add-player game-id player-id (:params req)))))))
 
     (context "/player" []
       (GET "/" []  (players/get-players))

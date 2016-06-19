@@ -74,8 +74,8 @@
 
 (defn register-user-in-game
   "registers a user in a game"
-  [db [_ game-id user-id]]
-  (post-game-user game-id user-id
+  [db [_ game-id user-id repo]]
+    (post-game-user game-id user-id repo
     #(re-frame/dispatch [:update-game %])
     #(re-frame/dispatch [:update-errors %]))
   db)

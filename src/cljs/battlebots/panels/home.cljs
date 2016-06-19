@@ -1,12 +1,32 @@
 (ns battlebots.panels.home
   (:require [re-frame.core :as re-frame]
+            [battlebots.services.forms :as f]
             [battlebots.components.arena :refer [render-arena]]))
 
+
+(defn is-valid?
+  [form]
+  (boolean (f/get-value :repo form)))
+
 (defn register-user
-  [game-id user]
-  (re-frame/dispatch [:register-user-in-game game-id (:_id user)])
-  ;; TODO
-)
+  [game-id {:keys [bots _id] :as user}]
+  (let [form (f/initialize {:repo nil})]
+    [:div
+     (for [bot bots]
+       ^{:key (:repo bot)} [:div
+                            [:input {:type "radio"
+                                     :name "bot"
+                                     :value (:repo bot)
+                                     :on-change #(f/set-value! :repo (-> % .-target .-value) form)}]
+                            [:p (:name bot)]])
+     [:input {:type "button"
+              :value "Join Game"
+              :on-click #(f/on-submit {:form form
+                                       :validator is-valid?
+                                       :dispatch [:register-user-in-game
+                                                  game-id
+                                                  _id
+                                                  (get-in @form [:doc :repo])]})}]]))
 
 (defn player-modal
   [players]
