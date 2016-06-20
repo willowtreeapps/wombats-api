@@ -7,6 +7,13 @@
     false
     true))
 
+(defn remove-bot-action
+  [{:keys [repo name]}]
+  (re-frame/dispatch [:display-alert
+                      {:title (str "Are you sure you want to remove " name "?")
+                       :confirmed #(re-frame/dispatch [:remove-bot repo])
+                       :type :option}]))
+
 (defn render-bot-list
   [bots]
   [:ul.bot-list
@@ -17,7 +24,7 @@
      ^{:key (:repo bot)} [:li.bot
                           [:p.bot-name (:name bot)]
                           [:p.bot-repo (:repo bot)]
-                          [:button.remove-bot-btn {:on-click #(re-frame/dispatch [:remove-bot (:repo bot)])} "Remove Bot"]])])
+                          [:button.remove-bot-btn {:on-click #(remove-bot-action bot)} "Remove Bot"]])])
 
 (defn my-settings-panel []
   (let [user (re-frame/subscribe [:user])

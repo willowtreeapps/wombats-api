@@ -25,7 +25,6 @@
 (defn render-player-stats
   "renders players score & details"
   [{:keys [login score] :as player}]
-  (println player)
   (fn []
     [:li.player-row
      [:p.name login]

@@ -74,11 +74,12 @@
 
 (defn post-game-user
   "adds a user record to a game"
-  [game-id user-id on-success on-error]
+  [game-id user-id repo on-success on-error]
   (POST (str "/api/v1/game/" game-id "/player/" user-id) {:response-format :json
                                                           :keywords? true
                                                           :headers (add-auth-header {})
                                                           :handler on-success
+                                                          :params {:repo repo}
                                                           :error-handler on-error}))
 
 (defn del-game

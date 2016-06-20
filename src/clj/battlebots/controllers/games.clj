@@ -31,7 +31,7 @@
 (defn add-game
   "adds a new game"
   []
-  (let [arena (arena/new-arena small-arena)
+  (let [arena (arena/new-arena large-arena)
         game {:initial-arena arena
               :players test-players
               :state "pending"}]
@@ -87,11 +87,13 @@
   "add a new player to a given game
 
   TODO: find-and-modify would prevent an additional database query"
-  [game-id identity]
-  (let [user-id (:_id identity)
+  [game-id player-id bot]
+  (let [{:keys [_id login]} (db/get-player player-id)
         game (db/get-game game-id)
-        player-not-registered? (empty? (filter #(= (:_id %) user-id) (:players game)))
-        player (select-keys identity [:_id :login])
+        player-not-registered? (empty? (filter #(= (:_id %) player-id) (:players game)))
+        player {:_id (str _id)
+                :login login
+                :bot-repo (:repo bot)}
         update (if player-not-registered?
                  (db/add-player-to-game game-id player))]
     (if player-not-registered?
