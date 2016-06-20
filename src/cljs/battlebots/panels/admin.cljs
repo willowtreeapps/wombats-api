@@ -35,10 +35,12 @@
                      :record-id-key :_id
                      :aliases {:_id "User ID"
                                :username "Username"
-                               :bot-repo "Repository"
+                               :bots "Bots"
                                :roles "User Roles"
                                :remove "Remove User"}
-                     :formatters {:remove (fn [record]
+                     :formatters {:bots (fn [record]
+                                          [:div])
+                                  :remove (fn [record]
                                             [:button {:on-click #(remove-user-action record)} "Remove User"])}})))
 
 (defn remove-game-action
