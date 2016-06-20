@@ -15,12 +15,16 @@ Each player writes their own bot in clojure (other language support may become a
 
 #### Getting Started (Development)
 
-1. [Register](https://github.com/settings/applications/new) a new GitHub OAuth Application NOTE: This step will be removed when we get a WillowTree GitHub App.
-1. Add the following ENV variable to your path
-   - **WT_BATTLEBOTS_GITHUB_CLIENT_ID_DEV** (GitHub Client ID)
-   - **WT_BATTLEBOTS_GITHUB_CLIENT_SECRET_DEV** (GitHub Client Secret)
-   - **WT_BATTLEBOTS_OAUTH_SIGNING_SECRECT** (Any random string)
-1. Run `lein run` in root directory (builds project and runs server)
-1. Run `lein figwheel` in root directory (compiles clojurescript and watches)
-1. Run `lein less auto` in root directory (watches styles)
-1. Run `mongod` start mongodb
+1. For development, [Register](https://github.com/settings/applications/new) a new GitHub OAuth Application NOTE: This step will be removed when we get a WillowTree GitHub App.
+1. (REQUIRED) Add the following environment variables.
+   - **BATTLEBOTS_GITHUB_CLIENT_ID** (GitHub Client ID)
+   - **BATTLEBOTS_GITHUB_CLIENT_SECRET** (GitHub Client Secret)
+   - **BATTLEBOTS_OAUTH_SIGNING_SECRET** (Random secret string)
+1. (OPTIONAL) If running a remote database, add the following environment variables. (This is required if running in production.
+   - **BATTLEBOTS_MONGOD_USER_NAME**
+   - **BATTLEBOTS_MONGOD_USER_PW**
+   - **BATTLEBOTS_MONGOD_HOST_LIST**
+1. (REQUIRED) Run `lein run` in root directory (builds project and runs server)
+1. (REQUIRED - CLIENT DEV ONLY) Run `lein figwheel` in root directory (compiles clojurescript and watches)
+1. (REQUIRED - CLIENT DEV ONLY) Run `lein less auto` in root directory (watches styles)
+1. (REQUIRED - Unless using remote DB) If running DB locally, Run `mongod` to start MongoDB
