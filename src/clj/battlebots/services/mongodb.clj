@@ -6,14 +6,14 @@
   (:import org.bson.types.ObjectId))
 
 (def is-production? (= (System/getenv "CLJ_ENV") "production"))
-(def db-username (System/getenv "WT_BATTLEBOTS_MONGOD_USER_NAME"))
-(def db-password (System/getenv "WT_BATTLEBOTS_MONGOD_USER_PW"))
-(def db-host (System/getenv "WT_BATTLEBOTS_MONGOD_HOST_LIST"))
+(def db-username (System/getenv "BATTLEBOTS_MONGOD_USER_NAME"))
+(def db-password (System/getenv "BATTLEBOTS_MONGOD_USER_PW"))
+(def db-host (System/getenv "BATTLEBOTS_MONGOD_HOST_LIST"))
 
 ;; Throw Exception if running in Prod with no database environment variables
 (if is-production?
   (if (not (and db-username db-password db-host))
-    (throw (Exception. "Missing Database Environment Variable"))))
+    (throw (Exception. "Missing Database Environment Variable. Check out the README for more information."))))
 
 (def connection-uri (if is-production?
                       (str "mongodb://" db-username ":" db-password "@" db-host "/battlebots")

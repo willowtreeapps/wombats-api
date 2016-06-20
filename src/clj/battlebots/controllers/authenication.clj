@@ -12,9 +12,12 @@
 (def github-access-token-url (str github-base "access_token"))
 (def user-profile-url "https://api.github.com/user")
 (def user-repos-url "https://api.github.com/user/repos")
-(def client-id (System/getenv "WT_BATTLEBOTS_GITHUB_CLIENT_ID_DEV"))
-(def client-secret (System/getenv "WT_BATTLEBOTS_GITHUB_CLIENT_SECRET_DEV"))
-(def signing-secret (System/getenv "WT_BATTLEBOTS_OAUTH_SIGNING_SECRET"))
+(def client-id (System/getenv "BATTLEBOTS_GITHUB_CLIENT_ID"))
+(def client-secret (System/getenv "BATTLEBOTS_GITHUB_CLIENT_SECRET"))
+(def signing-secret (System/getenv "BATTLEBOTS_OAUTH_SIGNING_SECRET"))
+
+(if (not (and client-id client-secret signing-secret))
+  (throw (Exception. "Missing OAuth Environment Variable. Check out the README for more information.")))
 
 ;; The base player map ensure all new users will contain these values
 (def base-player
