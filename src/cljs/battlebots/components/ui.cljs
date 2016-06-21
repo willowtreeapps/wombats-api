@@ -13,10 +13,11 @@
   [{:keys [title confirmed type] :as alert}]
   (if alert
     [:div.alert-container
-     [:p.alert-title title]
-     (if (= type :option)
-       [:div.options
-        [:button {:on-click (fn []
-                              (confirmed)
-                              (re-frame/dispatch [:clear-alert]))} "yes"]
-        [:button {:on-click #(re-frame/dispatch [:clear-alert])} "no"]])]))
+     [:div.alert-component
+      [:p.alert-title title]
+      (if (= type :option)
+        [:div.options
+         [:button {:on-click (fn []
+                               (confirmed)
+                               (re-frame/dispatch [:clear-alert]))} "yes"]
+         [:button {:on-click #(re-frame/dispatch [:clear-alert])} "no"]])]]))
