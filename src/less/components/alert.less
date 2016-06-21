@@ -1,0 +1,32 @@
+@import "../defaults/spacing";
+@import "../variables/colors";
+
+.alert-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .alert-component {
+        width: 25%;
+        padding: @base-spacing-unit;
+        background-color: @color-white;
+        border-radius: 2px;
+        box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12);
+
+        .options {
+            display: flex;
+            justify-content: space-between;
+
+            button {
+                width: 49%;
+                padding: @base-spacing-unit--half;
+                cursor: pointer;
+            }
+        }
+    }
+}
