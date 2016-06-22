@@ -10,6 +10,10 @@
 
                  ;; Tests
                  [speclj "3.3.2"]
+                 [base64-clj "0.1.1"]
+
+                 ;; Codec implementations
+                 [org.clojure/data.codec "0.1.0"]
 
                  ;;
                  ;; API Libs
