@@ -1,9 +1,10 @@
 (ns battlebots.game
   (:require [battlebots.arena :as arena]
             [battlebots.services.mongodb :as db]
+            [battlebots.services.github :as github]
             [battlebots.constants.arena :refer [arena-key]]
             [battlebots.constants.game :refer [segment-length game-length]]
-            [battlebots.sample-bots.bot-one :as bot-one]     ;; TODO Remove sample bots when users can register
+            [battlebots.sample-bots.bot-one :as bot-one]
             [battlebots.sample-bots.bot-two :as bot-two]
             [battlebots.sample-bots.bot-three :as bot-three]
             [battlebots.sample-bots.bot-four :as bot-four]))
@@ -107,8 +108,7 @@
 
   "
   [coords direction dimensions]
-  (let [
-        updater (cond
+  (let [updater (cond
                  (= direction 0) [dec dec]
                  (= direction 1) [dec identity]
                  (= direction 2) [dec inc]
@@ -129,8 +129,8 @@
    (= type "food")
    (= type "poison")))
 
-(defn determin-affects
-  "Determins how player stats should be affected"
+(defn determine-effects
+  "Determines how player stats should be effected"
   [{:keys [type] :as space}]
   (cond
    (= type "open") {}
@@ -156,7 +156,7 @@
      (let [cell-contents (get-item coords dirty-arena)
            player (get-player player-id players)
            updated-arena (arena/update-cell dirty-arena coords (sanitized-player player))
-           player-update (determin-affects cell-contents)
+           player-update (determine-effects cell-contents)
            updated-players (modify-player-stats player-id player-update players)]
        (merge game-state {:dirty-arena updated-arena
                           :players updated-players}))))
@@ -166,6 +166,16 @@
   (fn [{:keys [dirty-arena] :as game-state}]
      (let [updated-arena (arena/update-cell dirty-arena coords (:open arena-key))]
        (merge game-state {:dirty-arena updated-arena}))))
+
+(defn get-bot
+  "Returns the code a bot executes"
+  [player-id repo]
+  (let [{:keys [bots access-token] :as player} (db/get-player-with-token player-id)
+        {:keys [contents-url] :as bot} (reduce (fn [memo bot]
+                                                 (if (= (:repo bot) repo)
+                                                   bot
+                                                   memo)) nil bots)]
+    (github/get-bot-code access-token contents-url)))
 
 ;;
 ;; DECISION FUNCTIONS
@@ -205,7 +215,7 @@
   "Returns a vecor of player decisions based off of the logic provided by
   their bots and an identical clean version of the arena"
   [players clean-arena]
-  (map (fn [{:keys [_id bot saved-state] :as player}] {:decision (bot clean-arena saved-state _id)
+  (map (fn [{:keys [_id bot saved-state] :as player}] {:decision ((load-string bot) clean-arena saved-state _id)
                                                        :_id _id}) players))
 
 ;;
@@ -236,12 +246,9 @@
   the one that is contained inside of the arena and will contain private data
   including scores, decision logic, and saved state."
   [players]
-
-  ;; TODO implement user specified bots
-  (let [bots [bot-one/run bot-two/run bot-three/run bot-four/run]]
-    (map #(merge % {:score 0
-                    :bot (rand-nth bots)
-                    :saved-state {}}) players)))
+  (map (fn [{:keys [_id bot-repo] :as player}] (merge player {:score 0
+                                                              :bot (get-bot _id bot-repo)
+                                                              :saved-state {}})) players))
 
 (defn initialize-game
   "Preps the game"
