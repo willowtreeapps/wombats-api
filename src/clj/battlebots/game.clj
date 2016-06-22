@@ -129,8 +129,8 @@
    (= type "food")
    (= type "poison")))
 
-(defn determin-affects
-  "Determins how player stats should be affected"
+(defn determine-effects
+  "Determines how player stats should be effected"
   [{:keys [type] :as space}]
   (cond
    (= type "open") {}
@@ -156,7 +156,7 @@
      (let [cell-contents (get-item coords dirty-arena)
            player (get-player player-id players)
            updated-arena (arena/update-cell dirty-arena coords (sanitized-player player))
-           player-update (determin-affects cell-contents)
+           player-update (determine-effects cell-contents)
            updated-players (modify-player-stats player-id player-update players)]
        (merge game-state {:dirty-arena updated-arena
                           :players updated-players}))))
