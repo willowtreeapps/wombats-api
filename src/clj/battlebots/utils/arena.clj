@@ -1,16 +1,27 @@
-(ns battlebots.utils.arena)
+(ns battlebots.utils.arena
+  (:require [battlebots.constants.arena :refer [arena-key]]))
+
+(defn empty-arena
+  "returns an empty arena"
+  [dimx dimy]
+  (vec (repeat dimx (vec (repeat dimy (:open arena-key))))))
 
 (defn get-item
   "gets an item based off of given coords"
   [coords arena]
   (get-in arena coords))
 
-(defn get-arena-row-cell-length
-  "Similar to arena/get-arena-dimensions except that it is zero based"
+(defn get-arena-dimensions
+  "returns the dimensions of a given arena (NOTE: Not 0 based)"
   [arena]
   (let [x (count arena)
         y ((comp count first) arena)]
-    [(dec x) (dec y)]))
+    [x y]))
+
+(defn get-arena-row-cell-length
+  "Similar to arena/get-arena-dimensions except that it is zero based"
+  [arena]
+  (map dec (get-arena-dimensions arena)))
 
 (defn wrap-coords
   "wraps the coords around to the other side of the arena"
@@ -82,33 +93,66 @@
                   (recur (inc x) (+ y y-step) (+ error (- delta-x delta-y)) (conj res pt))
                   (recur (inc x) y            (- error delta-y) (conj res pt)))))))))))
 
-(defn test-draw-line
-  [x1 y1 x2 y2]
-  (let [arena (empty-arena (+ 5 (max x1 x2)) (+ 5 (max y1 y2)))
-        line (draw-line x1 y1 x2 y2)
-        res-arena (reduce (fn [a p] (update-cell a p {:display "*"})) arena line)]
-    res-arena))
 
 (defn pretty-print-arena
   [arena]
   (doseq [a (apply map vector arena)] (println (map :display a))))
 
+(defn get-arena-area
+  [arena [posx posy] radius]
+  (let [[xdim ydim] (get-arena-dimensions arena)
+        [xmax ymax] (map dec [xdim ydim])
+        maxradius (int (/ xdim 2))
+        nradius (if (> (inc (* 2 radius)) xdim)
+                  maxradius
+                  radius)
+        [x1 y1] (adjust-coords [posx posy] 0 [xmax ymax] nradius)
+        [x2 y2] (adjust-coords [posx posy] 4 [xmax ymax] nradius)
+        ;; now take these coords and copy the ranges of the arena vectors
+        ;; swapping as needed
+        columns (if (> x2 x1)
+                  (subvec arena x1 (inc x2))
+                  (conj (subvec arena x1) (subvec arena 0 (inc x2))))
+        area (map (fn [cols]
+                    (if (> y2 y1)
+                      (subvec cols y1 (inc y2))
+                      (conj (subvec cols y1) (subvec cols 0 (inc y2))))) columns)
+        ]
+    arena))
+
 (defn get-wrapped-area-in-range
   "given an arena, a position, and fov radius return an arena subset within range"
   [arena [posx posy] radius]
-  (let [dims (get-arena-dimensions arena)
-        x-bound (- (get dims 0) 1)
-        y-bound (- (get dims 1) 1)
-        x1 (if (> radius posx)
-             (- posx (mod radius posx))
-             (- posx radius))
-        x2 (if (> (+ posx radius) x-bound)
-             (+ posx (mod (+ posx radius) x-bound))
-             (+ posx radius))
-        y1 (if (> radius posy)
-             (- posy (mod radius posy))
-             (- posy radius))
-        y2 (if (> (+ posy radius) y-bound)
-             (+ posy (mod (+ posy radius)) y-bound)
-             (+ posy radius))]
-    (map #(subvec % y1 y2) (subvec arena x1 x2))))
+  ;; find corners
+  (let [[xdim ydim] (get-arena-dimensions arena)
+        [x1 y1] (adjust-coords [posx posy] 0 [xdim ydim] radius)
+        [x2 y2] (adjust-coords [posx posy] 4 [xdim ydim] radius)
+        tpose-arena (apply map vector arena)
+        diameter (* 2 radius)
+        rangex (if (>= (inc diameter) xdim)
+                 xdim
+                 (inc diameter))
+        rangey (if (>= (inc diameter) ydim)
+                 ydim
+                 (inc diameter))
+        ;; if y1 > y2 prepend tail vectors to head
+        arenay (if (> y1 y2) (conj (subvec tpose-arena (inc y1))
+                                   (take y2 tpose-arena)))
+
+        ]
+    (let [dims (get-arena-dimensions arena)
+          x-bound (- (get dims 0) 1)
+          y-bound (- (get dims 1) 1)
+          x1 (if (> radius posx)
+               (- posx (mod radius posx))
+               (- posx radius))
+          x2 (if (> (+ posx radius) x-bound)
+               (+ posx (mod (+ posx radius) x-bound))
+               (+ posx radius))
+          y1 (if (> radius posy)
+               (- posy (mod radius posy))
+               (- posy radius))
+          y2 (if (> (+ posy radius) y-bound)
+               (+ posy (mod (+ posy radius)) y-bound)
+               (+ posy radius))]
+      (map #(subvec % y1 y2) (subvec arena x1 x2)))))
