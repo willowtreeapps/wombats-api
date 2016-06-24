@@ -102,7 +102,7 @@
   [arena [posx posy] radius]
   (let [[xdim ydim] (get-arena-dimensions arena)
         [xmax ymax] (map dec [xdim ydim])
-        maxradius (int (/ xdim 2))
+        maxradius (int (/ (dec xdim) 2))
         nradius (if (> (inc (* 2 radius)) xdim)
                   maxradius
                   radius)
@@ -112,13 +112,24 @@
         ;; swapping as needed
         columns (if (> x2 x1)
                   (subvec arena x1 (inc x2))
-                  (conj (subvec arena x1) (subvec arena 0 (inc x2))))
-        area (map (fn [cols]
+                  (vec (concat (subvec arena (inc x1) xdim) (subvec arena 0 (inc x2)))))
+        area (map (fn [col]
                     (if (> y2 y1)
-                      (subvec cols y1 (inc y2))
-                      (conj (subvec cols y1) (subvec cols 0 (inc y2))))) columns)
-        ]
-    arena))
+                      (subvec col y1 (inc y2))
+                      (vec (concat (subvec col (inc y1) ydim) (subvec col 0 (inc y2))))
+                      )) columns)]
+    (comment (println "xdim " xdim)
+             (println "ydim " ydim)
+             (println "xmax " xmax)
+             (println "ymax " ymax)
+             (println "maxradius " maxradius)
+             (println "nradius " nradius)
+             (println "x1 " x1)
+             (println "y1 " y1)
+             (println "x2 " x2)
+             (println "y2 " y2)
+             (println "columns ")) (pretty-print-arena columns)
+    area))
 
 (defn get-wrapped-area-in-range
   "given an arena, a position, and fov radius return an arena subset within range"
@@ -156,3 +167,11 @@
                (+ posy (mod (+ posy radius)) y-bound)
                (+ posy radius))]
       (map #(subvec % y1 y2) (subvec arena x1 x2)))))
+
+(defn test-arena
+  [dimx dimy]
+  (vec (map-indexed
+        (fn [colidx col]
+          (vec (map-indexed
+                (fn [cellidx cell] {:display (str colidx cellidx)}) col)))
+        (empty-arena dimx dimy))))
