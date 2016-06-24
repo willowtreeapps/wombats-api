@@ -10,8 +10,7 @@
             [battlebots.controllers.players :as players]
             [battlebots.controllers.authenication :as auth]
             [battlebots.views.index :refer [index]]
-            [battlebots.controllers.socket :as ws]
-            [battlebots.utils :refer [in?]]))
+            [battlebots.controllers.socket :as ws]))
 
 ;;
 ;; Helper functions

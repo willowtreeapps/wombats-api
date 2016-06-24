@@ -1,5 +1,6 @@
 (ns battlebots.arena
-  (:require [battlebots.constants.arena :refer [arena-key]]))
+  (:require [battlebots.constants.arena :refer [arena-key]]
+            [battlebots.utils.arena :refer :all]))
 
 (defn arena-icon
   [key]
@@ -8,13 +9,6 @@
 ;; ----------------------------------
 ;; MAP GENERATION HELPERS
 ;; ----------------------------------
-
-(defn get-arena-dimensions
-  "returns the dimensions of a given arena (NOTE: Not 0 based)"
-  [arena]
-  (let [x (count arena)
-        y ((comp count first) arena)]
-    [x y]))
 
 (defn get-number-of-items
   "reutrns the number of items based off of a given frequency and the total number
@@ -107,11 +101,6 @@
 ;; ARENA GENERATION
 ;; ----------------------------------
 
-(defn empty-arena
-  "returns an empty arena"
-  [dimx dimy]
-  (vec (repeat dimx (vec (repeat dimy (:open arena-key))))))
-
 (defn new-arena
   "compose all arena building functions to make a fresh new arena"
   [{:keys [dimx dimy food-freq block-freq poison-freq] :as config}]
@@ -123,3 +112,10 @@
 ;; ----------------------------------
 ;; END ARENA GENERATION
 ;; ----------------------------------
+
+(defn test-draw-line
+  [x1 y1 x2 y2]
+  (let [arena (empty-arena (+ 5 (max x1 x2)) (+ 5 (max y1 y2)))
+        line (draw-line x1 y1 x2 y2)
+        res-arena (reduce (fn [a p] (update-cell a p {:display "*"})) arena line)]
+    res-arena))

@@ -7,7 +7,8 @@
             [battlebots.sample-bots.bot-one :as bot-one]
             [battlebots.sample-bots.bot-two :as bot-two]
             [battlebots.sample-bots.bot-three :as bot-three]
-            [battlebots.sample-bots.bot-four :as bot-four]))
+            [battlebots.sample-bots.bot-four :as bot-four]
+            [battlebots.utils.arena :refer :all]))
 
 ;;
 ;; HELPER FUNCTIONS
@@ -27,13 +28,6 @@
   [rounds segments]
   (+ (* segments segment-length) rounds))
 
-(defn get-arena-row-cell-length
-  "Similar to arena/get-arena-dimensions except that it is zero based"
-  [arena]
-  (let [x (count arena)
-        y ((comp count first) arena)]
-    [(dec x) (dec y)]))
-
 (defn get-player
   "Grabs a player by id"
   [id collection]
@@ -50,11 +44,6 @@
                          :players (map sanitized-player players)
                          :rounds rounds
                          :segment segment-count}))
-
-(defn get-item
-  "gets an item based off of given coords"
-  [coords arena]
-  (get-in arena coords))
 
 (defn randomize-players
   "Randomizes player ids"
@@ -85,41 +74,6 @@
                             :coords [row-number idx]}
                            {:row (+ 1 row-number)}))))
                    {:row 0} arena)))
-
-(defn wrap-coords
-  "wraps the coords around to the other side of the arena"
-  [[c-x c-y] [d-x d-y]]
-  (let [x (cond
-           (< c-x 0) d-x
-           (> c-x d-x) 0
-           :else c-x)
-        y (cond
-           (< c-y 0) d-y
-           (> c-y d-y) 0
-           :else c-y)]
-    [x y]))
-
-(defn adjust-coords
-  "Returns a new set of coords based off of an applied direction.
-
-  0 1 2
-  7   3
-  6 5 4
-
-  "
-  [coords direction dimensions]
-  (let [updater (cond
-                 (= direction 0) [dec dec]
-                 (= direction 1) [dec identity]
-                 (= direction 2) [dec inc]
-                 (= direction 3) [identity inc]
-                 (= direction 4) [inc inc]
-                 (= direction 5) [inc identity]
-                 (= direction 6) [inc dec]
-                 (= direction 7) [identity dec]
-                 :else [identity identity])
-        coords (map #(%1 %2) updater coords)]
-    (wrap-coords coords dimensions)))
 
 (defn can-occupy-space?
   "determins if a bot can occupy a given space"
