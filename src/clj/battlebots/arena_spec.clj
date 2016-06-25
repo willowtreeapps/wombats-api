@@ -1,6 +1,6 @@
 (ns battlebots.arena-spec
   (:require [speclj.core :refer :all]
-            [battlebots.arena :refer :all]))
+            [battlebots.utils.arena :refer [get-arena-dimensions]]))
 
 (describe "get-arena-dimensions"
 
