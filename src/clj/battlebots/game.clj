@@ -4,7 +4,6 @@
             [battlebots.services.github :as github]
             [battlebots.constants.arena :refer [arena-key]]
             [battlebots.constants.game :refer [segment-length game-length]]
-            [battlebots.utils.arena :refer :all]
             [battlebots.utils.arena :refer :all]))
 
 ;;
