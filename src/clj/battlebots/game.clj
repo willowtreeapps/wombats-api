@@ -177,7 +177,9 @@
   their bots and an identical clean version of the arena"
   [players clean-arena]
   (map (fn [{:keys [_id bot saved-state energy] :as player}]
-         {:decision ((load-string bot) {:arena clean-arena
+         {:decision ((load-string bot)
+                     {:arena (get-arena-area clean-arena
+                                             (get-player-coords _id clean-arena) 10)
                                         :state saved-state
                                         :bot_id _id
                                         :energy energy
