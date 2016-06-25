@@ -21,6 +21,7 @@
 ;; with the arena dimensions
 (def small-arena {:dimx 20
                   :dimy 20
+                  :border {:tunnel false}
                   :food-freq 10
                   :block-freq 10
                   :poison-freq 4})
