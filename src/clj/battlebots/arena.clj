@@ -59,6 +59,23 @@
   (let [wall-symbol (:block arena-key)]
     ;; TODO Update wall generation logic Github issue #10
     arena))
+
+(defn- border
+  "places block walls contiguously along the border of the arena"
+  ;; arenas are vectors (seqs?) of columns -not vectors of rows
+  ;; columns are not consistently vectors -they can be seqs
+  [{:keys [dimx dimy border]} arena]
+  (if border
+    (let [block (:block arena-key)
+          vwall (repeat dimy block)
+          xform (map-indexed (fn [x column]
+                               (if (#{0 (dec dimx)} x)
+                                 vwall
+                                 (-> (vec column)
+                                     (assoc-in [0] block)
+                                     (assoc-in [(dec dimy)] block)))))]
+      (vec (sequence xform arena)))
+    arena))
 ;; ----------------------------------
 ;; END MAP GENERATION HELPERS
 ;; ----------------------------------
@@ -105,10 +122,11 @@
   "compose all arena building functions to make a fresh new arena"
   [{:keys [dimx dimy food-freq block-freq poison-freq] :as config}]
   (let [arena (empty-arena dimx dimy)]
-    ((apply comp (map (fn [item-func item-frequency]
-                        (partial item-func item-frequency config))
-                      [poison food blocks]
-                      [poison-freq food-freq block-freq])) arena)))
+    ((apply comp (partial border config)
+            (map (fn [item-func item-frequency]
+                   (partial item-func item-frequency config))
+                 [poison food blocks]
+                 [poison-freq food-freq block-freq])) arena)))
 ;; ----------------------------------
 ;; END ARENA GENERATION
 ;; ----------------------------------
