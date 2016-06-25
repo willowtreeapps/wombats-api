@@ -4,10 +4,6 @@
             [battlebots.services.github :as github]
             [battlebots.constants.arena :refer [arena-key]]
             [battlebots.constants.game :refer [segment-length game-length]]
-            [battlebots.sample-bots.bot-one :as bot-one]
-            [battlebots.sample-bots.bot-two :as bot-two]
-            [battlebots.sample-bots.bot-three :as bot-three]
-            [battlebots.sample-bots.bot-four :as bot-four]
             [battlebots.utils.arena :refer :all]))
 
 ;;
@@ -139,6 +135,8 @@
 ;; function will return a modifed game-state (:dirty-arena)
 
 (defn move-player
+  "Determins if a player can move to the space they have requested, if they can then update
+  the board by moving the player and apply any possible consequences of the move to the player."
   [_id {:keys [direction] :as metadata} {:keys [dirty-arena players] :as game-state}]
   (let [player-coords (get-player-coords _id dirty-arena)
         dimensions (get-arena-row-cell-length dirty-arena)
@@ -154,23 +152,37 @@
 ;; GAME STATE UPDATE HELPERS
 ;;
 
-(defn apply-decision
-  "Applies player decision to the current state of the game"
-  [game-state {:keys [decision _id]}]
-  (let [type (:type decision)
-        metadata (:metadata decision)]
-    (cond
-     (= type "MOVE") (move-player _id metadata game-state)
-     (= type "SHOOT" game-state) ;; TODO
-     (= type "HEAL" game-state) ;; TODO
-     :else game-state)))
+(defn process-command
+  "Processes a single command for a given player."
+  [player-id]
+  (fn [game-state command]
+    (let [{:keys [cmd metadata]} command]
+      (cond
+       (= cmd "MOVE") (move-player player-id metadata game-state)
+       (= cmd "SHOOT") game-state ;; TODO
+       :else game-state))))
+
+(defn apply-decisions
+  "Applies player decision to the current state of the game
+
+  TODO: Implement time unit logic
+  https://github.com/willowtreeapps/battlebots/issues/44
+  "
+  [game-state {:keys [decision _id] :as player}]
+  (let [{:keys [commands]} decision]
+    (reduce (process-command _id) game-state commands)))
 
 (defn resolve-player-decisions
   "Returns a vecor of player decisions based off of the logic provided by
   their bots and an identical clean version of the arena"
   [players clean-arena]
-  (map (fn [{:keys [_id bot saved-state] :as player}] {:decision ((load-string bot) clean-arena saved-state _id)
-                                                       :_id _id}) players))
+  (map (fn [{:keys [_id bot saved-state energy] :as player}]
+         {:decision ((load-string bot) {:arena clean-arena
+                                        :state saved-state
+                                        :bot_id _id
+                                        :energy energy
+                                        :spawn_bot? false})
+          :_id _id}) players))
 
 ;;
 ;; GAME STATE UPDATERS
@@ -185,7 +197,7 @@
   (let [execution-order (randomize-players players)
         player-decisions (resolve-player-decisions players clean-arena)
         sorted-player-decisions (sort-decisions player-decisions execution-order)
-        updated-game-state (reduce apply-decision game-state sorted-player-decisions)]
+        updated-game-state (reduce apply-decisions game-state sorted-player-decisions)]
     updated-game-state))
 
 ;;
