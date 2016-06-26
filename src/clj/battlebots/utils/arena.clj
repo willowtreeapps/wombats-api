@@ -116,19 +116,7 @@
         area (map (fn [col]
                     (if (> y2 y1)
                       (subvec col y1 (inc y2))
-                      (vec (concat (subvec col (inc y1) ydim) (subvec col 0 (inc y2))))
-                      )) columns)]
-    (comment (println "xdim " xdim)
-             (println "ydim " ydim)
-             (println "xmax " xmax)
-             (println "ymax " ymax)
-             (println "maxradius " maxradius)
-             (println "nradius " nradius)
-             (println "x1 " x1)
-             (println "y1 " y1)
-             (println "x2 " x2)
-             (println "y2 " y2)
-             (println "columns ")) (pretty-print-arena columns)
+                      (vec (concat (subvec col (inc y1) ydim) (subvec col 0 (inc y2)))))) columns)]
     area))
 
 (defn get-wrapped-area-in-range
