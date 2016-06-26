@@ -57,13 +57,13 @@
    (let [
          updater (cond
                    (= direction 0) [(incx (- steps)) (incx (- steps))]
-                   (= direction 1) [(incx (- steps)) identity]
-                   (= direction 2) [(incx (- steps)) (incx steps)]
-                   (= direction 3) [identity (incx steps)]
+                   (= direction 1) [identity (incx (- steps))]
+                   (= direction 2) [(incx steps) (incx (- steps))]
+                   (= direction 3) [(incx steps) identity]
                    (= direction 4) [(incx steps) (incx steps)]
-                   (= direction 5) [(incx steps) identity]
-                   (= direction 6) [(incx steps) (incx (- steps))]
-                   (= direction 7) [identity (incx (- steps))]
+                   (= direction 5) [identity (incx steps)]
+                   (= direction 6) [(incx (- steps)) (incx steps)]
+                   (= direction 7) [(incx (- steps)) identity]
                    :else [identity identity])
          coords (map #(%1 %2) updater coords)]
      (wrap-coords coords dimensions))))
@@ -155,11 +155,3 @@
                (+ posy (mod (+ posy radius)) y-bound)
                (+ posy radius))]
       (map #(subvec % y1 y2) (subvec arena x1 x2)))))
-
-(defn test-arena
-  [dimx dimy]
-  (vec (map-indexed
-        (fn [colidx col]
-          (vec (map-indexed
-                (fn [cellidx cell] {:display (str colidx cellidx)}) col)))
-        (empty-arena dimx dimy))))
