@@ -30,19 +30,17 @@
             (< c-x 0) (if (> (Math/abs c-x) d-x)
                         (- d-x (mod (Math/abs c-x) d-x))
                         (+ d-x c-x))
-            (> c-x d-x) (mod c-x d-x)
+            (>= c-x d-x) (mod c-x d-x)
            :else c-x)
         y (cond
             (< c-y 0) (if (> (Math/abs c-y) d-y)
                         (- d-y (mod (Math/abs c-y) d-y))
                         (+ d-y c-y))
-            (> c-y d-y) (mod c-y d-y)
+            (>= c-y d-y) (mod c-y d-y)
             :else c-y)]
     [x y]))
 
-(defn incx
-  [x]
-  (fn [v] (+ x v)))
+(defn incx [x] (fn [v] (+ x v)))
 
 (defn adjust-coords
   "Returns a new set of coords based off of an applied direction.

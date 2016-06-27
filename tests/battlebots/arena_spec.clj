@@ -33,13 +33,15 @@
   (is (= (get-arena-row-cell-length [[0 0 0 0 0 0]]) [0 5]))
   (is (= (get-arena-row-cell-length [[0 0 0 0 0 0] [0 0 0 0 0 0]]) [1 5])))
 
-;; TODO Resolve wrap questions and pass commented tests
-(deftest wrap-coords-spec
-  (is (= (wrap-coords [0 0] [4 4]) [0 0])))
-
 (deftest incx-spec
   (is (= ((incx 5) 1) 6))
   (is (= ((incx 2) 2) 4)))
+
+;; TODO Resolve wrap questions and pass commented tests
+(deftest wrap-coords-spec
+  (is (= (wrap-coords [0 0] [4 4]) [0 0]))
+  (is (= (wrap-coords [0 1] [4 4]) [0 1]))
+  (is (= (wrap-coords [5 5] [4 4]) [1 1])))
 
 ;; Directions
 ;;
