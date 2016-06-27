@@ -87,3 +87,7 @@
   (is (= [2 2] (adjust-coords [2 2] 7 [4 4] 8)) "move left eight spaces")
   (is (= [2 2] (adjust-coords [2 2] 8 [4 4]))   "passing an invalid direction will return the same coords")
   (is (= [2 2] (adjust-coords [2 2] 0 [4 4] 0)) "passing 0 for steps will return the same coords"))
+
+(deftest draw-line-spec
+  (is (= [[0 0] [1 1] [2 2] [3 3]] (draw-line 0 0 3 3)) "from (0 0) to (3 3)")
+  #_(is (= [[2 2] [2 3] [2 4] [2 5]] (draw-line 2 2 2 5)) "from (2 2) to (2 5)"))
