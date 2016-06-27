@@ -91,11 +91,6 @@
                   (recur (inc x) (+ y y-step) (+ error (- delta-x delta-y)) (conj res pt))
                   (recur (inc x) y            (- error delta-y) (conj res pt)))))))))))
 
-
-(defn pretty-print-arena
-  [arena]
-  (doseq [a (apply map vector arena)] (println (map :display a))))
-
 (defn get-arena-area
   [arena [posx posy] radius]
   (let [[xdim ydim] (get-arena-dimensions arena)
@@ -153,3 +148,7 @@
                (+ posy (mod (+ posy radius)) y-bound)
                (+ posy radius))]
       (map #(subvec % y1 y2) (subvec arena x1 x2)))))
+
+(defn pretty-print-arena
+  [arena]
+  (doseq [a (apply map vector arena)] (println (map :display a))))
