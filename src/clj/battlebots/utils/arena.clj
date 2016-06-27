@@ -30,19 +30,17 @@
             (< c-x 0) (if (> (Math/abs c-x) d-x)
                         (- d-x (mod (Math/abs c-x) d-x))
                         (+ d-x c-x))
-            (> c-x d-x) (mod c-x d-x)
+            (>= c-x d-x) (mod c-x d-x)
            :else c-x)
         y (cond
             (< c-y 0) (if (> (Math/abs c-y) d-y)
                         (- d-y (mod (Math/abs c-y) d-y))
                         (+ d-y c-y))
-            (> c-y d-y) (mod c-y d-y)
+            (>= c-y d-y) (mod c-y d-y)
             :else c-y)]
     [x y]))
 
-(defn incx
-  [x]
-  (fn [v] (+ x v)))
+(defn incx [x] (fn [v] (+ x v)))
 
 (defn adjust-coords
   "Returns a new set of coords based off of an applied direction.
@@ -57,13 +55,13 @@
    (let [
          updater (cond
                    (= direction 0) [(incx (- steps)) (incx (- steps))]
-                   (= direction 1) [(incx (- steps)) identity]
-                   (= direction 2) [(incx (- steps)) (incx steps)]
-                   (= direction 3) [identity (incx steps)]
+                   (= direction 1) [identity (incx (- steps))]
+                   (= direction 2) [(incx steps) (incx (- steps))]
+                   (= direction 3) [(incx steps) identity]
                    (= direction 4) [(incx steps) (incx steps)]
-                   (= direction 5) [(incx steps) identity]
-                   (= direction 6) [(incx steps) (incx (- steps))]
-                   (= direction 7) [identity (incx (- steps))]
+                   (= direction 5) [identity (incx steps)]
+                   (= direction 6) [(incx (- steps)) (incx steps)]
+                   (= direction 7) [(incx (- steps)) identity]
                    :else [identity identity])
          coords (map #(%1 %2) updater coords)]
      (wrap-coords coords dimensions))))
@@ -93,11 +91,6 @@
                   (recur (inc x) (+ y y-step) (+ error (- delta-x delta-y)) (conj res pt))
                   (recur (inc x) y            (- error delta-y) (conj res pt)))))))))))
 
-
-(defn pretty-print-arena
-  [arena]
-  (doseq [a (apply map vector arena)] (println (map :display a))))
-
 (defn get-arena-area
   [arena [posx posy] radius]
   (let [[xdim ydim] (get-arena-dimensions arena)
@@ -116,19 +109,7 @@
         area (map (fn [col]
                     (if (> y2 y1)
                       (subvec col y1 (inc y2))
-                      (vec (concat (subvec col (inc y1) ydim) (subvec col 0 (inc y2))))
-                      )) columns)]
-    (comment (println "xdim " xdim)
-             (println "ydim " ydim)
-             (println "xmax " xmax)
-             (println "ymax " ymax)
-             (println "maxradius " maxradius)
-             (println "nradius " nradius)
-             (println "x1 " x1)
-             (println "y1 " y1)
-             (println "x2 " x2)
-             (println "y2 " y2)
-             (println "columns ")) (pretty-print-arena columns)
+                      (vec (concat (subvec col (inc y1) ydim) (subvec col 0 (inc y2)))))) columns)]
     area))
 
 (defn get-wrapped-area-in-range
@@ -168,10 +149,6 @@
                (+ posy radius))]
       (map #(subvec % y1 y2) (subvec arena x1 x2)))))
 
-(defn test-arena
-  [dimx dimy]
-  (vec (map-indexed
-        (fn [colidx col]
-          (vec (map-indexed
-                (fn [cellidx cell] {:display (str colidx cellidx)}) col)))
-        (empty-arena dimx dimy))))
+(defn pretty-print-arena
+  [arena]
+  (doseq [a (apply map vector arena)] (println (map :display a))))
