@@ -135,9 +135,8 @@
                                   [pjstadig/humane-test-output "0.8.0"]]
 
                    :source-paths ["env/dev/clj"]
-                   :resource-paths ["test-resources"]
 
-                   :resource-paths ["tests"]
+                   :resource-paths ["tests" "test-resources"]
 
                    :plugins [[lein-figwheel "0.5.2" :exclusions [org.clojure/core.memoize
                                                                  ring/ring-core
