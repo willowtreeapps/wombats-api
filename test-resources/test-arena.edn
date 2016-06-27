@@ -1,0 +1,121 @@
+[[{:type "open", :display "!", :transparent true}
+  {:type "food", :display "+", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "poison", :display "-", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "food", :display "+", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}]
+
+ [{:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "block", :display "@", :transparent false}
+  {:type "block", :display "@", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}]
+
+ [{:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "food", :display "+", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}]
+
+ [{:type "food", :display "+", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "poison", :display "-", :transparent false}
+  {:type "block", :display "@", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}]
+
+ [{:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:_id "me" :display "B"}
+  {:type "block", :display "@", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "food", :display "+", :transparent false}]
+
+ [{:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "food", :display "+", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "food", :display "+", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}]
+
+ [{:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "block", :display "@", :transparent false}
+  {:type "block", :display "@", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}]
+
+ [{:type "open", :display "_", :transparent true}
+  {:type "food", :display "+", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "poison", :display "-", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}]
+
+ [{:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "food", :display "+", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "food", :display "+", :transparent false}]
+
+ [{:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "food", :display "+", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "block", :display "@", :transparent false}
+  {:type "food", :display "+", :transparent false}]
+
+ [{:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "food", :display "+", :transparent false}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "open", :display "_", :transparent true}
+  {:type "food", :display "+", :transparent false}]]
+:eof

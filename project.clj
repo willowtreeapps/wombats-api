@@ -135,6 +135,7 @@
                                   [pjstadig/humane-test-output "0.8.0"]]
 
                    :source-paths ["env/dev/clj"]
+                   :resource-paths ["test-resources"]
 
                    :resource-paths ["tests"]
 
