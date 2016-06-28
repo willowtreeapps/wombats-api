@@ -1,11 +1,6 @@
-(ns battlebots.utils.arena
+(ns battlebots.arena.utils
   (:require [battlebots.constants.arena :refer [arena-key]]
             [clojure.string :as string]))
-
-(defn empty-arena
-  "returns an empty arena"
-  [dimx dimy]
-  (vec (repeat dimx (vec (repeat dimy (:open arena-key))))))
 
 (defn get-item
   "gets an item based off of given coords"
@@ -18,6 +13,14 @@
   (let [x (count arena)
         y ((comp count first) arena)]
     [x y]))
+
+(defn update-cell
+  "set the value of an arena cell to the value provided"
+  [arena [x y] v]
+  (let [[xdim ydim] (get-arena-dimensions arena)]
+    (if (or (>= x xdim) (>= y ydim))
+      arena
+      (assoc-in arena [x y] v))))
 
 (defn get-arena-row-cell-length
   "Similar to arena/get-arena-dimensions except that it is zero based"
@@ -155,3 +158,11 @@
   (print (string/join "\n"
                       (for [row arena]
                         (string/join " " (map :display row))))))
+(comment
+  (require [battlebots.arena.generation :refer [empty-arena]])
+  (defn test-draw-line
+    [x1 y1 x2 y2]
+    (let [arena (empty-arena (+ 5 (max x1 x2)) (+ 5 (max y1 y2)))
+          line (draw-line x1 y1 x2 y2)
+          res-arena (reduce (fn [a p] (update-cell a p {:display "*"})) arena line)]
+      res-arena)))
