@@ -1,10 +1,9 @@
 (ns battlebots.game
-  (:require [battlebots.arena :as arena]
-            [battlebots.services.mongodb :as db]
+  (:require [battlebots.services.mongodb :as db]
             [battlebots.services.github :as github]
             [battlebots.constants.arena :refer [arena-key]]
             [battlebots.constants.game :refer [segment-length game-length]]
-            [battlebots.utils.arena :refer :all]))
+            [battlebots.arena.utils :as au]))
 
 ;;
 ;; HELPER FUNCTIONS
@@ -103,9 +102,9 @@
 (defn player-occupy-space
   [coords player-id]
   (fn [{:keys [dirty-arena players] :as game-state}]
-     (let [cell-contents (get-item coords dirty-arena)
+     (let [cell-contents (au/get-item coords dirty-arena)
            player (get-player player-id players)
-           updated-arena (arena/update-cell dirty-arena coords (sanitized-player player))
+           updated-arena (au/update-cell dirty-arena coords (sanitized-player player))
            player-update (determine-effects cell-contents)
            updated-players (modify-player-stats player-id player-update players)]
        (merge game-state {:dirty-arena updated-arena
@@ -114,7 +113,7 @@
 (defn clear-space
   [coords]
   (fn [{:keys [dirty-arena] :as game-state}]
-     (let [updated-arena (arena/update-cell dirty-arena coords (:open arena-key))]
+     (let [updated-arena (au/update-cell dirty-arena coords (:open arena-key))]
        (merge game-state {:dirty-arena updated-arena}))))
 
 (defn get-bot
@@ -139,9 +138,9 @@
   the board by moving the player and apply any possible consequences of the move to the player."
   [_id {:keys [direction] :as metadata} {:keys [dirty-arena players] :as game-state}]
   (let [player-coords (get-player-coords _id dirty-arena)
-        dimensions (get-arena-row-cell-length dirty-arena)
-        desired-coords (adjust-coords player-coords direction dimensions)
-        desired-space-contents (get-item desired-coords dirty-arena)
+        dimensions (au/get-arena-row-cell-length dirty-arena)
+        desired-coords (au/adjust-coords player-coords direction dimensions)
+        desired-space-contents (au/get-item desired-coords dirty-arena)
         take-space? (can-occupy-space? desired-space-contents)]
     (if take-space?
       (reduce #(%2 %1) game-state [(clear-space player-coords)
@@ -178,12 +177,12 @@
   [players clean-arena]
   (map (fn [{:keys [_id bot saved-state energy] :as player}]
          {:decision ((load-string bot)
-                     {:arena (get-arena-area clean-arena
-                                             (get-player-coords _id clean-arena) 10)
-                                        :state saved-state
-                                        :bot_id _id
-                                        :energy energy
-                                        :spawn_bot? false})
+                     {:arena (au/get-arena-area clean-arena
+                                                (get-player-coords _id clean-arena) 10)
+                      :state saved-state
+                      :bot_id _id
+                      :energy energy
+                      :spawn_bot? false})
           :_id _id}) players))
 
 ;;

@@ -14,6 +14,9 @@
                          :transparent false}
                 :poison {:type "poison"
                          :display "-"
+                         :transparent false}
+                :fog    {:type "fog"
+                         :display "?"
                          :transparent false}})
 
 ;; Example Arena Configurations

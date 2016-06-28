@@ -1,5 +1,5 @@
-(ns battlebots.arena-spec
-  (:require [battlebots.utils.arena :refer :all]
+(ns battlebots.arena.utils_spec
+  (:require [battlebots.arena.utils :refer :all]
             [battlebots.constants.arena :refer [arena-key]])
   (:use clojure.test))
 
@@ -12,11 +12,6 @@
                  [open-space open-space block-space poison-space]
                  [block-space block-space food-space poison-space]
                  [open-space open-space food-space poison-space]])
-
-(deftest empty-arena-spec
-  (is (= [[open-space open-space] [open-space open-space]] (empty-arena 2 2)))
-  (is (= [[open-space open-space]] (empty-arena 1 2)))
-  (is (= [[open-space] [open-space]] (empty-arena 2 1))))
 
 (deftest get-item-spec
   (is (= food-space (get-item [0 2] test-arena)))

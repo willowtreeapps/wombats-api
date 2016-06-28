@@ -1,8 +1,8 @@
 (ns battlebots.controllers.games
   (:require [ring.util.response :refer [response]]
             [battlebots.services.mongodb :as db]
+            [battlebots.arena.generation :as generate]
             [battlebots.constants.arena :refer [small-arena large-arena]]
-            [battlebots.arena :as arena]
             [battlebots.game :as game]
             [monger.result :as mr])
   (:import org.bson.types.ObjectId))
@@ -31,7 +31,7 @@
 (defn add-game
   "adds a new game"
   []
-  (let [arena (arena/new-arena large-arena)
+  (let [arena (generate/new-arena large-arena)
         game {:initial-arena arena
               :players [] ;; test-players
               :state "pending"}]
@@ -42,7 +42,7 @@
   ;; TODO implement FSM to handle game state transitions
   [game-id]
   (let [game (db/get-game game-id)
-        initialized-arena (arena/add-players (:players game) (:initial-arena game))
+        initialized-arena (generate/add-players (:players game) (:initial-arena game))
         updated-game (assoc game :initial-arena initialized-arena :state "initialized")
         update (db/update-game game-id updated-game)]
     (if (mr/acknowledged? update)
