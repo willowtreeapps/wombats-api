@@ -85,8 +85,8 @@
   [{:keys [type] :as space}]
   (cond
    (= type "open") {}
-   (= type "food") {:score #(+ % 10)}
-   (= type "poison") {:score #(- % 5)}))
+   (= type "food") {:energy #(+ % 10)}
+   (= type "poison") {:energy #(- % 5)}))
 
 (defn apply-player-update
   "Applies an update to a player object"
@@ -219,9 +219,9 @@
 (defn- initialize-players
   "Preps each player map for the game. This player map is different from
   the one that is contained inside of the arena and will contain private data
-  including scores, decision logic, and saved state."
+  including energy, decision logic, and saved state."
   [players]
-  (map (fn [{:keys [_id bot-repo] :as player}] (merge player {:score 0
+  (map (fn [{:keys [_id bot-repo] :as player}] (merge player {:energy 0
                                                               :bot (get-bot _id bot-repo)
                                                               :saved-state {}})) players))
 
