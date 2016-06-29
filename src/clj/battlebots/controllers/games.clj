@@ -7,20 +7,6 @@
             [monger.result :as mr])
   (:import org.bson.types.ObjectId))
 
-;; TODO Remove when done testing
-(def test-players [{:_id 1 :login "AI1"}
-                   {:_id 2 :login "AI2"}
-                   {:_id 3 :login "AI3"}
-                   {:_id 4 :login "AI4"}
-                   {:_id 5 :login "AI5"}
-                   {:_id 6 :login "AI6"}
-                   {:_id 7 :login "AI7"}
-                   {:_id 8 :login "AI8"}
-                   {:_id 9 :login "AI9"}
-                   {:_id 10 :login "AI10"}
-                   {:_id 11 :login "AI11"}
-                   {:_id 12 :login "AI12"}])
-
 (defn get-games
   "returns all games or a specified game"
   ([]
@@ -33,7 +19,7 @@
   []
   (let [arena (generate/new-arena large-arena)
         game {:initial-arena arena
-              :players [] ;; test-players
+              :players []
               :state "pending"}]
     (response (db/add-game game))))
 

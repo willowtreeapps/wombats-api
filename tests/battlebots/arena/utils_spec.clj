@@ -1,5 +1,5 @@
 (ns battlebots.arena.utils_spec
-  (:require [battlebots.arena.utils :refer :all]
+  (:require [battlebots.arena.utils :refer :all :as au]
             [battlebots.constants.arena :refer [arena-key]])
   (:use clojure.test))
 
@@ -14,25 +14,26 @@
                  [open-space open-space food-space poison-space]])
 
 (deftest get-item-spec
-  (is (= food-space (get-item [0 2] test-arena)))
+  (is (= block-space (get-item [0 2] test-arena)))
   (is (= food-space (get-item [2 2] test-arena)))
-  (is (= block-space (get-item [1 2] test-arena))))
+  (is (= poison-space (get-item [3 1] test-arena)))
+  (is (= food-space (get-item [2 3] test-arena))))
 
 (deftest get-arena-dimensions-spec
-  (is (= [3 5] (get-arena-dimensions [[0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]])))
-  (is (= [2 2] (get-arena-dimensions [[0 0] [0 0]])))
+  (is (= [5 3] (get-arena-dimensions [[0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]])))
+  (is (= [2 5] (get-arena-dimensions [[0 0] [0 0] [0 0] [0 0] [0 0]])))
   (is (= [1 1] (get-arena-dimensions [[0]]))))
 
-(deftest get-arena-row-cell-length-spec
-  (is (= [3 3] (get-arena-row-cell-length test-arena)))
-  (is (= [0 5] (get-arena-row-cell-length [[0 0 0 0 0 0]])))
-  (is (= [1 5] (get-arena-row-cell-length [[0 0 0 0 0 0] [0 0 0 0 0 0]]))))
+(deftest get-arena-dimensions-zero-idx-spec
+  (is (= [4 2] (get-arena-dimensions-zero-idx [[0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]])))
+  (is (= [1 4] (get-arena-dimensions-zero-idx [[0 0] [0 0] [0 0] [0 0] [0 0]])))
+  (is (= [0 0] (get-arena-dimensions-zero-idx [[0]]))))
 
-(deftest incx-spec
-  (is (= 6 ((incx 5) 1)))
-  (is (= 4 ((incx 2) 2))))
+(deftest update-cell-spec
+  (is (= food-space (get-item [1 1] (update-cell test-arena [1 1] food-space))))
+  (is (= block-space (get-item [1 1] (update-cell test-arena [1 1] block-space))))
+  (is (= food-space (get-item [0 1] (update-cell test-arena [0 1] food-space)))))
 
-;; TODO Resolve wrap questions and pass commented tests
 (deftest wrap-coords-spec
   (is (= [0 0] (wrap-coords [0 0] [4 4])))
   (is (= [0 1] (wrap-coords [0 1] [4 4])))
@@ -40,6 +41,10 @@
   (is (= [0 0] (wrap-coords [8 8] [4 4])))
   (is (= [3 1] (wrap-coords [3 9] [4 4])))
   (is (= [1 1] (wrap-coords [5 5] [4 4]))))
+
+(deftest incx-spec
+  (is (= 6 ((#'au/incx 5) 1)))
+  (is (= 4 ((#'au/incx 2) 2))))
 
 ;; Directions
 ;;

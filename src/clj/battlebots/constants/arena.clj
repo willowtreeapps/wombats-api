@@ -31,6 +31,7 @@
 
 (def large-arena {:dimx 50
                   :dimy 50
+                  :border {:tunnel false}
                   :food-freq 10
                   :block-freq 10
                   :poison-freq 3})

@@ -82,7 +82,7 @@
   ;; eval (C-x C-e) each line to see the occluded-arena work
   (require '[clojure.edn :as edn])
   (require '[clojure.java.io :as io])
-  (require '[battlebots.utils.arena :refer [pprint-arena]])
+  (require '[battlebots.arena.utils :refer [pprint-arena]])
   (def t-arena (edn/read-string (slurp "test-resources/test-arena.edn")))
   (def o-arena (occluded-arena t-arena [4 4]))
   (pprint-arena o-arena))
