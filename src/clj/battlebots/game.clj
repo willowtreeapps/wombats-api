@@ -2,6 +2,7 @@
   (:require [battlebots.services.mongodb :as db]
             [battlebots.services.github :as github]
             [battlebots.constants.arena :refer [arena-key]]
+            [battlebots.arena.occlusion :refer [occluded-arena]]
             [battlebots.constants.game :refer [segment-length game-length]]
             [battlebots.arena.utils :as au]))
 
@@ -66,7 +67,7 @@
                              row-number (:row memo)]
                          (if idx
                            {:row (+ 1 row-number)
-                            :coords [row-number idx]}
+                            :coords [idx row-number]}
                            {:row (+ 1 row-number)}))))
                    {:row 0} arena)))
 
@@ -176,14 +177,22 @@
   their bots and an identical clean version of the arena"
   [players clean-arena]
   (map (fn [{:keys [_id bot saved-state energy] :as player}]
-         {:decision ((load-string bot)
-                     {:arena (au/get-arena-area clean-arena
-                                                (get-player-coords _id clean-arena) 10)
-                      :state saved-state
-                      :bot_id _id
-                      :energy energy
-                      :spawn_bot? false})
-          :_id _id}) players))
+         (let [partial-arena (au/get-arena-area
+                              clean-arena
+                              (get-player-coords _id clean-arena)
+                              ;; TODO Remove magic number for arena radius
+                              10)]
+           {:decision ((load-string bot)
+                       {:arena partial-arena
+                        ;; TODO Bug when applied
+                        ;; (occluded-arena
+                        ;;         partial-arena
+                        ;;         (get-player-coords _id partial-arena))
+                        :state saved-state
+                        :bot_id _id
+                        :energy energy
+                        :spawn_bot? false})
+            :_id _id})) players))
 
 ;;
 ;; GAME STATE UPDATERS

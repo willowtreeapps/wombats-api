@@ -96,6 +96,7 @@
                   (recur (inc x) y            (- error delta-y) (conj res pt)))))))))))
 
 (defn get-arena-area
+  "returns a partial arena centered on a given coordinate"
   [arena [posx posy] radius]
   (let [[xdim ydim] (get-arena-dimensions arena)
         [xmax ymax] (map dec [xdim ydim])
