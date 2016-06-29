@@ -100,7 +100,7 @@
   (let [[xdim ydim] (get-arena-dimensions arena)
         [xmax ymax] (map dec [xdim ydim])
         maxradius (int (/ (dec xdim) 2))
-        nradius (if (> (inc (* 2 radius)) xdim)
+        nradius (if (or (> (inc (* 2 radius)) xdim) (= radius 0))
                   maxradius
                   radius)
         [x1 y1] (adjust-coords [posx posy] 0 [xmax ymax] nradius)
@@ -116,41 +116,6 @@
                       (vec (concat (subvec col (inc y1) ydim)
                                    (subvec col 0 (inc y2)))))) columns)]
     area))
-
-(defn get-wrapped-area-in-range
-  "given an arena, a position, and fov radius return an arena subset within range"
-  [arena [posx posy] radius]
-  ;; find corners
-  (let [[xdim ydim] (get-arena-dimensions arena)
-        [x1 y1] (adjust-coords [posx posy] 0 [xdim ydim] radius)
-        [x2 y2] (adjust-coords [posx posy] 4 [xdim ydim] radius)
-        tpose-arena (apply map vector arena)
-        diameter (* 2 radius)
-        rangex (if (>= (inc diameter) xdim)
-                 xdim
-                 (inc diameter))
-        rangey (if (>= (inc diameter) ydim)
-                 ydim
-                 (inc diameter))
-        ;; if y1 > y2 prepend tail vectors to head
-        arenay (if (> y1 y2) (conj (subvec tpose-arena (inc y1))
-                                   (take y2 tpose-arena)))]
-    (let [dims (get-arena-dimensions arena)
-          x-bound (- (get dims 0) 1)
-          y-bound (- (get dims 1) 1)
-          x1 (if (> radius posx)
-               (- posx (mod radius posx))
-               (- posx radius))
-          x2 (if (> (+ posx radius) x-bound)
-               (+ posx (mod (+ posx radius) x-bound))
-               (+ posx radius))
-          y1 (if (> radius posy)
-               (- posy (mod radius posy))
-               (- posy radius))
-          y2 (if (> (+ posy radius) y-bound)
-               (+ posy (mod (+ posy radius)) y-bound)
-               (+ posy radius))]
-      (map #(subvec % y1 y2) (subvec arena x1 x2)))))
 
 (defn pprint-arena
   "Pretty Print for a given arena"
