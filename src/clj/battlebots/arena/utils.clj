@@ -4,8 +4,8 @@
 
 (defn get-item
   "gets an item based off of given coords"
-  [coords arena]
-  (get-in arena coords))
+  [[x y] arena]
+  (get-in arena [y x]))
 
 (defn get-arena-dimensions
   "returns the dimensions of a given arena (NOTE: Not 0 based)"
@@ -20,7 +20,7 @@
   (let [[xdim ydim] (get-arena-dimensions arena)]
     (if (or (>= x xdim) (>= y ydim))
       arena
-      (assoc-in arena [x y] v))))
+      (assoc-in arena [y x] v))))
 
 (defn get-arena-row-cell-length
   "Similar to arena/get-arena-dimensions except that it is zero based"
@@ -44,7 +44,7 @@
             :else c-y)]
     [x y]))
 
-(defn incx [x] (fn [v] (+ x v)))
+(defn- incx [x] (fn [v] (+ x v)))
 
 (defn adjust-coords
   "Returns a new set of coords based off of an applied direction.
@@ -155,9 +155,16 @@
 (defn pprint-arena
   "Pretty Print for a given arena"
   [arena]
-  (print (string/join "\n"
-                      (for [row arena]
-                        (string/join " " (map :display row))))))
+  (let [[x-len _] (get-arena-dimensions arena)
+        x-indices (range x-len)]
+    (println " " (string/join " " (vec x-indices)))
+    (print
+     (string/join "\n" (map-indexed (fn [idx row]
+                                      (print
+                                       idx
+                                       (string/join " " (map :display row))
+                                       "\n")) arena)))))
+
 (comment
   (require [battlebots.arena.generation :refer [empty-arena]])
   (defn test-draw-line

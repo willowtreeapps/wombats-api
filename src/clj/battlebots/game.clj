@@ -134,7 +134,7 @@
 ;; function will return a modifed game-state (:dirty-arena)
 
 (defn move-player
-  "Determins if a player can move to the space they have requested, if they can then update
+  "Determine if a player can move to the space they have requested, if they can then update
   the board by moving the player and apply any possible consequences of the move to the player."
   [_id {:keys [direction] :as metadata} {:keys [dirty-arena players] :as game-state}]
   (let [player-coords (get-player-coords _id dirty-arena)
@@ -208,7 +208,7 @@
 ;; not stored in the game object
 ;;
 
-(defn initialize-players
+(defn- initialize-players
   "Preps each player map for the game. This player map is different from
   the one that is contained inside of the arena and will contain private data
   including scores, decision logic, and saved state."
@@ -217,7 +217,7 @@
                                                               :bot (get-bot _id bot-repo)
                                                               :saved-state {}})) players))
 
-(defn initialize-game
+(defn- initialize-game
   "Preps the game"
   [{:keys [initial-arena players] :as game}]
   (merge game {:clean-arena initial-arena
@@ -226,12 +226,12 @@
                :segment-count 0
                :players (initialize-players players)}))
 
-(defn initialize-new-round
+(defn- initialize-new-round
   "Preps game-state for a new round"
   [{:keys [clean-arena] :as game-state}]
   (merge game-state {:dirty-arena clean-arena}))
 
-(defn finalize-segment
+(defn- finalize-segment
   "Batches a segment of rounds together, persists them, and returns a clean segment"
   [{:keys [segment-count] :as game-state}]
   (save-segment game-state)
@@ -239,7 +239,7 @@
                      :segment-count (inc segment-count)
                      :rounds []}))
 
-(defn finalize-round
+(defn- finalize-round
   "Modifies game state to close out a round"
   [{:keys [rounds dirty-arena players] :as game-state}]
   (let [formatted-round {:map dirty-arena
@@ -250,7 +250,7 @@
       (finalize-segment updated-game-state)
       updated-game-state)))
 
-(defn finalize-game
+(defn- finalize-game
   "Finializes game"
   [{:keys [players] :as game-state}]
   (save-segment game-state)
@@ -266,16 +266,20 @@
 ;; MAIN GAME LOOP
 ;;
 
+(defn- game-loop
+  [initial-game-state]
+  (loop [{:keys [round-count segment-count] :as game-state} initial-game-state]
+    (if (< (total-rounds round-count segment-count) game-length)
+      (let [updated-game-state (reduce (fn [game-state update-function]
+                                         (update-function game-state))
+                                       (initialize-new-round game-state)
+                                       [resolve-player-turns])]
+        (recur (finalize-round updated-game-state)))
+      game-state)))
+
 (defn start-game
   "Starts the game loop"
   [{:keys [players initial-arena] :as game}]
   (let [initial-game-state (initialize-game game)
-        final-game-state (loop [{:keys [round-count segment-count] :as game-state} initial-game-state]
-                           (if (< (total-rounds round-count segment-count) game-length)
-                             (let [updated-game-state (reduce (fn [game-state update-function]
-                                                                (update-function game-state))
-                                                              (initialize-new-round game-state)
-                                                              [resolve-player-turns])]
-                               (recur (finalize-round updated-game-state)))
-                             game-state))]
+        final-game-state (game-loop initial-game-state)]
     (finalize-game final-game-state)))
