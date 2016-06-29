@@ -10,5 +10,5 @@
 
 (deftest empty-arena-spec
   (is (= [[open-space open-space] [open-space open-space]] (empty-arena 2 2)))
-  (is (= [[open-space open-space]] (empty-arena 1 2)))
-  (is (= [[open-space] [open-space]] (empty-arena 2 1))))
+  (is (= [[open-space open-space]] (empty-arena 2 1)))
+  (is (= [[open-space] [open-space]] (empty-arena 1 2))))

@@ -101,7 +101,7 @@
 (defn empty-arena
   "returns an empty arena"
   [dimx dimy]
-  (vec (repeat dimx (vec (repeat dimy (:open arena-key))))))
+  (vec (repeat dimy (vec (repeat dimx (:open arena-key))))))
 
 (defn new-arena
   "compose all arena building functions to make a fresh new arena"

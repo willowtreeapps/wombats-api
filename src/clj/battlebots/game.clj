@@ -3,6 +3,7 @@
             [battlebots.services.github :as github]
             [battlebots.constants.arena :refer [arena-key]]
             [battlebots.arena.occlusion :refer [occluded-arena]]
+            [battlebots.arena.partial :refer [get-arena-area]]
             [battlebots.constants.game :refer [segment-length game-length]]
             [battlebots.arena.utils :as au]))
 
@@ -139,7 +140,7 @@
   the board by moving the player and apply any possible consequences of the move to the player."
   [_id {:keys [direction] :as metadata} {:keys [dirty-arena players] :as game-state}]
   (let [player-coords (get-player-coords _id dirty-arena)
-        dimensions (au/get-arena-row-cell-length dirty-arena)
+        dimensions (au/get-arena-dimensions-zero-idx dirty-arena)
         desired-coords (au/adjust-coords player-coords direction dimensions)
         desired-space-contents (au/get-item desired-coords dirty-arena)
         take-space? (can-occupy-space? desired-space-contents)]
@@ -177,17 +178,15 @@
   their bots and an identical clean version of the arena"
   [players clean-arena]
   (map (fn [{:keys [_id bot saved-state energy] :as player}]
-         (let [partial-arena (au/get-arena-area
+         (let [partial-arena (get-arena-area
                               clean-arena
                               (get-player-coords _id clean-arena)
                               ;; TODO Remove magic number for arena radius
                               10)]
            {:decision ((load-string bot)
-                       {:arena partial-arena
-                        ;; TODO Bug when applied
-                        ;; (occluded-arena
-                        ;;         partial-arena
-                        ;;         (get-player-coords _id partial-arena))
+                       {:arena (occluded-arena
+                                partial-arena
+                                (get-player-coords _id partial-arena))
                         :state saved-state
                         :bot_id _id
                         :energy energy

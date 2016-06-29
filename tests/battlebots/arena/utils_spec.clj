@@ -20,19 +20,19 @@
   (is (= food-space (get-item [2 3] test-arena))))
 
 (deftest get-arena-dimensions-spec
-  (is (= [3 5] (get-arena-dimensions [[0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]])))
-  (is (= [2 2] (get-arena-dimensions [[0 0] [0 0]])))
+  (is (= [5 3] (get-arena-dimensions [[0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]])))
+  (is (= [2 5] (get-arena-dimensions [[0 0] [0 0] [0 0] [0 0] [0 0]])))
   (is (= [1 1] (get-arena-dimensions [[0]]))))
+
+(deftest get-arena-dimensions-zero-idx-spec
+  (is (= [4 2] (get-arena-dimensions-zero-idx [[0 0 0 0 0] [0 0 0 0 0] [0 0 0 0 0]])))
+  (is (= [1 4] (get-arena-dimensions-zero-idx [[0 0] [0 0] [0 0] [0 0] [0 0]])))
+  (is (= [0 0] (get-arena-dimensions-zero-idx [[0]]))))
 
 (deftest update-cell-spec
   (is (= food-space (get-item [1 1] (update-cell test-arena [1 1] food-space))))
   (is (= block-space (get-item [1 1] (update-cell test-arena [1 1] block-space))))
   (is (= food-space (get-item [0 1] (update-cell test-arena [0 1] food-space)))))
-
-(deftest get-arena-row-cell-length-spec
-  (is (= [3 3] (get-arena-row-cell-length test-arena)))
-  (is (= [0 5] (get-arena-row-cell-length [[0 0 0 0 0 0]])))
-  (is (= [1 5] (get-arena-row-cell-length [[0 0 0 0 0 0] [0 0 0 0 0 0]]))))
 
 (deftest wrap-coords-spec
   (is (= [0 0] (wrap-coords [0 0] [4 4])))
@@ -91,13 +91,3 @@
 (deftest draw-line-spec
   (is (= [[0 0] [1 1] [2 2] [3 3]] (draw-line 0 0 3 3)) "from (0 0) to (3 3)")
   #_(is (= [[2 2] [2 3] [2 4] [2 5]] (draw-line 2 2 2 5)) "from (2 2) to (2 5)"))
-
-(deftest get-arena-area-spec
-  (is (= [[open-space block-space food-space]
-          [open-space open-space block-space]
-          [block-space block-space food-space]]
-         (get-arena-area test-arena [1 1] 1)))
-  (is (= [[poison-space open-space open-space]
-          [food-space open-space block-space]
-          [poison-space open-space open-space]]
-         (get-arena-area test-arena [0 0] 1))))
