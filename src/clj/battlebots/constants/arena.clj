@@ -11,10 +11,10 @@
                          :transparent false}
                 :food   {:type "food"
                          :display "+"
-                         :transparent false}
+                         :transparent true}
                 :poison {:type "poison"
                          :display "-"
-                         :transparent false}
+                         :transparent true}
                 :fog    {:type "fog"
                          :display "?"
                          :transparent false}})
