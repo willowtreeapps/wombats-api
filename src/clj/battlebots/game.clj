@@ -4,7 +4,9 @@
             [battlebots.constants.arena :refer [arena-key]]
             [battlebots.arena.occlusion :refer [occluded-arena]]
             [battlebots.arena.partial :refer [get-arena-area]]
-            [battlebots.constants.game :refer [segment-length game-length]]
+            [battlebots.constants.game :refer [segment-length
+                                               game-length
+                                               collision-damage-amount]]
             [battlebots.arena.utils :as au]))
 
 ;;
@@ -20,17 +22,29 @@
                            idx))
                        coll)))
 
+(defn- is-player?
+  "Checks to see if an item is a player"
+  [item]
+  (boolean (:login item)))
+
+(defn- update-player-with
+  "updates a private player object"
+  [player-id players update]
+  (map #(if (= player-id (:_id %))
+          (merge % update)
+          %) players))
+
 (defn- total-rounds
   "Calculates the total number of rounds that have elapsed"
   [rounds segments]
   (+ (* segments segment-length) rounds))
 
 (defn- get-player
-  "Grabs a player by id"
+  "Grabs a player by id from the private player collection"
   [id collection]
   (first (filter #(= (:_id %) id) collection)))
 
-(defn- sanitized-player
+(defn- sanitize-player
   "Sanitizes the full player object returning the partial used on the game map"
   [player]
   (select-keys player [:_id :login]))
@@ -38,7 +52,7 @@
 (defn- save-segment
   [{:keys [_id players rounds segment-count] :as game-state}]
   (db/save-game-segment {:game-id _id
-                         :players (map sanitized-player players)
+                         :players (map sanitize-player players)
                          :rounds rounds
                          :segment segment-count}))
 
@@ -47,9 +61,9 @@
   [players]
   (shuffle (map #(:_id %) players)))
 
-(defn- sanitize-player
-  [player]
-  (dissoc player :bot :saved-state))
+(comment (defn- sanitize-player
+           [player]
+           (dissoc player :bot :saved-state)))
 
 (defn- sort-decisions
   "Sorts player decisions based of of a provided execution-order"
@@ -75,17 +89,17 @@
 (defn- can-occupy-space?
   "determins if a bot can occupy a given space"
   [{:keys [type] :as space}]
-  (or
-   (= type "open")
-   (= type "food")
-   (= type "poison")))
+  (boolean (or
+            (= type "open")
+            (= type "food")
+            (= type "poison"))))
 
 (defn- determine-effects
   "Determines how player stats should be effected"
   [{:keys [type] :as space}]
   (cond
    (= type "open") {}
-   (= type "food") {:energy #(+ % 10)}
+   (= type "food")  {:energy #(+ % 10)}
    (= type "poison") {:energy #(- % 5)}))
 
 (defn- apply-player-update
@@ -95,28 +109,26 @@
             (assoc player prop (update-fn (get player prop)))) player update))
 
 (defn- modify-player-stats
+  "maps over all players and applies an update if the pred matches"
   [player-id update players]
   (map (fn [{:keys [_id] :as player}]
          (if (= player-id _id)
            (apply-player-update player update)
            player)) players))
 
-(defn- player-occupy-space
-  [coords player-id]
-  (fn [{:keys [dirty-arena players] :as game-state}]
-     (let [cell-contents (au/get-item coords dirty-arena)
-           player (get-player player-id players)
-           updated-arena (au/update-cell dirty-arena coords (sanitized-player player))
-           player-update (determine-effects cell-contents)
-           updated-players (modify-player-stats player-id player-update players)]
-       (merge game-state {:dirty-arena updated-arena
-                          :players updated-players}))))
-
-(defn- clear-space
-  [coords]
-  (fn [{:keys [dirty-arena] :as game-state}]
-     (let [updated-arena (au/update-cell dirty-arena coords (:open arena-key))]
-       (merge game-state {:dirty-arena updated-arena}))))
+(defn- apply-damage
+  "applies damage to items that have energy. If the item does not have energy, return the item.
+  If the item after receiving damage has 0 or less energy, replace it with an open space"
+  ([item damage] (apply-damage item damage true))
+  ([{:keys [energy] :as item} damage replace-item?]
+   (if energy
+     (let [updated-energy (- energy damage)
+           updated-item (assoc item :energy updated-energy)
+           destroyed? (>= 0 updated-energy)]
+       (if (and destroyed? replace-item?)
+         (:open arena-key)
+         updated-item))
+     item)))
 
 (defn- get-bot
   "Returns the code a bot executes"
@@ -129,6 +141,52 @@
     (github/get-bot-code access-token contents-url)))
 
 ;;
+;; DECISION EFFECT FUNCTION
+;;
+;; These functions operate on the game-state and player objects to apply effects
+
+(defn- player-occupy-space
+  [coords player-id]
+  (fn [{:keys [dirty-arena players] :as game-state}]
+     (let [cell-contents (au/get-item coords dirty-arena)
+           player (get-player player-id players)
+           updated-arena (au/update-cell dirty-arena coords (sanitize-player player))
+           player-update (determine-effects cell-contents)
+           updated-players (modify-player-stats player-id player-update players)]
+       (merge game-state {:dirty-arena updated-arena
+                          :players updated-players}))))
+
+(defn- clear-space
+  [coords]
+  (fn [{:keys [dirty-arena] :as game-state}]
+     (let [updated-arena (au/update-cell dirty-arena coords (:open arena-key))]
+       (merge game-state {:dirty-arena updated-arena}))))
+
+(defn- apply-collision-damage
+  "Apply collision damage is responsible for updating the game-state with applied collision damage.
+  Bots that run into item spaces that cannot be occupied will receive damage. If the item that is
+  collided with has energy, it to will receive damage. If the item collided with has an energy level
+  of 0 or less after the collision, that item will disappear and the bot will occupy its space."
+  [player-id collision-item collision-coords]
+  (fn [{:keys [players dirty-arena] :as game-state}]
+    (if (is-player? collision-item)
+      (let [])
+      (let [player (get-player player-id players)
+            updated-player (apply-damage player collision-damage-amount false)
+            updated-players (update-player-with player-id players updated-player)
+            updated-collision-item (apply-damage collision-item collision-damage-amount)
+            collision-item-now-open? (= (:type updated-collision-item) "open")]
+        (if collision-item-now-open?
+          (merge game-state {:players updated-players
+                             :dirty-arena (au/update-cell dirty-arena
+                                                          collision-coords
+                                                          updated-player)})
+          (merge game-state {:players updated-players
+                             :dirty-arena (au/update-cell dirty-arena
+                                                          collision-coords
+                                                          updated-collision-item)}))))))
+
+;;
 ;; DECISION FUNCTIONS
 ;;
 ;; Each decision function takes the _id (of the user / bot making the decision,
@@ -138,16 +196,18 @@
 (defn- move-player
   "Determine if a player can move to the space they have requested, if they can then update
   the board by moving the player and apply any possible consequences of the move to the player."
-  [_id {:keys [direction] :as metadata} {:keys [dirty-arena players] :as game-state}]
-  (let [player-coords (get-player-coords _id dirty-arena)
+  [player-id {:keys [direction] :as metadata} {:keys [dirty-arena players] :as game-state}]
+  (let [player-coords (get-player-coords player-id dirty-arena)
         dimensions (au/get-arena-dimensions-zero-idx dirty-arena)
         desired-coords (au/adjust-coords player-coords direction dimensions)
         desired-space-contents (au/get-item desired-coords dirty-arena)
         take-space? (can-occupy-space? desired-space-contents)]
     (if take-space?
       (reduce #(%2 %1) game-state [(clear-space player-coords)
-                                   (player-occupy-space desired-coords _id)])
-      (reduce #(%2 %1) game-state []))))
+                                   (player-occupy-space desired-coords player-id)])
+      (reduce #(%2 %1) game-state [(apply-collision-damage player-id
+                                                           desired-space-contents
+                                                           desired-coords)]))))
 
 
 (defn- set-player-state
@@ -232,7 +292,7 @@
   the one that is contained inside of the arena and will contain private data
   including energy, decision logic, and saved state."
   [players]
-  (map (fn [{:keys [_id bot-repo] :as player}] (merge player {:energy 0
+  (map (fn [{:keys [_id bot-repo] :as player}] (merge player {:energy 100
                                                               :bot (get-bot _id bot-repo)
                                                               :saved-state {}})) players))
 
@@ -241,7 +301,6 @@
   [{:keys [initial-arena players] :as game}]
   (merge game {:clean-arena initial-arena
                :rounds []
-               :round-count 0
                :segment-count 0
                :players (initialize-players players)}))
 
@@ -254,8 +313,7 @@
   "Batches a segment of rounds together, persists them, and returns a clean segment"
   [{:keys [segment-count] :as game-state}]
   (save-segment game-state)
-  (merge game-state {:round-count 0
-                     :segment-count (inc segment-count)
+  (merge game-state {:segment-count (inc segment-count)
                      :rounds []}))
 
 (defn- finalize-round
@@ -277,7 +335,6 @@
                  :clean-arena
                  :dirty-arena
                  :rounds
-                 :round-count
                  :segment-count) {:state "finalized"
                                   :players (map sanitize-player players)}))
 
@@ -287,8 +344,8 @@
 
 (defn- game-loop
   [initial-game-state]
-  (loop [{:keys [round-count segment-count] :as game-state} initial-game-state]
-    (if (< (total-rounds round-count segment-count) game-length)
+  (loop [{:keys [rounds segment-count] :as game-state} initial-game-state]
+    (if (< (total-rounds (count rounds) segment-count) game-length)
       (let [updated-game-state (reduce (fn [game-state update-function]
                                          (update-function game-state))
                                        (initialize-new-round game-state)
