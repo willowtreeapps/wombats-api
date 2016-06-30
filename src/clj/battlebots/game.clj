@@ -36,8 +36,8 @@
 
 (defn- total-rounds
   "Calculates the total number of rounds that have elapsed"
-  [rounds segments]
-  (+ (* segments segment-length) rounds))
+  [num-rounds num-segments]
+  (+ (* num-segments segment-length) num-rounds))
 
 (defn- get-player
   "Grabs a player by id from the private player collection"
@@ -47,7 +47,7 @@
 (defn- sanitize-player
   "Sanitizes the full player object returning the partial used on the game map"
   [player]
-  (select-keys player [:_id :login]))
+  (select-keys player [:_id :login :energy]))
 
 (defn- save-segment
   [{:keys [_id players rounds segment-count] :as game-state}]
@@ -167,10 +167,12 @@
   Bots that run into item spaces that cannot be occupied will receive damage. If the item that is
   collided with has energy, it to will receive damage. If the item collided with has an energy level
   of 0 or less after the collision, that item will disappear and the bot will occupy its space."
-  [player-id collision-item collision-coords]
+  [player-id player-coords collision-item collision-coords]
   (fn [{:keys [players dirty-arena] :as game-state}]
     (if (is-player? collision-item)
-      (let [])
+      (let []
+        ;; TODO https://github.com/willowtreeapps/battlebots/issues/57
+        game-state)
       (let [player (get-player player-id players)
             updated-player (apply-damage player collision-damage-amount false)
             updated-players (update-player-with player-id players updated-player)
@@ -178,9 +180,11 @@
             collision-item-now-open? (= (:type updated-collision-item) "open")]
         (if collision-item-now-open?
           (merge game-state {:players updated-players
-                             :dirty-arena (au/update-cell dirty-arena
-                                                          collision-coords
-                                                          updated-player)})
+                             :dirty-arena (au/update-cell (au/update-cell dirty-arena
+                                                                          collision-coords
+                                                                          updated-player)
+                                                          player-coords
+                                                          (:open arena-key))})
           (merge game-state {:players updated-players
                              :dirty-arena (au/update-cell dirty-arena
                                                           collision-coords
@@ -206,6 +210,7 @@
       (reduce #(%2 %1) game-state [(clear-space player-coords)
                                    (player-occupy-space desired-coords player-id)])
       (reduce #(%2 %1) game-state [(apply-collision-damage player-id
+                                                           player-coords
                                                            desired-space-contents
                                                            desired-coords)]))))
 
