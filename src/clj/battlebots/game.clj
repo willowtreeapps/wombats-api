@@ -61,10 +61,6 @@
   [players]
   (shuffle (map #(:_id %) players)))
 
-(comment (defn- sanitize-player
-           [player]
-           (dissoc player :bot :saved-state)))
-
 (defn- sort-decisions
   "Sorts player decisions based of of a provided execution-order"
   [decisions execution-order]
