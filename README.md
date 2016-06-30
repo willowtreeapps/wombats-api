@@ -1,5 +1,7 @@
 ## WillowTree Battlebots
 
+![](https://circleci.com/gh/willowtreeapps/battlebots.svg?style=shield&circle-token=:circle-token)
+
 Battlebots is multiplayer game inspired by [scalatron](https://scalatron.github.io/) written in [clojure](https://clojure.org/).
 
 ### How it works
