@@ -8,7 +8,8 @@
                          :transparent false}
                 :block  {:type "block"
                          :display "X"
-                         :transparent false}
+                         :transparent false
+                         :energy 20}
                 :food   {:type "food"
                          :display "+"
                          :transparent true}
