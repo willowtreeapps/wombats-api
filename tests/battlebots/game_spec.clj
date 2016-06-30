@@ -59,7 +59,11 @@
 
 (deftest sanitize-player-spec
   (is (= {:_id "1"
-          :login "oconn"} (#'game/sanitize-player (first test-players)))))
+          :login "oconn"
+          :energy 100} (#'game/sanitize-player {:_id "1"
+                                                :login "oconn"
+                                                :energy 100
+                                                :super-secret-value "shhhh...."}))))
 
 (comment (deftest save-segment-spec))
 
@@ -98,3 +102,6 @@
       "When false is passed as the last argument, the item is not replaced with an open space")
   (is (= (assoc b :energy (dec (:energy b))) (#'game/apply-damage b 1))
       "An item's energy is updated when damage is applied"))
+
+;; TODO
+(comment (deftest player-occupy-space-spec))
