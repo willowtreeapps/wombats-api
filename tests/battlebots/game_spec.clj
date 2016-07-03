@@ -1,10 +1,14 @@
 (ns battlebots.game_spec
   (:require [battlebots.game :as game]
-            [battlebots.arena.utils :refer [get-item]]
+            [battlebots.arena.utils :refer [get-item update-cell]]
             [battlebots.constants.arena :refer [arena-key]])
   (:use clojure.test))
 
-(def test-players [{:_id "1"
+(def o (:open arena-key))
+(def b (:block arena-key))
+(def f (:food arena-key))
+(def p (:poison arena-key))
+(def bot1-private {:_id "1"
                     :login "oconn"
                     :bot-repo "bot"
                     :energy 20
@@ -12,8 +16,8 @@
                                        :metadata {:direction (rand-nth [0])}}
                                       {:cmd \"SET_STATE\"
                                        :metadata {:step-counter 0}}]}"
-                    :saved-state {}}
-                   {:_id "2"
+                    :saved-state {}})
+(def bot2-private {:_id "2"
                     :login "Mr. Robot"
                     :bot-repo "bot"
                     :energy 50
@@ -21,18 +25,18 @@
                                        :metadata {:direction (rand-nth [0])}}
                                       {:cmd \"SET_STATE\"
                                        :metadata {:step-counter 0}}]}"
-                    :saved-state {}}])
+                   :saved-state {}})
+(def b1 (#'game/sanitize-player bot1-private))
+(def b2 (#'game/sanitize-player bot2-private))
+(def test-players [bot1-private bot2-private])
 
-(def o (:open arena-key))
-(def b (:block arena-key))
-(def f (:food arena-key))
-(def p (:poison arena-key))
-
+;; NOTE: do NOT modify this arena. Almost all of the following tests
+;; rely on it and will most likey break all off them if it is modified.
 (def test-arena [[o o b f p f f]
                  [b f f p o o o]
                  [b f o o p f p]
-                 [b f f p o b {:_id "1" :login "oconn"}]
-                 [b p o o o p {:_id "2" :login "Mr. Robot"}]
+                 [b f f p o b b1]
+                 [b p o o o p b2]
                  [p o p f f f f]
                  [o o o o f p f]])
 
@@ -105,3 +109,28 @@
 
 ;; TODO
 (comment (deftest player-occupy-space-spec))
+
+(deftest apply-collision-damage-spec
+  (is (= {:players (assoc-in (assoc-in test-players [0 :energy] 10) [1 :energy] 40)
+          :dirty-arena test-arena}
+         ((#'game/apply-collision-damage "1" [6 3] (get-item [6 4] test-arena) [6 4] 10) {:players test-players
+                                                                                          :dirty-arena test-arena}))
+      "When a bot collides with another bot, damage is applied to both bots")
+  (is (= {:players (assoc-in (assoc-in test-players [0 :energy] -20) [1 :energy] 10)
+          :dirty-arena test-arena}
+         ((#'game/apply-collision-damage "1" [6 3] (get-item [6 4] test-arena) [6 4] 40) {:players test-players
+                                                                                          :dirty-arena test-arena}))
+      "When a bot collides with another bot, and one or both bots go negitive with their score, neither bot will move, however, both will experience damage.")
+  (is (= {:players (assoc-in test-players [0 :energy] -10)
+          :dirty-arena (update-cell (update-cell test-arena [5 3] (assoc b1 :energy -10)) [6 3] o)}
+         ((#'game/apply-collision-damage "1" [6 3] b [5 3] 30) {:players test-players
+                                                                :dirty-arena test-arena}))
+      "When a bot collides with a wall, damage is applied to both the wall and bot that collided with it. If the wall has zero or less energy after the collision, the bot will take the space of the wall.")
+  (is (= {:players (assoc-in test-players [0 :energy] (- (:energy bot1-private) 10))
+          :dirty-arena (update-cell (update-cell test-arena
+                                                 [6 3]
+                                                 (assoc b1 :energy (- (:energy b1) 10)))
+                                    [5 3]
+                                    (assoc b :energy (- (:energy b) 10)))}
+         ((#'game/apply-collision-damage "1" [6 3] b [5 3] 10) {:players test-players
+                                                                :dirty-arena test-arena}))))
