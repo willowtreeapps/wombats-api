@@ -6,11 +6,17 @@
             [battlebots.arena.partial :refer [get-arena-area]]
             [battlebots.game.bot-decisions :refer [move
                                                    save-state]]
-            [battlebots.game.utils :as gu]))
+            [battlebots.game.utils :as gu]
+            [battlebots.arena.utils :as au]))
 
 (defn- apply-ai-decision
   [{:keys [dirty-arena] :as game-state} ai-uuid]
-  (let [bot-coords (gu/get-item-coords ai-uuid dirty-arena)]))
+  (let [bot-coords (gu/get-item-coords ai-uuid dirty-arena)
+        ai-bot (au/get-item bot-coords dirty-arena)
+        is-current-ai-bot? (= ai-uuid (:uuid ai-bot))]
+    (when is-current-ai-bot?
+      "TODO: Apply bot logic: https://github.com/willowtreeapps/battlebots/issues/63")
+    game-state))
 
 (defn- get-ai-bots
   "Returns a vector of all the ai bot uuids"
