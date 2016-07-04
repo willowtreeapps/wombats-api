@@ -249,6 +249,7 @@
                                 (move-player player-id metadata game-state)
 
                                 ;; TODO
+                                ;; https://github.com/willowtreeapps/battlebots/issues/45
                                 (= cmd "SHOOT")
                                 game-state
 
