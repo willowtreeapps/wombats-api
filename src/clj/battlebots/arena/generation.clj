@@ -7,7 +7,7 @@
   "reutrns the number of items based off of a given frequency and the total number
   of cells in a given arena"
   [frequency arena]
-  (* (/ frequency 100) (apply * (get-arena-dimensions arena))))
+  (* (/ (or frequency 0) 100) (apply * (get-arena-dimensions arena))))
 
 (defn- pos-open
   "returns true of false depending if a given coodinate in a given arena is open"
@@ -140,6 +140,12 @@
   (let [amount (get-number-of-items frequency arena)]
     (sprinkle amount (:poison arena-key) arena)))
 
+(defn- ai
+  "sprinkle ai bots around the arena and return a new arena"
+  [frequency config arena]
+  (let [amount (get-number-of-items frequency arena)]
+    (sprinkle amount (:ai arena-key) arena)))
+
 (defn- players
   "place players around the arena and returns a new arena"
   [players arena]
@@ -161,12 +167,11 @@
 
 (defn new-arena
   "compose all arena building functions to make a fresh new arena"
-  [{:keys [dimx dimy food-freq block-freq poison-freq] :as config}]
+  [{:keys [dimx dimy food-freq block-freq poison-freq ai-freq] :as config}]
   (let [arena (empty-arena dimx dimy)]
     ((apply comp
-            (partial blocks block-freq config)
             (partial border config)
             (map (fn [item-func item-frequency]
                    (partial item-func item-frequency config))
-                 [poison food]
-                 [poison-freq food-freq block-freq])) arena)))
+                 [ai poison food blocks]
+                 [ai-freq poison-freq food-freq block-freq])) arena)))

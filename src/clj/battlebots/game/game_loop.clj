@@ -7,7 +7,8 @@
                                                              finalize-game]]
             [battlebots.constants.game :refer [segment-length
                                                game-length]]
-            [battlebots.game.step-operators :refer [resolve-player-turns]]))
+            [battlebots.game.step-operators :refer [resolve-player-turns
+                                                    resolve-ai-turns]]))
 
 (defn- total-rounds
   "Calculates the total number of rounds that have elapsed"
@@ -21,7 +22,8 @@
       (let [updated-game-state (reduce (fn [game-state update-function]
                                          (update-function game-state))
                                        (initialize-new-round game-state)
-                                       [resolve-player-turns])]
+                                       [resolve-player-turns
+                                        resolve-ai-turns])]
         (recur (finalize-round updated-game-state)))
       game-state)))
 

@@ -3,9 +3,9 @@
 (def arena-key {:open   {:type "open"
                          :display " "
                          :transparent true}
-                :bot    {:type "bot"
+                :ai     {:type "ai"
                          :display "@"
-                         :transparent false}
+                         :transparent true}
                 :block  {:type "block"
                          :display "X"
                          :transparent false
@@ -26,6 +26,7 @@
 (def small-arena {:dimx 20
                   :dimy 20
                   :border {:tunnel false}
+                  :ai-freq 3
                   :food-freq 10
                   :block-freq 10
                   :poison-freq 4})
@@ -33,6 +34,7 @@
 (def large-arena {:dimx 50
                   :dimy 50
                   :border {:tunnel false}
+                  :ai-freq 3
                   :food-freq 10
                   :block-freq 10
                   :poison-freq 3})

@@ -84,10 +84,15 @@
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn resolve-player-turns
-  "Updates the arena by applying each players movement logic"
+  "Updates the arena by applying each players' movement logic"
   [{:keys [players clean-arena] :as game-state}]
   (let [execution-order (randomize-players players)
         player-decisions (resolve-player-decisions players clean-arena)
         sorted-player-decisions (sort-decisions player-decisions execution-order)
         updated-game-state (reduce (apply-decisions command-map) game-state sorted-player-decisions)]
     updated-game-state))
+
+(defn resolve-ai-turns
+  "Updates the arena by applying each AIs' movement logic"
+  [{:keys [dirty-arena] :as game-state}]
+  game-state)
