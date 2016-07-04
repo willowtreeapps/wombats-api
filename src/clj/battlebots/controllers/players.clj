@@ -46,4 +46,4 @@
   [player-id repo]
   (if (mr/acknowledged? (db/remove-player-bot player-id repo))
     (response (db/get-player player-id))
-    (status (response "Failed to remove bot" 400))))
+    (status (response "Failed to remove bot") 400)))

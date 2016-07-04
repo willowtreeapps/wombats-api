@@ -3,7 +3,7 @@
             [battlebots.services.mongodb :as db]
             [battlebots.arena.generation :as generate]
             [battlebots.constants.arena :refer [small-arena large-arena]]
-            [battlebots.game :as game]
+            [battlebots.game.game-loop :as game-loop]
             [monger.result :as mr])
   (:import org.bson.types.ObjectId))
 
@@ -39,7 +39,7 @@
   [game-id]
   (let [game (db/get-game game-id)
         ;; updated-game (assoc game :state "started")
-        updated-game (game/start-game game)
+        updated-game (game-loop/start-game game)
         update (db/update-game game-id updated-game)]
     (if (mr/acknowledged? update)
       (response updated-game))))
