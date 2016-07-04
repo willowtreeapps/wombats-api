@@ -14,9 +14,11 @@
   (let [bot-coords (gu/get-item-coords ai-uuid dirty-arena)
         ai-bot (au/get-item bot-coords dirty-arena)
         is-current-ai-bot? (= ai-uuid (:uuid ai-bot))]
-    (when is-current-ai-bot?
-      "TODO: Apply bot logic: https://github.com/willowtreeapps/battlebots/issues/63")
-    game-state))
+    (if is-current-ai-bot?
+      (do
+        "TODO: Apply bot logic: https://github.com/willowtreeapps/battlebots/issues/63"
+        game-state)
+      game-state)))
 
 (defn- get-ai-bots
   "Returns a vector of all the ai bot uuids"
