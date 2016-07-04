@@ -5,7 +5,8 @@
                          :transparent true}
                 :ai     {:type "ai"
                          :display "@"
-                         :transparent true}
+                         :transparent true
+                         :energy 20}
                 :block  {:type "block"
                          :display "X"
                          :transparent false

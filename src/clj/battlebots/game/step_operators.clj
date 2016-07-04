@@ -8,6 +8,21 @@
                                                    save-state]]
             [battlebots.game.utils :as gu]))
 
+(defn- apply-ai-decision
+  [{:keys [dirty-arena] :as game-state} ai-uuid]
+  (let [bot-coords (gu/get-item-coords ai-uuid dirty-arena)]))
+
+(defn- get-ai-bots
+  "Returns a vector of all the ai bot uuids"
+  [arena]
+  (reduce (fn [memo row]
+            (reduce (fn [ai-bots cell]
+                      (if (= (:type cell) "ai")
+                        (conj ai-bots (:uuid cell))
+                        ai-bots))
+                    memo row))
+          [] arena))
+
 (defn- randomize-players
   "Randomizes player ids"
   [players]
@@ -95,4 +110,5 @@
 (defn resolve-ai-turns
   "Updates the arena by applying each AIs' movement logic"
   [{:keys [dirty-arena] :as game-state}]
-  game-state)
+  (let [ai-bots (get-ai-bots dirty-arena)]
+    (reduce apply-ai-decision game-state (shuffle ai-bots))))

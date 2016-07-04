@@ -60,7 +60,7 @@
 (defn sanitize-player
   "Sanitizes the full player object returning the partial used on the game map"
   [player]
-  (select-keys player [:_id :login :energy]))
+  (select-keys player [:_id :uuid :login :energy]))
 
 (defn apply-damage
   "applies damage to items that have energy. If the item does not have energy, return the item.

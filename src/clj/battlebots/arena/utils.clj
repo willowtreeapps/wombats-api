@@ -115,3 +115,9 @@
           line (draw-line x1 y1 x2 y2)
           res-arena (reduce (fn [a p] (update-cell a p {:display "*"})) arena line)]
       res-arena)))
+
+;; https://gist.github.com/gorsuch/1418850#file-gistfile1-clj
+(defn uuid
+  "generates a random UUID"
+  []
+  (str (java.util.UUID/randomUUID)))

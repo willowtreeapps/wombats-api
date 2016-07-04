@@ -25,10 +25,16 @@
   (is (= [6 3] (get-player-coords "1" test-arena)))
   (is (= [6 4] (get-player-coords "2" test-arena))))
 
+(deftest get-item-coords-spec
+  (is (= [6 3] (get-item-coords "1111-1111-1111-1111" test-arena)))
+  (is (= [6 4] (get-item-coords "2222-2222-2222-2222" test-arena))))
+
 (deftest sanitize-player-spec
   (is (= {:_id "1"
+          :uuid "1"
           :login "oconn"
           :energy 100} (sanitize-player {:_id "1"
+                                         :uuid "1"
                                          :login "oconn"
                                          :energy 100
                                          :super-secret-value "shhhh...."}))))

@@ -1,7 +1,8 @@
 (ns battlebots.arena.generation
   (:require [battlebots.constants.arena :refer [arena-key]]
-            [battlebots.arena.utils :refer [get-arena-dimensions update-cell]]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [battlebots.arena.utils :refer [get-arena-dimensions update-cell uuid]]))
+
 
 (defn- get-number-of-items
   "reutrns the number of items based off of a given frequency and the total number
@@ -31,7 +32,9 @@
 (defn- replacer
   "replaces an empty cell with a value in a given arena"
   [arena item]
-  (update-cell arena (find-random-open-space arena) item))
+  (update-cell arena
+               (find-random-open-space arena)
+               (assoc item :uuid (uuid))))
 
 (defn- sprinkle
   "sprinkles given items into an arena"
