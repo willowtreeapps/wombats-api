@@ -6,7 +6,10 @@
             [battlebots.arena.partial :refer [get-arena-area]]
             [battlebots.constants.game :refer [segment-length
                                                game-length
-                                               collision-damage-amount]]
+                                               collision-damage-amount
+                                               command-map
+                                               initial-time-unit-count
+                                               partial-arena-radius]]
             [battlebots.arena.utils :as au]))
 
 ;;
@@ -205,7 +208,7 @@
   the board by moving the player and apply any possible consequences of the move to the player."
   [player-id {:keys [direction] :as metadata} {:keys [dirty-arena players] :as game-state}]
   (let [player-coords (get-player-coords player-id dirty-arena)
-        dimensions (au/get-arena-dimensions-zero-idx dirty-arena)
+        dimensions (au/get-arena-dimensions dirty-arena)
         desired-coords (au/adjust-coords player-coords direction dimensions)
         desired-space-contents (au/get-item desired-coords dirty-arena)
         take-space? (can-occupy-space? desired-space-contents)]
@@ -233,25 +236,40 @@
 ;;
 
 (defn- process-command
-  "Processes a single command for a given player."
-  [player-id]
-  (fn [game-state command]
-    (let [{:keys [cmd metadata]} command]
-      (cond
-       (= cmd "MOVE") (move-player player-id metadata game-state)
-       (= cmd "SHOOT") game-state ;; TODO
-       (= cmd "SET_STATE") (set-player-state player-id metadata game-state)
-       :else game-state))))
+  "Processes a single command for a given player if the player has enough time for that command."
+  [player-id command-map]
+  (fn [{:keys [game-state remaining-time]} command]
+    (let [{:keys [cmd metadata]} command
+          time-cost (or (get-in command-map [(keyword cmd) :tu]) 0)
+          updated-time (- remaining-time time-cost)
+          should-update? (>= updated-time 0)
+          updated-game-state (if should-update?
+                               (cond
+                                (= cmd "MOVE")
+                                (move-player player-id metadata game-state)
+
+                                ;; TODO
+                                ;; https://github.com/willowtreeapps/battlebots/issues/45
+                                (= cmd "SHOOT")
+                                game-state
+
+                                (= cmd "SET_STATE")
+                                (set-player-state player-id metadata game-state)
+
+                                :else game-state)
+                               game-state)]
+      {:game-state updated-game-state
+       :remaining-time (if should-update?
+                         updated-time
+                         remaining-time)})))
 
 (defn- apply-decisions
-  "Applies player decision to the current state of the game
-
-  TODO: Implement time unit logic
-  https://github.com/willowtreeapps/battlebots/issues/44
-  "
-  [game-state {:keys [decision _id] :as player}]
-  (let [{:keys [commands]} decision]
-    (reduce (process-command _id) game-state commands)))
+  "Applies player decision to the current state of the game"
+  [command-map]
+  (fn [game-state {:keys [decision _id] :as player}]
+    (let [{:keys [commands]} decision]
+      (:game-state (reduce (process-command _id command-map) {:game-state game-state
+                                                              :remaining-time initial-time-unit-count} commands)))))
 
 (defn- resolve-player-decisions
   "Returns a vecor of player decisions based off of the logic provided by
@@ -261,8 +279,7 @@
          (let [partial-arena (get-arena-area
                               clean-arena
                               (get-player-coords _id clean-arena)
-                              ;; TODO Remove magic number for arena radius
-                              10)]
+                              partial-arena-radius)]
            {:decision ((load-string bot)
                        {:arena (occluded-arena
                                 partial-arena
@@ -286,7 +303,7 @@
   (let [execution-order (randomize-players players)
         player-decisions (resolve-player-decisions players clean-arena)
         sorted-player-decisions (sort-decisions player-decisions execution-order)
-        updated-game-state (reduce apply-decisions game-state sorted-player-decisions)]
+        updated-game-state (reduce (apply-decisions command-map) game-state sorted-player-decisions)]
     updated-game-state))
 
 ;;

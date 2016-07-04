@@ -40,6 +40,14 @@
                  [p o p f f f f]
                  [o o o o f p f]])
 
+(def test-game-state {:initial-arena test-arena
+                      :clean-arena test-arena
+                      :dirty-arena test-arena
+                      :rounds []
+                      :segment-count 0
+                      :_id "1"
+                      :players [bot1-private bot2-private]})
+
 (deftest position-spec
   (is (= 1 (#'game/position #(= % 4) [0 4 5 6])))
   (is (= 3 (#'game/position #(= % 6) [0 4 5 6])))
@@ -134,3 +142,72 @@
                                     (assoc b :energy (- (:energy b) 10)))}
          ((#'game/apply-collision-damage "1" [6 3] b [5 3] 10) {:players test-players
                                                                 :dirty-arena test-arena}))))
+
+(deftest process-command-spec
+  (is (= 50 (:remaining-time ((#'game/process-command "1" {:SHOOT {:tu 50}})
+                              {:game-state test-game-state
+                               :remaining-time 100} {:cmd "SHOOT"
+                                                     :metadata {:energy 5
+                                                                :direction 4}})))
+      "When a player passes a command and has enough banked time to execute the command, remaining-time is decremented")
+  (is (= 50 (:remaining-time ((#'game/process-command "1" {:SHOOT {:tu 60}})
+                              {:game-state test-game-state
+                               :remaining-time 50} {:cmd "SHOOT"
+                                                    :metadata {:energy 5
+                                                               :direction 4}})))
+      "When a player passas a command and does not have enough time to execute the command, remaining time does not change.")
+  (is (= {:game-state test-game-state
+          :remaining-time 20}
+         ((#'game/process-command "1" {:SHOOT {:tu 10}})
+          {:game-state test-game-state
+           :remaining-time 20} {:cmd "SOME_INVALID_COMMAND"
+                                :metadata {}}))
+      "When a player passes an invalid command, nothing is modified"))
+
+(deftest apply-decisions-spec
+  (is (= (#'game/get-player-coords
+          "1"
+          (update-cell
+           (update-cell
+            (update-cell
+             (update-cell
+              test-arena
+              [6 3] o)
+             [6 2] o)
+            [6 1] o)
+           [6 0] b1))
+         (#'game/get-player-coords
+          "1"
+          (:dirty-arena ((#'game/apply-decisions {:MOVE {:tu 33}}) test-game-state
+                         {:decision {:commands [{:cmd "MOVE"
+                                                 :metadata {:direction 1}}
+                                                {:cmd "MOVE"
+                                                 :metadata {:direction 1}}
+                                                {:cmd "MOVE"
+                                                 :metadata {:direction 1}}]}
+                          :_id "1"}))))
+      "Player 1 is moved 3 spaces up when passed 3 {:MOVE 1} commands, each costing 33 time units")
+  (is (= (#'game/get-player-coords
+          "1"
+          (update-cell
+            (update-cell
+             (update-cell
+              test-arena
+              [6 3] 0)
+             [6 2] o)
+            [6 1] b1))
+         (#'game/get-player-coords
+          "1"
+          (:dirty-arena ((#'game/apply-decisions {:MOVE {:tu 50}}) test-game-state
+                         {:decision {:commands [{:cmd "MOVE"
+                                                 :metadata {:direction 1}}
+                                                {:cmd "MOVE"
+                                                 :metadata {:direction 1}}
+                                                {:cmd "MOVE"
+                                                 :metadata {:direction 1}}
+                                                {:cmd "MOVE"
+                                                 :metadata {:direction 1}}
+                                                {:cmd "MOVE"
+                                                 :metadata {:direction 1}}]}
+                          :_id "1"}))))
+      "Player 1 is moved 2 spaces up when passed 5 {:MOVE 1} commands, each costing 50 time units"))

@@ -105,7 +105,7 @@
      (string/join "\n" (map-indexed (fn [idx row]
                                       (print
                                        (format "%2d" idx)
-                                       (string/join "  " (map :display row))
+                                       (string/join "  " (map #(or (:display %) "B") row))
                                        "\n")) arena)))))
 
 (comment

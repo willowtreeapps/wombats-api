@@ -87,7 +87,7 @@
          ;; Pass the next round and sleep the thread in between each
          :else
          (do
-           (Thread/sleep 40) ;; TODO Once client side rendering has improved, adjust this value
+           (Thread/sleep 200) ;; TODO Once client side rendering has improved, adjust this value
            (chsk-send! uid [:game/display-round (nth (:rounds current-segment) current-round)])
            (recur current-segment next-segement (inc current-round))))))))
 
