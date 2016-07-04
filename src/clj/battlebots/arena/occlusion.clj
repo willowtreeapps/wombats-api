@@ -1,5 +1,5 @@
 (ns battlebots.arena.occlusion
-  (require [battlebots.constants.arena :refer [arena-key]]))
+  (:require [battlebots.constants.arena :refer [arena-key]]))
 
 (def ^:private slopes [[1 0] [-1 0] [0 1] [0 -1]])
 

@@ -1,5 +1,6 @@
 (ns battlebots.services.github
-  (:require [org.httpkit.client :as http]
+  (:require [battlebots.services.mongodb :as db]
+            [org.httpkit.client :as http]
             [base64-clj.core :as b64]
             [cheshire.core :refer [parse-string]]))
 
@@ -15,3 +16,13 @@
     (if (= status 200)
       (decode-bot (:content (parse-string body true)))
       nil)))
+
+(defn get-bot
+  "Returns the code a bot executes"
+  [player-id repo]
+  (let [{:keys [bots access-token] :as player} (db/get-player-with-token player-id)
+        {:keys [contents-url] :as bot} (reduce (fn [memo bot]
+                                                 (if (= (:repo bot) repo)
+                                                   bot
+                                                   memo)) nil bots)]
+    (get-bot-code access-token contents-url)))
