@@ -10,9 +10,9 @@
             [battlebots.arena.utils :as au]))
 
 (defn- calculate-ai-move
-  [[x y] arena]
+  [[x y] {:keys [dirty-arena] :as game-state}]
   ;; TODO Add bot movement logic
-  arena)
+  game-state)
 
 (defn- apply-ai-decision
   [{:keys [dirty-arena] :as game-state} ai-uuid]
@@ -20,7 +20,7 @@
         ai-bot (au/get-item bot-coords dirty-arena)
         is-current-ai-bot? (= ai-uuid (:uuid ai-bot))]
     (if is-current-ai-bot?
-      (calculate-ai-move bot-coords dirty-arena)
+      (calculate-ai-move bot-coords game-state)
       game-state)))
 
 (defn- get-ai-bots
