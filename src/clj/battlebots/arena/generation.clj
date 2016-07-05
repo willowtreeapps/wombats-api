@@ -11,7 +11,7 @@
 (defn- pos-open
   "returns true of false depending if a given coodinate in a given arena is open"
   [[x y] arena]
-  (= (:open arena-key) (get-in arena [x y])))
+  (= (:open arena-key) (get-in arena [y x])))
 
 (defn- generate-random-coords
   "generates random coordinates from a given dimension set"
