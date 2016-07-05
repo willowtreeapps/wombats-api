@@ -1,13 +1,14 @@
 (ns battlebots.arena.generation
   (:require [battlebots.constants.arena :refer [arena-key]]
-            [battlebots.arena.utils :refer [get-arena-dimensions update-cell]]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [battlebots.arena.utils :refer [get-arena-dimensions update-cell uuid]]))
+
 
 (defn- get-number-of-items
   "reutrns the number of items based off of a given frequency and the total number
   of cells in a given arena"
   [frequency arena]
-  (* (/ frequency 100) (apply * (get-arena-dimensions arena))))
+  (* (/ (or frequency 0) 100) (apply * (get-arena-dimensions arena))))
 
 (defn- pos-open
   "returns true of false depending if a given coodinate in a given arena is open"
@@ -31,7 +32,9 @@
 (defn- replacer
   "replaces an empty cell with a value in a given arena"
   [arena item]
-  (update-cell arena (find-random-open-space arena) item))
+  (update-cell arena
+               (find-random-open-space arena)
+               (assoc item :uuid (uuid))))
 
 (defn- sprinkle
   "sprinkles given items into an arena"
@@ -140,6 +143,12 @@
   (let [amount (get-number-of-items frequency arena)]
     (sprinkle amount (:poison arena-key) arena)))
 
+(defn- ai
+  "sprinkle ai bots around the arena and return a new arena"
+  [frequency config arena]
+  (let [amount (get-number-of-items frequency arena)]
+    (sprinkle amount (:ai arena-key) arena)))
+
 (defn- players
   "place players around the arena and returns a new arena"
   [players arena]
@@ -161,12 +170,11 @@
 
 (defn new-arena
   "compose all arena building functions to make a fresh new arena"
-  [{:keys [dimx dimy food-freq block-freq poison-freq] :as config}]
+  [{:keys [dimx dimy food-freq block-freq poison-freq ai-freq] :as config}]
   (let [arena (empty-arena dimx dimy)]
     ((apply comp
-            (partial blocks block-freq config)
             (partial border config)
             (map (fn [item-func item-frequency]
                    (partial item-func item-frequency config))
-                 [poison food]
-                 [poison-freq food-freq block-freq])) arena)))
+                 [ai poison food blocks]
+                 [ai-freq poison-freq food-freq block-freq])) arena)))

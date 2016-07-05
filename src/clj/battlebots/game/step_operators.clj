@@ -6,7 +6,33 @@
             [battlebots.arena.partial :refer [get-arena-area]]
             [battlebots.game.bot-decisions :refer [move
                                                    save-state]]
-            [battlebots.game.utils :as gu]))
+            [battlebots.game.utils :as gu]
+            [battlebots.arena.utils :as au]))
+
+(defn- calculate-ai-move
+  [[x y] {:keys [dirty-arena] :as game-state}]
+  ;; TODO Add bot movement logic
+  game-state)
+
+(defn- apply-ai-decision
+  [{:keys [dirty-arena] :as game-state} ai-uuid]
+  (let [bot-coords (gu/get-item-coords ai-uuid dirty-arena)
+        ai-bot (au/get-item bot-coords dirty-arena)
+        is-current-ai-bot? (= ai-uuid (:uuid ai-bot))]
+    (if is-current-ai-bot?
+      (calculate-ai-move bot-coords game-state)
+      game-state)))
+
+(defn- get-ai-bots
+  "Returns a vector of all the ai bot uuids"
+  [arena]
+  (reduce (fn [memo row]
+            (reduce (fn [ai-bots cell]
+                      (if (= (:type cell) "ai")
+                        (conj ai-bots (:uuid cell))
+                        ai-bots))
+                    memo row))
+          [] arena))
 
 (defn- randomize-players
   "Randomizes player ids"
@@ -84,10 +110,16 @@
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn resolve-player-turns
-  "Updates the arena by applying each players movement logic"
+  "Updates the arena by applying each players' movement logic"
   [{:keys [players clean-arena] :as game-state}]
   (let [execution-order (randomize-players players)
         player-decisions (resolve-player-decisions players clean-arena)
         sorted-player-decisions (sort-decisions player-decisions execution-order)
         updated-game-state (reduce (apply-decisions command-map) game-state sorted-player-decisions)]
     updated-game-state))
+
+(defn resolve-ai-turns
+  "Updates the arena by applying each AIs' movement logic"
+  [{:keys [dirty-arena] :as game-state}]
+  (let [ai-bots (get-ai-bots dirty-arena)]
+    (reduce apply-ai-decision game-state (shuffle ai-bots))))

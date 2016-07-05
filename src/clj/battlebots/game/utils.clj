@@ -41,6 +41,22 @@
            (apply-player-update player update)
            player)) players))
 
+(defn get-item-coords
+  "Returns a tuple of a given players coords
+
+  TODO: There's most likely a better way to accomplish this"
+  [uuid arena]
+  (:coords (reduce (fn [memo row]
+                     (if (:coords memo)
+                       memo
+                       (let [idx (position #(= (:uuid %) uuid) row)
+                             row-number (:row memo)]
+                         (if idx
+                           {:row (+ 1 row-number)
+                            :coords [idx row-number]}
+                           {:row (+ 1 row-number)}))))
+                   {:row 0} arena)))
+
 (defn get-player-coords
   "Returns a tuple of a given players coords
 
@@ -60,7 +76,7 @@
 (defn sanitize-player
   "Sanitizes the full player object returning the partial used on the game map"
   [player]
-  (select-keys player [:_id :login :energy]))
+  (select-keys player [:_id :uuid :login :energy]))
 
 (defn apply-damage
   "applies damage to items that have energy. If the item does not have energy, return the item.

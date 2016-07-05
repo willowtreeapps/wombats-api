@@ -7,6 +7,7 @@
 (def f (:food arena-key))
 (def p (:poison arena-key))
 (def bot1-private {:_id "1"
+                   :uuid "1111-1111-1111-1111"
                    :login "oconn"
                    :bot-repo "bot"
                    :energy 20
@@ -16,6 +17,7 @@
                                       :metadata {:step-counter 0}}]}"
                    :saved-state {}})
 (def bot2-private {:_id "2"
+                   :uuid "2222-2222-2222-2222"
                    :login "Mr. Robot"
                    :bot-repo "bot"
                    :energy 50
