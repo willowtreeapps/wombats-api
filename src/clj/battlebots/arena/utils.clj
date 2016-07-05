@@ -103,10 +103,9 @@
     (println " " (string/join " " (map #(format "%2d" %) x-indices)))
     (print
      (string/join "\n" (map-indexed (fn [idx row]
-                                      (print
-                                       (format "%2d" idx)
-                                       (string/join "  " (map #(or (:display %) "B") row))
-                                       "\n")) arena)))))
+                                      (format "%2d %s" idx
+                                              (string/join "  " (map #(or (:display %) "B") row))))
+                                    arena)))))
 
 (comment
   (require '[battlebots.arena.generation :refer [empty-arena]])

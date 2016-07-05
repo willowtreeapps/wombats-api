@@ -11,7 +11,7 @@
 (defn- pos-open
   "returns true of false depending if a given coodinate in a given arena is open"
   [[x y] arena]
-  (= (:open arena-key) (get-in arena [x y])))
+  (= (:open arena-key) (get-in arena [y x])))
 
 (defn- generate-random-coords
   "generates random coordinates from a given dimension set"
@@ -50,18 +50,18 @@
 
 (defn- border
   "places block walls contiguously along the border of the arena"
-  ;; arenas are vectors (seqs?) of columns -not vectors of rows
-  ;; columns are not consistently vectors -they can be seqs
+  ;; arenas are vectors (seqs?) of rows -not vectors of columbs
+  ;; rows are not consistently vectors -they can be seqs
   [{:keys [dimx dimy border]} arena]
   (if border
     (let [block (:block arena-key)
-          vwall (repeat dimy block)
-          xform (map-indexed (fn [x column]
-                               (if (#{0 (dec dimx)} x)
-                                 vwall
-                                 (-> (vec column)
+          hwall (repeat dimx block)
+          xform (map-indexed (fn [y row]
+                               (if (#{0 (dec dimy)} y)
+                                 hwall
+                                 (-> (vec row)
                                      (assoc-in [0] block)
-                                     (assoc-in [(dec dimy)] block)))))]
+                                     (assoc-in [(dec dimx)] block)))))]
       (vec (sequence xform arena)))
     arena))
 
