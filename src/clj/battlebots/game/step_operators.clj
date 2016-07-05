@@ -9,15 +9,18 @@
             [battlebots.game.utils :as gu]
             [battlebots.arena.utils :as au]))
 
+(defn- calculate-ai-move
+  [[x y] arena]
+  ;; TODO Add bot movement logic
+  arena)
+
 (defn- apply-ai-decision
   [{:keys [dirty-arena] :as game-state} ai-uuid]
   (let [bot-coords (gu/get-item-coords ai-uuid dirty-arena)
         ai-bot (au/get-item bot-coords dirty-arena)
         is-current-ai-bot? (= ai-uuid (:uuid ai-bot))]
     (if is-current-ai-bot?
-      (do
-        "TODO: Apply bot logic: https://github.com/willowtreeapps/battlebots/issues/63"
-        game-state)
+      (calculate-ai-move bot-coords dirty-arena)
       game-state)))
 
 (defn- get-ai-bots
