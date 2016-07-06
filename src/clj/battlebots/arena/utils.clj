@@ -46,27 +46,30 @@
 
 (defn- incx [x] (fn [v] (+ x v)))
 
+(defn directional-functions
+  "Returns the update functions to apply to a set of coords
+
+   0 1 2
+   7   3
+   6 5 4"
+  ([] (directional-functions 1))
+  ([direction dist]
+   (condp = direction
+     0 [(incx (- dist)) (incx (- dist))]
+     1 [identity (incx (- dist))]
+     2 [(incx dist) (incx (- dist))]
+     3 [(incx dist) identity]
+     4 [(incx dist) (incx dist)]
+     5 [identity (incx dist)]
+     6 [(incx (- dist)) (incx dist)]
+     7 [(incx (- dist)) identity]
+     [identity identity])))
+
 (defn adjust-coords
-  "Returns a new set of coords based off of an applied direction.
-
-  0 1 2
-  7   3
-  6 5 4
-
-  "
+  "Returns a new set of coords based off of an applied direction."
   ([coords direction dimensions] (adjust-coords coords direction dimensions 1))
-  ([coords direction dimensions steps]
-   (let [
-         updater (cond
-                   (= direction 0) [(incx (- steps)) (incx (- steps))]
-                   (= direction 1) [identity (incx (- steps))]
-                   (= direction 2) [(incx steps) (incx (- steps))]
-                   (= direction 3) [(incx steps) identity]
-                   (= direction 4) [(incx steps) (incx steps)]
-                   (= direction 5) [identity (incx steps)]
-                   (= direction 6) [(incx (- steps)) (incx steps)]
-                   (= direction 7) [(incx (- steps)) identity]
-                   :else [identity identity])
+  ([coords direction dimensions dist]
+   (let [updater (directional-functions direction dist)
          coords (map #(%1 %2) updater coords)]
      (wrap-coords coords dimensions))))
 
@@ -94,6 +97,15 @@
                 (if (< error delta-y)
                   (recur (inc x) (+ y y-step) (+ error (- delta-x delta-y)) (conj res pt))
                   (recur (inc x) y            (- error delta-y) (conj res pt)))))))))))
+
+(defn draw-line-from-point
+  [arena pos direction dist]
+  (vec (map (fn [idx]
+              (vec (wrap-coords
+                    (map (fn [fnc dim] (fnc dim))
+                         (directional-functions direction idx) pos)
+                    (get-arena-dimensions arena))))
+            (range 1 (inc dist)))))
 
 (defn pprint-arena
   "Pretty Print for a given arena"

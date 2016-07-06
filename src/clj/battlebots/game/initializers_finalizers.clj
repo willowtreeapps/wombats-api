@@ -2,6 +2,7 @@
   (:require [battlebots.services.mongodb :as db]
             [battlebots.services.github :refer [get-bot]]
             [battlebots.game.utils :as gu]
+            [battlebots.constants.arena :as ac]
             [battlebots.constants.game :refer [segment-length]]))
 
 (defn- save-segment
@@ -10,6 +11,20 @@
                          :players (map gu/sanitize-player players)
                          :rounds rounds
                          :segment segment-count}))
+
+(defn update-volatile-positions
+  "currently reverts all volatile cells to open if decay-turns is less than 1"
+  [arena]
+  (vec (map (fn [row]
+              (vec (map (fn [cell]
+                          (if (:volatile cell false)
+                            (let
+                                [decay-turns (get-in cell [:md :decay-turns] 0)]
+                              (if (< decay-turns 1)
+                                (get-in cell [:md :restore-cell] (:open ac/arena-key))
+                                (assoc-in cell [:md :decay-turns]
+                                          (dec decay-turns))))
+                            cell)) row))) arena)))
 
 (defn initialize-players
   "Preps each player map for the game. This player map is different from
@@ -46,7 +61,7 @@
   (let [formatted-round {:map dirty-arena
                          :players (map gu/sanitize-player players)}
         updated-game-state (merge game-state {:rounds (conj rounds formatted-round)
-                                              :clean-arena dirty-arena})]
+                                              :clean-arena (update-volatile-positions dirty-arena)})]
     (if (= (count (:rounds updated-game-state)) segment-length)
       (finalize-segment updated-game-state)
       updated-game-state)))

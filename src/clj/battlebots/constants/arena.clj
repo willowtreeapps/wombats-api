@@ -2,24 +2,41 @@
 
 (def arena-key {:open   {:type "open"
                          :display " "
-                         :transparent true}
+                         :transparent true
+                         :can-occupy true}
                 :ai     {:type "ai"
                          :display "@"
                          :transparent true
-                         :energy 20}
+                         :energy 20
+                         :can-occupy false
+                         :destructible true}
                 :block  {:type "block"
                          :display "X"
                          :transparent false
+                         :can-occupy false
+                         :destructible true
                          :energy 20}
                 :food   {:type "food"
                          :display "+"
-                         :transparent true}
+                         :transparent true
+                         :can-occupy true
+                         :destructible false}
                 :poison {:type "poison"
                          :display "-"
-                         :transparent true}
+                         :transparent true
+                         :can-occupy true
+                         :destructible false}
                 :fog    {:type "fog"
                          :display "?"
-                         :transparent false}})
+                         :transparent false
+                         :can-occupy true
+                         :destructible false}
+                :shoot  {:type "shoot"
+                         :display "!"
+                         :transparent true
+                         :can-occupy true
+                         :destructible false
+                         :volatile true}})
 
 ;; Example Arena Configurations
 ;; food-freq, block-freq, and poison-freq represent percentages and will scale
@@ -39,3 +56,11 @@
                   :food-freq 10
                   :block-freq 10
                   :poison-freq 3})
+
+(defn can-occupy?
+  [key]
+  (:can-occupy (get arena-key (keyword key) {:can-occupy false})))
+
+(defn destructible?
+  [key]
+  (:destructible (get arena-key (keyword key) {:destructible false})))
