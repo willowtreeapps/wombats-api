@@ -16,7 +16,7 @@
     (try
       (handler request)
       (catch Exception e
-        (println e)
+        (.printStackTrace e)
         {:status 400 :body (.getMessage e)}))))
 
 (defn auth-user

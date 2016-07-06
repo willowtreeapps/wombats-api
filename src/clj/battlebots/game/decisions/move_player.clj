@@ -1,7 +1,7 @@
 (ns battlebots.game.decisions.move-player
   (:require [battlebots.game.utils :as gu]
             [battlebots.arena.utils :as au]
-            [battlebots.constants.arena :refer [arena-key]]
+            [battlebots.constants.arena :refer [arena-key] :as ac]
             [battlebots.constants.game :refer [collision-damage-amount]]))
 
 (defn- determine-effects

@@ -19,7 +19,26 @@
                          :transparent true}
                 :fog    {:type "fog"
                          :display "?"
-                         :transparent false}})
+                         :transparent false}
+                :shoot  {:type "shoot"
+                         :display "!"
+                         :transparent true
+                         :volatile true}})
+
+
+(def move-settings {:can-occupy #{:open
+                                  :food
+                                  :poison}})
+
+(def shot-settings {:can-occupy #{:open
+                                  :ai
+                                  :block
+                                  :food
+                                  :poison
+                                  :fog
+                                  :shoot}
+                    :destructible #{:ai
+                                    :block}})
 
 ;; Example Arena Configurations
 ;; food-freq, block-freq, and poison-freq represent percentages and will scale
@@ -39,3 +58,11 @@
                   :food-freq 10
                   :block-freq 10
                   :poison-freq 3})
+
+(defn can-occupy?
+  [key settings]
+  (contains? (get settings :can-occupy) (keyword key)))
+
+(defn destructible?
+  [key settings]
+  (contains? (get settings :destructible) (keyword key)))

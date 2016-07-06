@@ -5,7 +5,8 @@
             [battlebots.arena.occlusion :refer [occluded-arena]]
             [battlebots.arena.partial :refer [get-arena-area]]
             [battlebots.game.bot-decisions :refer [move
-                                                   save-state]]
+                                                   save-state
+                                                   shoot]]
             [battlebots.game.utils :as gu]
             [battlebots.arena.utils :as au]))
 
@@ -57,10 +58,8 @@
                                 (= cmd "MOVE")
                                 (move player-id metadata game-state)
 
-                                ;; TODO
-                                ;; https://github.com/willowtreeapps/battlebots/issues/45
                                 (= cmd "SHOOT")
-                                game-state
+                                (shoot player-id metadata game-state)
 
                                 (= cmd "SET_STATE")
                                 (save-state player-id metadata game-state)

@@ -1,6 +1,7 @@
 (ns battlebots.game.bot-decisions
   (:require [battlebots.game.decisions.move-player :refer [move-player]]
-            [battlebots.game.decisions.save-state :refer [set-player-state]]))
+            [battlebots.game.decisions.save-state :refer [set-player-state]]
+            [battlebots.game.decisions.resolve-shot :refer [resolve-shoot]]))
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -14,3 +15,4 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def move move-player)
 (def save-state set-player-state)
+(def shoot resolve-shoot)
