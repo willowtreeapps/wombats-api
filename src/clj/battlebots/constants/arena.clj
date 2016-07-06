@@ -2,41 +2,43 @@
 
 (def arena-key {:open   {:type "open"
                          :display " "
-                         :transparent true
-                         :can-occupy true}
+                         :transparent true}
                 :ai     {:type "ai"
                          :display "@"
                          :transparent true
-                         :energy 20
-                         :can-occupy false
-                         :destructible true}
+                         :energy 20}
                 :block  {:type "block"
                          :display "X"
                          :transparent false
-                         :can-occupy false
-                         :destructible true
                          :energy 20}
                 :food   {:type "food"
                          :display "+"
-                         :transparent true
-                         :can-occupy true
-                         :destructible false}
+                         :transparent true}
                 :poison {:type "poison"
                          :display "-"
-                         :transparent true
-                         :can-occupy true
-                         :destructible false}
+                         :transparent true}
                 :fog    {:type "fog"
                          :display "?"
-                         :transparent false
-                         :can-occupy true
-                         :destructible false}
+                         :transparent false}
                 :shoot  {:type "shoot"
                          :display "!"
                          :transparent true
-                         :can-occupy true
-                         :destructible false
                          :volatile true}})
+
+
+(def move-settings {:can-occupy #{:open
+                                  :food
+                                  :poison}})
+
+(def shot-settings {:can-occupy #{:open
+                                  :ai
+                                  :block
+                                  :food
+                                  :poison
+                                  :fog
+                                  :shoot}
+                    :destructible #{:ai
+                                    :block}})
 
 ;; Example Arena Configurations
 ;; food-freq, block-freq, and poison-freq represent percentages and will scale
@@ -58,9 +60,9 @@
                   :poison-freq 3})
 
 (defn can-occupy?
-  [key]
-  (:can-occupy (get arena-key (keyword key) {:can-occupy false})))
+  [key settings]
+  (contains? (get settings :can-occupy) (keyword key)))
 
 (defn destructible?
-  [key]
-  (:destructible (get arena-key (keyword key) {:destructible false})))
+  [key settings]
+  (contains? (get settings :destructible) (keyword key)))

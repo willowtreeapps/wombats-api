@@ -7,15 +7,15 @@
   [{:keys [type] :as cell-at-point} energy]
   (cond
     (< energy 1) cell-at-point
-    (ac/can-occupy? type) (assoc-in (:shoot ac/arena-key)
-                                    [:md :restore-cell]
-                                    cell-at-point)
-    (ac/destructible? type) (if (> (get cell-at-point :energy) energy)
-                              (assoc cell-at-point
-                                :energy
-                                (- energy
-                                   (get cell-at-point :energy)))
-                              (:shoot ac/arena-key))))
+    (ac/can-occupy? type ac/shot-settings) (assoc-in (:shoot ac/arena-key)
+                                                     [:md :restore-cell]
+                                                     cell-at-point)
+    (ac/destructible? type ac/shot-settings) (if (> (get cell-at-point :energy) energy)
+                                               (assoc cell-at-point
+                                                 :energy
+                                                 (- energy
+                                                    (get cell-at-point :energy)))
+                                               (:shoot ac/arena-key))))
 
 (defn- resolve-shoot-damage
   [shoot-coords])
