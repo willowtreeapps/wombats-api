@@ -23,8 +23,11 @@
                 :shoot  {:type "shoot"
                          :display "!"
                          :transparent true
-                         :volatile true}})
-
+                         ;; TODO Remove when shoot no longer uses this
+                         :volatile true}
+                :steel  {:type "steel"
+                         :display "&"
+                         :transparent false}})
 
 (def move-settings {:can-occupy #{:open
                                   :food

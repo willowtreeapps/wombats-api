@@ -17,8 +17,8 @@
   (fn [{:keys [dirty-arena players] :as game-state}]
      (let [cell-contents (au/get-item coords dirty-arena)
            player (gu/get-player player-id players)
-           updated-arena (au/update-cell dirty-arena coords (gu/sanitize-player player))
            player-update (determine-effects cell-contents)
+           updated-arena (au/update-cell dirty-arena coords (gu/sanitize-player player))
            updated-players (gu/modify-player-stats player-id player-update players)]
        (merge game-state {:dirty-arena updated-arena
                           :players updated-players}))))
