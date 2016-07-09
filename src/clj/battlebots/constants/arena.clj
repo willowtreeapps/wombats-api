@@ -31,7 +31,10 @@
 
 (def move-settings {:can-occupy #{:open
                                   :food
-                                  :poison}})
+                                  :poison}
+                    :effects {:open {}
+                              :food {:energy #(+ % 10)}
+                              :poision {:energy #(- % 5)}}})
 
 (def shot-settings {:can-occupy #{:open
                                   :ai
@@ -65,6 +68,10 @@
 (defn can-occupy?
   [key settings]
   (contains? (get settings :can-occupy) (keyword key)))
+
+(defn determine-effects
+  [key settings]
+  (get-in settings [:effects (keyword key)]))
 
 (defn destructible?
   [key settings]

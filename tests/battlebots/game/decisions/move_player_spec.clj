@@ -1,6 +1,7 @@
 (ns battlebots.game.decisions.move-player-spec
   (:require [battlebots.game.decisions.move-player :refer :all :as move-player]
             [battlebots.arena.utils :refer [get-item update-cell]]
+            [battlebots.constants.arena :as ac]
             [battlebots.game.test-game :refer [o b
                                                bot1-private
                                                b1
@@ -8,11 +9,11 @@
                                                test-arena]])
   (:use clojure.test))
 
-(deftest can-occupy-space-spec
-  (is (= true (#'move-player/can-occupy-space? {:type "food"})) "Bots can occupy food spaces")
-  (is (= true (#'move-player/can-occupy-space? {:type "poison"})) "Bots can occupy poison spaces")
-  (is (= true (#'move-player/can-occupy-space? {:type "open"})) "Bots can occupy open spaces")
-  (is (= false (#'move-player/can-occupy-space? {:type "block"})) "Bots cannot occupy block spaces"))
+(deftest can-occupy-move-spec
+  (is (= true (ac/can-occupy? "food" ac/move-settings)) "Bots can occupy food spaces")
+  (is (= true (ac/can-occupy? "poison" ac/move-settings)) "Bots can occupy poison spaces")
+  (is (= true (ac/can-occupy? "open" ac/move-settings)) "Bots can occupy open spaces")
+  (is (= false (ac/can-occupy? "block" ac/move-settings)) "Bots cannot occupy block spaces"))
 
 (deftest apply-collision-damage-spec
   (is (= {:players (assoc-in (assoc-in test-players [0 :energy] 10) [1 :energy] 40)
