@@ -1,7 +1,10 @@
 (ns battlebots.arena.generation
   (:require [battlebots.constants.arena :refer [arena-key]]
             [clojure.tools.logging :as log]
-            [battlebots.arena.utils :refer [get-arena-dimensions update-cell uuid]]))
+            [battlebots.arena.utils :refer [get-arena-dimensions
+                                            update-cell
+                                            uuid
+                                            wrap-coords]]))
 
 
 (defn- get-number-of-items
@@ -41,13 +44,6 @@
   [amount item arena]
   (reduce replacer arena (repeat amount item)))
 
-(defn- wrap
-  "Wraps out-of-bounds coordinates (zero-based) to opposite edge of m x n arena"
-  [[x y] [m n]]
-  {:pre [(integer? x) (integer? y) (pos? m) (pos? n)]
-   :post [(let [[x y] %] (and (<= 0 x m) (<= 0 y n)))]}
-  [(mod x m) (mod y n)])
-
 (def ^:private directions #{:n :s :e :w :ne :se :sw :nw})
 
 (let [moves {:n [ 0 -1] :ne [ 1 -1] :e [ 1  0] :se [ 1  1]
@@ -62,7 +58,7 @@
       (if (oob? coordinates')
         (case oob
           :return coordinates
-          :wrap (wrap coordinates' dimensions))
+          :wrap (wrap-coords coordinates' dimensions))
         coordinates'))))
 
 (letfn [(block? [arena c] (= (:block arena-key) (get-in arena (reverse c))))]
