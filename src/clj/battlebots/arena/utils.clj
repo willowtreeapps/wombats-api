@@ -28,21 +28,11 @@
       (assoc-in arena [y x] v))))
 
 (defn wrap-coords
-  "wraps the coords around to the other side of the arena"
-  [[c-x c-y] [d-x d-y]]
-  (let [x (cond
-            (< c-x 0) (if (> (Math/abs c-x) d-x)
-                        (- d-x (mod (Math/abs c-x) d-x))
-                        (+ d-x c-x))
-            (>= c-x d-x) (mod c-x d-x)
-           :else c-x)
-        y (cond
-            (< c-y 0) (if (> (Math/abs c-y) d-y)
-                        (- d-y (mod (Math/abs c-y) d-y))
-                        (+ d-y c-y))
-            (>= c-y d-y) (mod c-y d-y)
-            :else c-y)]
-    [x y]))
+  "Wraps out-of-bounds coordinates (zero-based) to opposite edge of m x n arena"
+  [[x y] [m n]]
+  {:pre [(integer? x) (integer? y) (pos? m) (pos? n)]
+   :post [(let [[x y] %] (and (<= 0 x m) (<= 0 y n)))]}
+  [(mod x m) (mod y n)])
 
 (defn- incx [x] (fn [v] (+ x v)))
 
