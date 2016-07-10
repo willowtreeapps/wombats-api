@@ -3,7 +3,7 @@
             [prone.middleware :refer [wrap-exceptions]]
             [buddy.auth.backends :as backends]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
-            [ring.middleware.json :refer [wrap-json-response]]
+            [ring.middleware.json :refer [wrap-json-response wrap-json-params]]
             [ring.middleware.transit :refer [wrap-transit-params]]
             [ring.middleware.reload :refer [wrap-reload]]
             [battlebots.services.mongodb :as db]
@@ -30,6 +30,7 @@
 (defn wrap-middleware [handler]
   (-> handler
       (wrap-defaults api-defaults) ;; api-defaults should only be set for api endpoints. TODO refactor out site endpoints
+      wrap-json-params
       wrap-transit-params
       wrap-json-response
       (wrap-authorization backend)

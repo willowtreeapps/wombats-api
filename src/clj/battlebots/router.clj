@@ -8,6 +8,7 @@
             [battlebots.middleware :refer [wrap-middleware]]
             [battlebots.controllers.games :as games]
             [battlebots.controllers.players :as players]
+            [battlebots.controllers.playground :as playground]
             [battlebots.controllers.authenication :as auth]
             [battlebots.views.index :refer [index]]
             [battlebots.controllers.socket :as ws]))
@@ -89,6 +90,9 @@
                            {:pattern #"^/api/v1/game.*"
                             :handler authenticated-user}
 
+                           {:pattern #"^/api/v1/playground.*"
+                            :handler authenticated-user}
+
                            {:uris ["/api/v1/player/:player-id{\\w+}/bot"
                                    "/api/v1/player/:player-id{\\w+}/bot/:repo{\\w+}"]
                             :handler is-current-user?}
@@ -131,6 +135,10 @@
           (context "/:player-id" [player-id]
             (GET "/" [] (games/get-players game-id player-id))
             (POST "/" req (games/add-player game-id player-id (:params req)))))))
+
+    (context "/simulator" []
+      (POST "/run" req (playground/run-simulation (:params req)
+                                                             (:identity req))))
 
     (context "/player" []
       (GET "/" []  (players/get-players))
