@@ -9,6 +9,7 @@
 (def a (:ai arena-key))
 
 (def bot1-private {:_id "1"
+                   :type "player"
                    :uuid "1111-1111-1111-1111"
                    :login "oconn"
                    :bot-repo "bot"
@@ -19,6 +20,7 @@
                                       :metadata {:step-counter 0}}]}"
                    :saved-state {}})
 (def bot2-private {:_id "2"
+                   :type "player"
                    :uuid "2222-2222-2222-2222"
                    :login "Mr. Robot"
                    :bot-repo "bot"

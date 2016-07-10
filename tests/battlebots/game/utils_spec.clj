@@ -9,8 +9,8 @@
   (is (= nil (position #(= % 7) [0 4 5 6]))))
 
 (deftest is-player-spec
-  (is (= true (is-player? {:login "somelogin"})))
-  (is (= false (is-player? {:no "login here"}))))
+  (is (= true (is-player? {:type "player"})))
+  (is (= false (is-player? {:type "food"}))))
 
 (deftest get-player-spec
   (is (= (first test-players) (get-player "1" test-players))))

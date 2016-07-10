@@ -33,7 +33,8 @@
   [players]
   (map (fn [{:keys [_id bot-repo] :as player}] (merge player {:energy 100
                                                               :bot (get-bot _id bot-repo)
-                                                              :saved-state {}})) players))
+                                                              :saved-state {}
+                                                              :type "player"})) players))
 
 (defn initialize-game
   "Preps the game"

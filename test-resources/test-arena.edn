@@ -46,7 +46,7 @@
   {:type "open", :display "_", :transparent true}
   {:type "open", :display "_", :transparent true}
   {:type "open", :display "_", :transparent true}
-  {:_id "me" :display "B"}
+  {:type "player", :display "B", :_id "me"}
   {:type "block", :display "@", :transparent false}
   {:type "open", :display "_", :transparent true}
   {:type "open", :display "_", :transparent true}

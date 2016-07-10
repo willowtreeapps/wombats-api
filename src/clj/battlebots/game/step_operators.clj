@@ -9,44 +9,15 @@
                                                    shoot]]
             [battlebots.game.utils :as gu]
             [battlebots.arena.utils :as au]
-            [battlebots.constants.game :as gc]))
-
-(defn- scan-for
-  "Returns a colletion of matches. Each match must return true when passed to a given predicate
-
-  ex: o  o  o
-      b1 o  o
-      o  o  b2
-
-  returns: [{:match b1
-             :coords [0 1]}
-            {:match b2
-             :coords [2 2]]
-
-  when the predicate is is-player?"
-  [pred arena]
-  (let [tracker (atom {:x -1 :y -1})]
-    (reduce (fn [matches row]
-              (swap! tracker assoc :x -1 :y (inc (:y @tracker)))
-              (reduce (fn [matches cell]
-                        (swap! tracker assoc :x (inc (:x @tracker)))
-                        (if (pred cell)
-                          (conj matches {:match cell
-                                         :coords [(:x @tracker) (:y @tracker)]})
-                          matches)) matches row)) [] arena)))
-
-(defn- scan-for-players
-  "Returns a collection of players & their coords"
-  [arena]
-  (scan-for gu/is-player? arena))
+            [battlebots.constants.game :as gc]
+            [battlebots.game.bot-helpers :refer [sort-arena]]))
 
 (defn- ai-random-move
-  [game-state ai-arena]
-  (au/pprint-arena ai-arena)
+  [{:keys [game-state]}]
   game-state)
 
 (defn- ai-calculated-move
-  [game-state ai-arena players]
+  [{:keys [game-state]}]
   game-state)
 
 (defn- calculate-ai-move
@@ -55,10 +26,13 @@
                                   clean-arena
                                   bot-coords
                                   gc/ai-partial-arena-radius) bot-coords)
-        players (scan-for-players ai-arena)]
-    (if (empty? players)
-      (ai-random-move game-state ai-arena)
-      (ai-calculated-move game-state ai-arena players))))
+        sorted-arena (sort-arena ai-arena)
+        ai-parameters {:game-state game-state
+                       :sorted-arena sorted-arena
+                       :ai-arena ai-arena}]
+    (if (:player sorted-arena)
+      (ai-random-move ai-parameters)
+      (ai-calculated-move ai-parameters))))
 
 (defn- apply-ai-decision
   [{:keys [dirty-arena] :as game-state} ai-uuid]

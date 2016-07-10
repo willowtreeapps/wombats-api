@@ -13,7 +13,7 @@
 (defn is-player?
   "Checks to see if an item is a player"
   [item]
-  (boolean (:login item)))
+  (= (:type item) "player"))
 
 (defn get-player
   "Retrieves a player from the private player collection"
@@ -76,7 +76,7 @@
 (defn sanitize-player
   "Sanitizes the full player object returning the partial used on the game map"
   [player]
-  (select-keys player [:_id :uuid :login :energy]))
+  (select-keys player [:_id :uuid :login :energy :type]))
 
 (defn apply-damage
   "applies damage to items that have energy. If the item does not have energy, return the item.
