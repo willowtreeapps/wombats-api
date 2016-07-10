@@ -5,8 +5,36 @@
             [battlebots.game.test-game :refer [test-players
                                                test-game-state
                                                test-arena
-                                               o b1]])
+                                               o f p b b1 b2]])
   (:use clojure.test))
+
+(deftest scan-for-spec
+  (is (= [{:match f :coords [1 1]}
+          {:match f :coords [2 1]}
+          {:match f :coords [0 2]}] (#'step-operators/scan-for
+                                     #(= (:type f) (:type %))
+                                     [[o  o  b]
+                                      [b1 f  f]
+                                      [f  o  b2]]))
+      "Finds all food in the given arena")
+  (is (= [{:match b :coords [2 0]}] (#'step-operators/scan-for
+                                     #(= (:type b) (:type %))
+                                     [[o  o  b]
+                                      [b1 f  f]
+                                      [f  o  b2]]))
+      "Finds all blocks in the given arena"))
+
+(deftest scan-for-players-spec
+  (is (= [{:match b1
+           :coords [6 3]}
+          {:match b2
+           :coords [6 4]}] (#'step-operators/scan-for-players test-arena))
+      "Finds the two players in the test arena")
+  (is (= [{:match b1
+           :coords [0 1]}] (#'step-operators/scan-for-players [[o o o]
+                                                               [b1 o o]
+                                                               [o o o]]))
+      "Finds the single player in the given arena"))
 
 (deftest randomize-players-spec
   (is (= (count test-players)

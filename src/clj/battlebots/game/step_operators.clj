@@ -8,12 +8,57 @@
                                                    save-state
                                                    shoot]]
             [battlebots.game.utils :as gu]
-            [battlebots.arena.utils :as au]))
+            [battlebots.arena.utils :as au]
+            [battlebots.constants.game :as gc]))
+
+(defn- scan-for
+  "Returns a colletion of matches. Each match must return true when passed to a given predicate
+
+  ex: o  o  o
+      b1 o  o
+      o  o  b2
+
+  returns: [{:match b1
+             :coords [0 1]}
+            {:match b2
+             :coords [2 2]]
+
+  when the predicate is is-player?"
+  [pred arena]
+  (let [tracker (atom {:x -1 :y -1})]
+    (reduce (fn [matches row]
+              (swap! tracker assoc :x -1 :y (inc (:y @tracker)))
+              (reduce (fn [matches cell]
+                        (swap! tracker assoc :x (inc (:x @tracker)))
+                        (if (pred cell)
+                          (conj matches {:match cell
+                                         :coords [(:x @tracker) (:y @tracker)]})
+                          matches)) matches row)) [] arena)))
+
+(defn- scan-for-players
+  "Returns a collection of players & their coords"
+  [arena]
+  (scan-for gu/is-player? arena))
+
+(defn- ai-random-move
+  [game-state ai-arena]
+  (au/pprint-arena ai-arena)
+  game-state)
+
+(defn- ai-calculated-move
+  [game-state ai-arena players]
+  game-state)
 
 (defn- calculate-ai-move
-  [[x y] {:keys [dirty-arena] :as game-state}]
-  ;; TODO Add bot movement logic
-  game-state)
+  [bot-coords {:keys [clean-arena] :as game-state}]
+  (let [ai-arena (occluded-arena (get-arena-area
+                                  clean-arena
+                                  bot-coords
+                                  gc/ai-partial-arena-radius) bot-coords)
+        players (scan-for-players ai-arena)]
+    (if (empty? players)
+      (ai-random-move game-state ai-arena)
+      (ai-calculated-move game-state ai-arena players))))
 
 (defn- apply-ai-decision
   [{:keys [dirty-arena] :as game-state} ai-uuid]

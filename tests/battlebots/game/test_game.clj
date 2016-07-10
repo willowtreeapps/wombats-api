@@ -6,6 +6,8 @@
 (def b (:block arena-key))
 (def f (:food arena-key))
 (def p (:poison arena-key))
+(def a (:ai arena-key))
+
 (def bot1-private {:_id "1"
                    :uuid "1111-1111-1111-1111"
                    :login "oconn"
@@ -30,12 +32,13 @@
 (def b2 (gu/sanitize-player bot2-private))
 (def test-players [bot1-private bot2-private])
 
-;; NOTE: do NOT modify this arena. Almost all of the following tests
+;; NOTE: do NOT modify this arena. Almost all of game tests
 ;; rely on it and will most likey break all off them if it is modified.
+;; If modification is required, re-run tests and make necessary changes.
 (def test-arena [[o o b f p f f]
                  [b f f p o o o]
                  [b f o o p f p]
-                 [b f f p o b b1]
+                 [b f f a o b b1]
                  [b p o o o p b2]
                  [p o p f f f f]
                  [o o o o f p f]])
