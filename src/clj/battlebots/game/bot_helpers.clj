@@ -1,5 +1,33 @@
 (ns battlebots.game.bot-helpers)
 
+(defn within-n-spaces
+  "Returns a subset of sorted-arena. The subset is determined by the provided radius"
+  [sorted-arena [x y] radius]
+  (reduce (fn [found-spaces [space-type space-collection]]
+            (reduce (fn [found-spaces {:keys [coords] :as space}]
+                      (if (and (<= (Math/abs (- x (first coords))) radius)
+                               (<= (Math/abs (- y (last coords))) radius)
+                               (not (= coords [x y])))
+                        (assoc found-spaces space-type
+                               (conj (or (space-type found-spaces) []) space))
+                        found-spaces))
+                    found-spaces space-collection)) {} sorted-arena))
+
+(defn get-items-coords
+  "Given an item and an arena, get-items-coords will return the coordinates associated
+  with the item or nil if no item is found."
+  [item arena]
+  (let [tracker (atom {:x -1 :y -1})]
+    (:coords (reduce (fn [match row]
+                       (swap! tracker assoc :x -1 :y (inc (:y @tracker)))
+                       (reduce (fn [match cell]
+                                 (swap! tracker assoc :x (inc (:x @tracker)))
+                                 (cond
+                                  match match
+                                  (= item cell) {:match cell
+                                                 :coords [(:x @tracker) (:y @tracker)]}
+                                  :else match)) match row)) nil arena))))
+
 (defn scan-for
   "Returns a colletion of matches. Each match must return true when passed to a given predicate
 

@@ -20,6 +20,7 @@
   [{:keys [arena bot saved-state energy steps] :as simulation} {:keys [_id login]}]
   (is-simulation? simulation)
   (let [player {:_id _id
+                :type "player"
                 :login login
                 :energy energy
                 :bot (get-bot _id bot)

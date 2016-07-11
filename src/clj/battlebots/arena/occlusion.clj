@@ -51,33 +51,37 @@
 
 (defn- blocked-pos
   [arena view-dist player-pos]
-  (let [angs (angles view-dist)]
-    (:blocked-pos
-     (reduce
-      (fn [bmap ray-length]
-        (reduce
-         (fn [blocked-map ang]
-           (let [ang-blocked? (contains? (:blocked-angs blocked-map) ang)
-                 [pos pos-blocked?] (parse-pos arena view-dist ray-length
-                                               player-pos ang)
-                 blocker? (contains? (:blockers blocked-map) pos)]
-             (-> blocked-map
-                 (update-in [:blockers]
-                            #(if (and pos-blocked?
-                                      (not ang-blocked?))
-                               (conj % pos) %))
-                 (update-in [:blocked-angs]
-                            #(if pos-blocked?
-                               (conj % ang) %))
-                 (update-in [:blocked-pos]
-                            #(if (and ang-blocked?
-                                      (not blocker?))
-                               (conj % pos) %)))))
-         bmap angs))
-      {:blocked-angs #{}
-       :blocked-pos #{}
-       :blockers #{}}
-      (range 1 (inc view-dist))))))
+  ;; TODO There is a bug where player-pos is sometimes not passed to
+  ;; blocked-pos. Find that edge case and remove the if statement.
+  (if (not player-pos)
+    #{}
+    (let [angs (angles view-dist)]
+      (:blocked-pos
+       (reduce
+        (fn [bmap ray-length]
+          (reduce
+           (fn [blocked-map ang]
+             (let [ang-blocked? (contains? (:blocked-angs blocked-map) ang)
+                   [pos pos-blocked?] (parse-pos arena view-dist ray-length
+                                                 player-pos ang)
+                   blocker? (contains? (:blockers blocked-map) pos)]
+               (-> blocked-map
+                   (update-in [:blockers]
+                              #(if (and pos-blocked?
+                                        (not ang-blocked?))
+                                 (conj % pos) %))
+                   (update-in [:blocked-angs]
+                              #(if pos-blocked?
+                                 (conj % ang) %))
+                   (update-in [:blocked-pos]
+                              #(if (and ang-blocked?
+                                        (not blocker?))
+                                 (conj % pos) %)))))
+           bmap angs))
+        {:blocked-angs #{}
+         :blocked-pos #{}
+         :blockers #{}}
+        (range 1 (inc view-dist)))))))
 
 (defn occluded-arena
   "Only pass the limited arena that the user can see,
@@ -94,5 +98,4 @@
   (def t-arena (edn/read-string (slurp "test-resources/test-arena.edn")))
   (def o-arena (occluded-arena t-arena [4 4]))
   (pprint-arena t-arena)
-  (pprint-arena o-arena)
-  )
+  (pprint-arena o-arena))

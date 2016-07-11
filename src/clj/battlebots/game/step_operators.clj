@@ -10,10 +10,15 @@
             [battlebots.game.utils :as gu]
             [battlebots.arena.utils :as au]
             [battlebots.constants.game :as gc]
-            [battlebots.game.bot-helpers :refer [sort-arena]]))
+            [battlebots.game.bot-helpers :refer [sort-arena
+                                                 within-n-spaces
+                                                 get-items-coords]]))
 
 (defn- ai-random-move
-  [{:keys [game-state]}]
+  [{:keys [game-state sorted-arena ai-centered-coords ai-arena]}]
+  (let [within-one-space (within-n-spaces sorted-arena ai-centered-coords 1)]
+    ;; TODO Find an open space for now and take it
+    )
   game-state)
 
 (defn- ai-calculated-move
@@ -21,26 +26,31 @@
   game-state)
 
 (defn- calculate-ai-move
-  [bot-coords {:keys [clean-arena] :as game-state}]
-  (let [ai-arena (occluded-arena (get-arena-area
-                                  clean-arena
-                                  bot-coords
-                                  gc/ai-partial-arena-radius) bot-coords)
-        sorted-arena (sort-arena ai-arena)
+  [ai-coords ai-bot {:keys [clean-arena] :as game-state}]
+  (let [ai-partial-arena (get-arena-area
+                          clean-arena
+                          ai-coords
+                          gc/ai-partial-arena-radius)
+        ai-centered-coords (get-items-coords ai-bot ai-partial-arena)
+        ai-occluded-arena (occluded-arena ai-partial-arena ai-centered-coords)
+        sorted-arena (sort-arena ai-occluded-arena)
         ai-parameters {:game-state game-state
                        :sorted-arena sorted-arena
-                       :ai-arena ai-arena}]
-    (if (:player sorted-arena)
+                       :ai-arena ai-occluded-arena
+                       :ai-centered-coords ai-centered-coords}
+        players (or (:player sorted-arena) [])]
+    ;; TODO Remove true statement
+    (if (empty? players)
       (ai-random-move ai-parameters)
       (ai-calculated-move ai-parameters))))
 
 (defn- apply-ai-decision
   [{:keys [dirty-arena] :as game-state} ai-uuid]
-  (let [bot-coords (gu/get-item-coords ai-uuid dirty-arena)
-        ai-bot (au/get-item bot-coords dirty-arena)
+  (let [ai-coords (gu/get-item-coords ai-uuid dirty-arena)
+        ai-bot (au/get-item ai-coords dirty-arena)
         is-current-ai-bot? (= ai-uuid (:uuid ai-bot))]
     (if is-current-ai-bot?
-      (calculate-ai-move bot-coords game-state)
+      (calculate-ai-move ai-coords ai-bot game-state)
       game-state)))
 
 (defn- get-ai-bots

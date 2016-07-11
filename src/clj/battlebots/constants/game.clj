@@ -15,4 +15,4 @@
 ;; Radius of the partial arena passed to each player
 (def partial-arena-radius 10)
 ;; Radius of the partial arena passed to each AI bot
-(def ai-partial-arena-radius 3)
+(def ai-partial-arena-radius 2)
