@@ -61,7 +61,16 @@
 
 (defn get-items-coords
   "Given an item and an arena, get-items-coords will return the coordinates associated
-  with the item or nil if no item is found."
+  with the item or nil if no item is found.
+
+  ex:
+    :item a1
+    :arena o1 f2 o4
+           o5 b1 a1
+           o2 o3 f1
+
+  returns: [2 1]
+  "
   [item arena]
   (let [tracker (atom {:x -1 :y -1})]
     (:coords (reduce (fn [match row]
