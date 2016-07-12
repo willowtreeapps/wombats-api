@@ -5,12 +5,16 @@
   [sorted-arena [x y] radius]
   (reduce (fn [found-spaces [space-type space-collection]]
             (reduce (fn [found-spaces {:keys [coords] :as space}]
-                      (if (and (<= (Math/abs (- x (first coords))) radius)
-                               (<= (Math/abs (- y (last coords))) radius)
-                               (not (= coords [x y])))
-                        (assoc found-spaces space-type
-                               (conj (or (space-type found-spaces) []) space))
-                        found-spaces))
+                     (let [[coord-x coord-y] coords
+                            x-delta (Math/abs (- x coord-x))
+                            y-delta (Math/abs (- y coord-y))
+                            distance ((comp keyword str) (Math/max x-delta y-delta))]
+                       (if (and (<= x-delta radius)
+                                (<= y-delta radius)
+                                (not (= coords [x y])))
+                         (assoc-in found-spaces [distance space-type]
+                                   (conj (get-in found-spaces [distance space-type] []) space))
+                         found-spaces)))
                     found-spaces space-collection)) {} sorted-arena))
 
 (defn get-items-coords

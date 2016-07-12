@@ -17,7 +17,9 @@
 (defn- ai-random-move
   [{:keys [game-state sorted-arena ai-centered-coords ai-arena]}]
   (let [within-one-space (within-n-spaces sorted-arena ai-centered-coords 1)]
-    ;; TODO Find an open space for now and take it
+    ;; TODO Update movement logic to move over food / poision
+    ;; Find an open space for now and take it
+
     )
   game-state)
 
@@ -39,7 +41,6 @@
                        :ai-arena ai-occluded-arena
                        :ai-centered-coords ai-centered-coords}
         players (or (:player sorted-arena) [])]
-    ;; TODO Remove true statement
     (if (empty? players)
       (ai-random-move ai-parameters)
       (ai-calculated-move ai-parameters))))
