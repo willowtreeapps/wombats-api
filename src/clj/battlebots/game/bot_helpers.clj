@@ -1,7 +1,49 @@
 (ns battlebots.game.bot-helpers)
 
 (defn within-n-spaces
-  "Returns a subset of sorted-arena. The subset is determined by the provided radius"
+  "Returns a subset of sorted-arena. The subset is determined by the provided radius
+
+  Sample return map when searching at a radius of 2:
+
+    :arena   0  1  2  3  4  5  6
+           [[o  o  f  o  o  b  b]  0
+            [f  o  f  f  o  b  o]  1
+            [b1 o  o  f  o  f  f]  2
+            [o  o  f  f  f  b  o]  3
+            [o  o  f  f  ai o  f]  4
+            [o  o  b  f  b  o  f]  5
+            [o  o  b  f  b  o  f]] 6
+
+    :origin [2 4]
+
+    :radius 2
+
+  returns:
+
+  {:1 {:open   [{:match o :coords [1 3]}
+                {:match o :coords [1 4]}
+                {:match o :coords [1 5]}]
+       :food   [{:match f :coords [2 3]}
+                {:match f :coords [3 3]}
+                {:match f :coords [3 4]}
+                {:match f :coords [3 5]}]
+       :block  [{:match b :coords [2 5]}]}
+   :2 {:player [{:match b1 :coords [0 2]}]
+       :open   [{:match o :coords [1 2]}
+                {:match o :coords [2 2]}
+                {:match o :coords [4 2]}
+                {:match o :coords [0 3]}
+                {:match o :coords [0 4]}
+                {:match o :coords [0 5]}
+                {:match o :coords [0 6]}
+                {:match o :coords [1 6]}]
+       :food   [{:match f :coords [3 2]}
+                {:match f :coords [4 3]}
+                {:match f :coords [3 6]}]
+       :ai     [{:match ai :coords [4 4]}]
+       :block  [{:match b :coords [4 5]}
+                {:match b :coords [2 6]}
+                {:match b :coords [4 6]}]}}"
   [sorted-arena [x y] radius]
   (reduce (fn [found-spaces [space-type space-collection]]
             (reduce (fn [found-spaces {:keys [coords] :as space}]
