@@ -1,4 +1,4 @@
-(ns battlebots.game.decisions.resolve-shot
+(ns battlebots.game.bot.decisions.resolve-shot
   (:require [battlebots.constants.arena :as ac]
             [battlebots.arena.utils :as au]
             [battlebots.game.utils :as gu]))

@@ -1,5 +1,5 @@
-(ns battlebots.game.decisions.move-player-spec
-  (:require [battlebots.game.decisions.move-player :refer :all :as move-player]
+(ns battlebots.game.bot.decisions.move-player-spec
+  (:require [battlebots.game.bot.decisions.move-player :refer :all :as move-player]
             [battlebots.arena.utils :refer [get-item update-cell]]
             [battlebots.constants.arena :as ac]
             [battlebots.game.test-game :refer [o b

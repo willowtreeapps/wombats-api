@@ -1,4 +1,4 @@
-(ns battlebots.game.decisions.save-state)
+(ns battlebots.game.bot.decisions.save-state)
 
 (defn set-player-state
   "Player state is player described. This means players can choose to save any key

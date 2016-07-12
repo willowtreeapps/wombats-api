@@ -1,5 +1,5 @@
-(ns battlebots.game.decisions.resolve-shot-spec
-  (:require [battlebots.game.decisions.resolve-shot :refer :all :as resolve-shot]
+(ns battlebots.game.bot.decisions.resolve-shot-spec
+  (:require [battlebots.game.bot.decisions.resolve-shot :refer :all :as resolve-shot]
             [battlebots.constants.arena :as ac])
   (:use clojure.test))
 

@@ -4,15 +4,15 @@
                                                partial-arena-radius]]
             [battlebots.arena.occlusion :refer [occluded-arena]]
             [battlebots.arena.partial :refer [get-arena-area]]
-            [battlebots.game.bot-decisions :refer [move
-                                                   save-state
-                                                   shoot]]
             [battlebots.game.utils :as gu]
             [battlebots.arena.utils :as au]
             [battlebots.constants.game :as gc]
-            [battlebots.game.bot-helpers :refer [sort-arena
+            [battlebots.game.bot.helpers :refer [sort-arena
                                                  within-n-spaces
-                                                 get-items-coords]]))
+                                                 get-items-coords]]
+            [battlebots.game.bot.decisions.move-player :refer [move-player]]
+            [battlebots.game.bot.decisions.save-state :refer [set-player-state]]
+            [battlebots.game.bot.decisions.resolve-shot :refer [resolve-shoot]]))
 
 (defn- ai-random-move
   [{:keys [game-state sorted-arena ai-centered-coords ai-arena]}]
@@ -86,13 +86,13 @@
           updated-game-state (if should-update?
                                (cond
                                 (= cmd "MOVE")
-                                (move player-id metadata game-state)
+                                (move-player player-id metadata game-state)
 
                                 (= cmd "SHOOT")
-                                (shoot player-id metadata game-state)
+                                (resolve-shoot player-id metadata game-state)
 
                                 (= cmd "SET_STATE")
-                                (save-state player-id metadata game-state)
+                                (set-player-state player-id metadata game-state)
 
                                 :else game-state)
                                game-state)]

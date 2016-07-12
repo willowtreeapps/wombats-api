@@ -1,4 +1,4 @@
-(ns battlebots.game.bot-helpers)
+(ns battlebots.game.bot.helpers)
 
 (defn within-n-spaces
   "Returns a subset of sorted-arena. The subset is determined by the provided radius

@@ -1,5 +1,5 @@
-(ns battlebots.game.bot-helpers-spec
-  (:require [battlebots.game.bot-helpers :refer :all]
+(ns battlebots.game.bot.helpers-spec
+  (:require [battlebots.game.bot.helpers :refer :all]
             [battlebots.game.test-game :refer [test-arena
                                                o f p b b1 b2 a]])
   (:use clojure.test))
