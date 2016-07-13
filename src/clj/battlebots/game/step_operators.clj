@@ -7,30 +7,45 @@
             [battlebots.game.utils :as gu]
             [battlebots.arena.utils :as au]
             [battlebots.constants.game :as gc]
+            [battlebots.constants.arena :as ac]
             [battlebots.game.bot.helpers :refer [sort-arena
                                                  within-n-spaces
-                                                 get-items-coords]]
+                                                 get-items-coords
+                                                 calculate-direction-from-origin]]
             [battlebots.game.bot.decisions.move-player :refer [move-player]]
             [battlebots.game.bot.decisions.save-state :refer [set-player-state]]
             [battlebots.game.bot.decisions.resolve-shot :refer [resolve-shoot]]))
 
 (defn- ai-random-move
-  [{:keys [game-state sorted-arena ai-centered-coords ai-arena]}]
-  (let [within-one-space (within-n-spaces sorted-arena ai-centered-coords 1)]
-    ;; TODO Update movement logic to move over food / poision
-    ;; Find an open space for now and take it
-
-    )
-  game-state)
+  [{:keys [game-state sorted-arena ai-centered-coords ai-original-coords ai-arena ai-bot]}]
+  (let [within-one-space (:1 (within-n-spaces sorted-arena ai-centered-coords 1))
+        ;; TODO Update movement logic to move over food / poision
+        ;; Find an open space for now and take it
+        options (:open within-one-space)
+        direction (when options
+                    (calculate-direction-from-origin
+                     ai-centered-coords
+                     (:coords (rand-nth options))))
+        dirty-arena (:dirty-arena game-state)]
+    (if options
+      (merge game-state {:dirty-arena (au/update-cell
+                                       (au/update-cell dirty-arena
+                                                       (au/adjust-coords ai-original-coords
+                                                                         direction
+                                                                         (au/get-arena-dimensions dirty-arena))
+                                                       ai-bot)
+                                       ai-original-coords
+                                       (:open ac/arena-key))})
+      game-state)))
 
 (defn- ai-calculated-move
   [{:keys [game-state]}]
   game-state)
 
 (defn- calculate-ai-move
-  [ai-coords ai-bot {:keys [clean-arena] :as game-state}]
+  [ai-coords ai-bot {:keys [dirty-arena] :as game-state}]
   (let [ai-partial-arena (get-arena-area
-                          clean-arena
+                          dirty-arena
                           ai-coords
                           gc/ai-partial-arena-radius)
         ai-centered-coords (get-items-coords ai-bot ai-partial-arena)
@@ -38,8 +53,10 @@
         sorted-arena (sort-arena ai-occluded-arena)
         ai-parameters {:game-state game-state
                        :sorted-arena sorted-arena
+                       :ai-bot ai-bot
                        :ai-arena ai-occluded-arena
-                       :ai-centered-coords ai-centered-coords}
+                       :ai-centered-coords ai-centered-coords
+                       :ai-original-coords ai-coords}
         players (or (:player sorted-arena) [])]
     (if (empty? players)
       (ai-random-move ai-parameters)

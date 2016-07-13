@@ -15,6 +15,14 @@
                                 [o  o  b  f  b  o  f]])
 (def ^:private sorted-test-arena (sort-arena sort-test-arena))
 
+(deftest calculate-direction-from-origin-spec
+  (is (= 0 (calculate-direction-from-origin [1 1] [0 0])))
+  (is (= 7 (calculate-direction-from-origin [1 1] [0 1])))
+  (is (= 4 (calculate-direction-from-origin [1 1] [2 2])))
+  (is (= 5 (calculate-direction-from-origin [1 1] [1 2])))
+  (is (= nil (calculate-direction-from-origin [1 1] [3 3])) "Returns nil if coords are not adjacent")
+  (is (= nil (calculate-direction-from-origin [1 1] [0 3])) "Returns nil if coords are not adjacent"))
+
 (deftest within-n-spaces-spec
   (is (= {:1 {:food   [{:match f :coords [3 3]}
                        {:match f :coords [4 3]}
@@ -107,3 +115,7 @@
               [b1 f  f]
               [f  o  b2]]))
       "Finds no matches when nothing matches the predicate"))
+
+(deftest draw-line-spec
+  (is (= [[0 0] [1 1] [2 2] [3 3]] (draw-line [0 0] [3 3])) "from (0 0) to (3 3)")
+  #_(is (= [[2 2] [2 3] [2 4] [2 5]] (draw-line [2 2] [2 5])) "from (2 2) to (2 5)"))

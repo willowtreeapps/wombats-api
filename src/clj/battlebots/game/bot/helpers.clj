@@ -1,5 +1,38 @@
 (ns battlebots.game.bot.helpers)
 
+(defn calculate-direction-from-origin
+  "calculates the direction when supplied two adjacent coords
+
+  Arena
+
+  00 10 20
+
+  01 11 21
+
+  02 12 22
+
+  ex: [1 1] [0 1]
+  returns: 1
+
+  ex: [1 1] [2 2]
+  returns: 4
+  "
+  [origin destination]
+  (let [[ox oy] origin
+        [dx dy] destination
+        x (- dx ox)
+        y (- dy oy)]
+    (condp = [x y]
+      [-1 -1] 0
+      [0 -1]  1
+      [1 -1]  2
+      [1 0]   3
+      [1 1]   4
+      [0 1]   5
+      [-1 1]  6
+      [-1 0]  7
+      nil)))
+
 (defn within-n-spaces
   "Returns a subset of sorted-arena. The subset is determined by the provided radius
 
@@ -142,3 +175,33 @@
                                                                           (:y @tracker)]}))))
                item-map row))
             {} arena)))
+
+(defn draw-line
+  "Draw a line from x1,y1 to x2,y2 using Bresenham's Algorithm
+
+  TODO: Add tests
+  "
+  [from to]
+  (let [[x1 y1] from
+        [x2 y2] to
+        dist-x (Math/abs (- x1 x2))
+        dist-y (Math/abs (- y1 y2))
+        steep (> dist-y dist-x)]
+    (let [[x1 y1 x2 y2] (if steep [y1 x1 y2 x2] [x1 y1 x2 y2])]
+      (let [[x1 y1 x2 y2] (if (> x1 x2) [x2 y2 x1 y1] [x1 y1 x2 y2])]
+        (let  [delta-x (- x2 x1)
+               delta-y (Math/abs (- y1 y2))
+               y-step (if (< y1 y2) 1 -1)]
+          (loop [x x1
+                 y y1
+                 error (Math/floor (/ delta-x 2))
+                 res []]
+            (let [pt (if steep
+                      [(int x) (int y)]
+                      [(int y) (int x)])]
+              (if (>= x x2)
+                (conj res [x2 y2])
+                ; Rather then rebind error, test that it is less than delta-y not 0
+                (if (< error delta-y)
+                  (recur (inc x) (+ y y-step) (+ error (- delta-x delta-y)) (conj res pt))
+                  (recur (inc x) y            (- error delta-y) (conj res pt)))))))))))
