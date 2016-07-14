@@ -1,5 +1,17 @@
 (ns battlebots.game.bot.helpers)
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PRIVATE FUNCTIONS
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn- last-cell-of-row?
+  "Returns true or false indicating if the given cell is the last cell of the given row"
+  [cell row arena]
+  (let [row-n (get arena row)]
+    (= (dec (count row-n)) cell)))
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PUBLIC FUNCTIONS
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn calculate-direction-from-origin
   "calculates the direction when supplied two adjacent coords
 
@@ -105,16 +117,15 @@
   returns: [2 1]
   "
   [item arena]
-  (let [tracker (atom {:x -1 :y -1})]
-    (:coords (reduce (fn [match row]
-                       (swap! tracker assoc :x -1 :y (inc (:y @tracker)))
-                       (reduce (fn [match cell]
-                                 (swap! tracker assoc :x (inc (:x @tracker)))
-                                 (cond
-                                  match match
-                                  (= item cell) {:match cell
-                                                 :coords [(:x @tracker) (:y @tracker)]}
-                                  :else match)) match row)) nil arena))))
+  (loop [row 0
+         cell 0]
+    (let [current-cell (get-in arena [row cell])]
+      (cond
+       (= current-cell nil) nil
+       (= current-cell item) [cell row]
+       :else  (if (last-cell-of-row? cell row arena)
+                (recur (inc row) 0)
+                (recur row (inc cell)))))))
 
 (defn scan-for
   "Returns a colletion of matches. Each match must return true when passed to a given predicate
@@ -135,15 +146,20 @@
 
   when the predicate is is-player?"
   [pred arena]
-  (let [tracker (atom {:x -1 :y -1})]
-    (reduce (fn [matches row]
-              (swap! tracker assoc :x -1 :y (inc (:y @tracker)))
-              (reduce (fn [matches cell]
-                        (swap! tracker assoc :x (inc (:x @tracker)))
-                        (if (pred cell)
-                          (conj matches {:match cell
-                                         :coords [(:x @tracker) (:y @tracker)]})
-                          matches)) matches row)) [] arena)))
+  (loop [row 0
+         cell 0
+         matches []]
+    (let [current-cell (get-in arena [row cell])]
+      (cond
+       (= current-cell nil) matches
+       (pred current-cell) (let [update (conj matches {:match current-cell
+                                                       :coords [cell row]})]
+                             (if (last-cell-of-row? cell row arena)
+                               (recur (inc row) 0 update)
+                               (recur row (inc cell) update)))
+       :else (if (last-cell-of-row? cell row arena)
+               (recur (inc row) 0 matches)
+               (recur row (inc cell) matches))))))
 
 (defn sort-arena
   "Returns a sorted arena.
@@ -162,19 +178,19 @@
                      {:match f :coords [2 1]}]
             :player [{:match b1 :coords [0 2]}]}"
   [arena]
-  (let [tracker (atom {:x -1 :y -1})]
-    (reduce (fn [item-map row]
-              (swap! tracker assoc :x -1 :y (inc (:y @tracker)))
-              (reduce
-               (fn [item-map cell]
-                 (swap! tracker assoc :x (inc (:x @tracker)))
-                 (let [type-of-cell (keyword (or (:type cell) "none"))]
-                   (assoc item-map type-of-cell
-                          (conj (or (type-of-cell item-map) []) {:match cell
-                                                                 :coords [(:x @tracker)
-                                                                          (:y @tracker)]}))))
-               item-map row))
-            {} arena)))
+  (loop [row 0
+         cell 0
+         sorted-arena {}]
+    (let [current-cell (get-in arena [row cell])]
+      (if (= current-cell nil)
+        sorted-arena
+        (let [type-of-cell (keyword (get current-cell :type "none"))
+              update (assoc sorted-arena type-of-cell
+                            (conj (get sorted-arena type-of-cell []) {:match current-cell
+                                                                      :coords [cell row]}))]
+          (if (last-cell-of-row? cell row arena)
+            (recur (inc row) 0 update)
+            (recur row (inc cell) update)))))))
 
 (defn draw-line
   "Draw a line from x1,y1 to x2,y2 using Bresenham's Algorithm

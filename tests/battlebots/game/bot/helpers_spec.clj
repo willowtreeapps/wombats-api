@@ -1,5 +1,5 @@
 (ns battlebots.game.bot.helpers-spec
-  (:require [battlebots.game.bot.helpers :refer :all]
+  (:require [battlebots.game.bot.helpers :refer :all :as bot-helpers]
             [battlebots.game.test-game :refer [test-arena
                                                o f p b b1 b2 a]])
   (:use clojure.test))
@@ -119,3 +119,11 @@
 (deftest draw-line-spec
   (is (= [[0 0] [1 1] [2 2] [3 3]] (draw-line [0 0] [3 3])) "from (0 0) to (3 3)")
   #_(is (= [[2 2] [2 3] [2 4] [2 5]] (draw-line [2 2] [2 5])) "from (2 2) to (2 5)"))
+
+(deftest last-cell-of-row-spec
+  (is (= true (#'bot-helpers/last-cell-of-row? 2 0 [[o o o]]))
+      "Returns true when the given cell is the last cell of a given row")
+  (is (= false (#'bot-helpers/last-cell-of-row? 1 0 [[o o o]]))
+      "Returns false when the given cell is the not the last cell of a given row"))
+  (is (= false (#'bot-helpers/last-cell-of-row? 3 0 [[o o o]]))
+      "Returns false when the given cell does not exist")
