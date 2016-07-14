@@ -24,47 +24,50 @@
   (is (= nil (calculate-direction-from-origin [1 1] [0 3])) "Returns nil if coords are not adjacent"))
 
 (deftest within-n-spaces-spec
-  (is (= {:1 {:food   [{:match f :coords [3 3]}
-                       {:match f :coords [4 3]}
-                       {:match f :coords [3 4]}
-                       {:match f :coords [3 5]}]
-              :block  [{:match b :coords [5 3]}
-                       {:match b :coords [4 5]}]
-              :open   [{:match o :coords [5 4]}
-                       {:match o :coords [5 5]}]}} (within-n-spaces sorted-test-arena [4 4] 1)))
-  (is (= {:1 {:food   [{:match f :coords [0 1]}
-                       {:match f :coords [2 1]}
-                       {:match f :coords [2 3]}]
-              :open   [{:match o :coords [1 1]}
-                       {:match o :coords [2 2]}
-                       {:match o :coords [0 3]}
-                       {:match o :coords [1 3]}]
-              :player [{:match b1 :coords [0 2]}]}} (within-n-spaces sorted-test-arena [1 2] 1))
+  (is (= {:1 {:food   [(assoc f :coords [3 3])
+                       (assoc f :coords [4 3])
+                       (assoc f :coords [3 4])
+                       (assoc f :coords [3 5])]
+              :block  [(assoc b :coords [5 3])
+                       (assoc b :coords [4 5])]
+              :open   [(assoc o :coords [5 4])
+                       (assoc o :coords [5 5])]}}
+         (within-n-spaces sorted-test-arena [4 4] 1)))
+  (is (= {:1 {:food   [(assoc f :coords [0 1])
+                       (assoc f :coords [2 1])
+                       (assoc f :coords [2 3])]
+              :open   [(assoc o :coords [1 1])
+                       (assoc o :coords [2 2])
+                       (assoc o :coords [0 3])
+                       (assoc o :coords [1 3])]
+              :player [(assoc b1 :coords [0 2])]}}
+         (within-n-spaces sorted-test-arena [1 2] 1))
       "Searching within a 1 space radius will return a sorted map of items within one space")
-  (is (= {:1 {:open   [{:match o :coords [1 3]}
-                       {:match o :coords [1 4]}
-                       {:match o :coords [1 5]}]
-              :food   [{:match f :coords [2 3]}
-                       {:match f :coords [3 3]}
-                       {:match f :coords [3 4]}
-                       {:match f :coords [3 5]}]
-              :block  [{:match b :coords [2 5]}]}
-          :2 {:player [{:match b1 :coords [0 2]}]
-              :open   [{:match o :coords [1 2]}
-                       {:match o :coords [2 2]}
-                       {:match o :coords [4 2]}
-                       {:match o :coords [0 3]}
-                       {:match o :coords [0 4]}
-                       {:match o :coords [0 5]}
-                       {:match o :coords [0 6]}
-                       {:match o :coords [1 6]}]
-              :food   [{:match f :coords [3 2]}
-                       {:match f :coords [4 3]}
-                       {:match f :coords [3 6]}]
-              :ai     [{:match ai :coords [4 4]}]
-              :block  [{:match b :coords [4 5]}
-                       {:match b :coords [2 6]}
-                       {:match b :coords [4 6]}]}} (within-n-spaces sorted-test-arena [2 4] 2))
+  (is (= {:1 {:open   [(assoc o :coords [1 3])
+                       (assoc o :coords [1 4])
+                       (assoc o :coords [1 5])]
+              :food   [(assoc f :coords [2 3])
+                       (assoc f :coords [3 3])
+                       (assoc f :coords [3 4])
+                       (assoc f :coords [3 5])]
+              :block  [(assoc b :coords [2 5])]}
+          :2 {:player [(assoc b1 :coords [0 2])]
+              :open   [(assoc o :coords [1 2])
+                       (assoc o :coords [2 2])
+                       (assoc o :coords [4 2])
+                       (assoc o :coords [0 3])
+                       (assoc o :coords [0 4])
+                       (assoc o :coords [0 5])
+                       (assoc o :coords [0 6])
+                       (assoc o :coords [1 6])]
+              :food   [(assoc f :coords [3 2])
+                       (assoc f :coords [4 3])
+                       (assoc f :coords [3 6])]
+              :ai     [(assoc ai :coords [4 4])]
+              :block  [(assoc b :coords [4 5])
+                       (assoc b :coords [2 6])
+                       (assoc b :coords [4 6])]}}
+         (within-n-spaces sorted-test-arena [2 4] 2))
       "When increasing the radius to two, the map includes items two spaces away"))
 
 (deftest get-items-coords-spec
@@ -77,37 +80,37 @@
                                      [ai o  o]]))))
 
 (deftest sort-arena-spec
-  (is (= {:open   [{:match o :coords [0 0]}
-                   {:match o :coords [2 0]}
-                   {:match o :coords [2 2]}]
-          :block  [{:match b :coords [1 0]}
-                   {:match b :coords [0 1]}
-                   {:match b :coords [1 1]}]
-          :food   [{:match f :coords [2 1]}]
-          :ai     [{:match ai :coords [0 2]}]
-          :poison [{:match p :coords [1 2]}]} (sort-arena [[o  b  o]
-                                                           [b  b  f]
-                                                           [ai p  o]])))
-  (is (= {:open [{:match o :coords [0 0]}]
-          :food [{:match f :coords [1 0]}
-                 {:match f :coords [1 1]}]
-          :ai   [{:match ai :coords [0 1]}]} (sort-arena [[o  f]
-                                                          [ai f]]))))
+  (is (= {:open   [(assoc o :coords [0 0])
+                   (assoc o :coords [2 0])
+                   (assoc o :coords [2 2])]
+          :block  [(assoc b :coords [1 0])
+                   (assoc b :coords [0 1])
+                   (assoc b :coords [1 1])]
+          :food   [(assoc f :coords [2 1])]
+          :ai     [(assoc ai :coords [0 2])]
+          :poison [(assoc p :coords [1 2])]} (sort-arena [[o  b  o]
+                                                          [b  b  f]
+                                                          [ai p  o]])))
+  (is (= {:open [(assoc o :coords [0 0])]
+          :food [(assoc f :coords [1 0])
+                 (assoc f :coords [1 1])]
+          :ai   [(assoc ai :coords [0 1])]} (sort-arena [[o  f]
+                                                         [ai f]]))))
 
 (deftest scan-for-spec
-  (is (= [{:match f :coords [1 1]}
-          {:match f :coords [2 1]}
-          {:match f :coords [0 2]}] (scan-for
-                                     #(= (:type f) (:type %))
-                                     [[o  o  b]
-                                      [b1 f  f]
-                                      [f  o  b2]]))
+  (is (= [(assoc  f :coords [1 1])
+          (assoc f :coords [2 1])
+          (assoc f :coords [0 2])] (scan-for
+                                    #(= (:type f) (:type %))
+                                    [[o  o  b]
+                                     [b1 f  f]
+                                     [f  o  b2]]))
       "Finds all food in the given arena")
-  (is (= [{:match b :coords [2 0]}] (scan-for
-                                     #(= (:type b) (:type %))
-                                     [[o  o  b]
-                                      [b1 f  f]
-                                      [f  o  b2]]))
+  (is (= [(assoc b :coords [2 0])] (scan-for
+                                    #(= (:type b) (:type %))
+                                    [[o  o  b]
+                                     [b1 f  f]
+                                     [f  o  b2]]))
       "Finds all blocks in the given arena")
   (is (= [] (scan-for
              #(= (:type p) (:type %))

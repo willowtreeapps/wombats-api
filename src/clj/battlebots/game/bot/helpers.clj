@@ -65,30 +65,30 @@
 
   returns:
 
-  {:1 {:open   [{:match o :coords [1 3]}
-                {:match o :coords [1 4]}
-                {:match o :coords [1 5]}]
-       :food   [{:match f :coords [2 3]}
-                {:match f :coords [3 3]}
-                {:match f :coords [3 4]}
-                {:match f :coords [3 5]}]
-       :block  [{:match b :coords [2 5]}]}
-   :2 {:player [{:match b1 :coords [0 2]}]
-       :open   [{:match o :coords [1 2]}
-                {:match o :coords [2 2]}
-                {:match o :coords [4 2]}
-                {:match o :coords [0 3]}
-                {:match o :coords [0 4]}
-                {:match o :coords [0 5]}
-                {:match o :coords [0 6]}
-                {:match o :coords [1 6]}]
-       :food   [{:match f :coords [3 2]}
-                {:match f :coords [4 3]}
-                {:match f :coords [3 6]}]
-       :ai     [{:match ai :coords [4 4]}]
-       :block  [{:match b :coords [4 5]}
-                {:match b :coords [2 6]}
-                {:match b :coords [4 6]}]}}"
+  {:1 {:open   [(assoc o :coords [1 3])
+                (assoc o :coords [1 4])
+                (assoc o :coords [1 5])]
+       :food   [(assoc f :coords [2 3])
+                (assoc f :coords [3 3])
+                (assoc f :coords [3 4])
+                (assoc f :coords [3 5])]
+       :block  [(assoc b :coords [2 5])]}
+   :2 {:player [(assoc b1 :coords [0 2])]
+       :open   [(assoc o :coords [1 2])
+                (assoc o :coords [2 2])
+                (assoc o :coords [4 2])
+                (assoc o :coords [0 3])
+                (assoc o :coords [0 4])
+                (assoc o :coords [0 5])
+                (assoc o :coords [0 6])
+                (assoc o :coords [1 6])]
+       :food   [(assoc f :coords [3 2])
+                (assoc f :coords [4 3])
+                (assoc f :coords [3 6])]
+       :ai     [(assoc ai :coords [4 4])]
+       :block  [(assoc b :coords [4 5])
+                (assoc b :coords [2 6])
+                (assoc b :coords [4 6])]}}"
   [sorted-arena [x y] radius]
   (reduce (fn [found-spaces [space-type space-collection]]
             (reduce (fn [found-spaces {:keys [coords] :as space}]
@@ -139,10 +139,8 @@
       b1 o  o
       o  o  b2
 
-  returns: [{:match b1
-             :coords [0 1]}
-            {:match b2
-             :coords [2 2]]
+  returns: [(assoc b1 :coords [0 1]}
+            (assoc b2 :coords [2 2]]
 
   when the predicate is is-player?"
   [pred arena]
@@ -152,14 +150,27 @@
     (let [current-cell (get-in arena [row cell])]
       (cond
        (= current-cell nil) matches
-       (pred current-cell) (let [update (conj matches {:match current-cell
-                                                       :coords [cell row]})]
+       (pred current-cell) (let [update (conj matches (assoc current-cell :coords [cell row]))]
                              (if (last-cell-of-row? cell row arena)
                                (recur (inc row) 0 update)
                                (recur row (inc cell) update)))
        :else (if (last-cell-of-row? cell row arena)
                (recur (inc row) 0 matches)
                (recur row (inc cell) matches))))))
+
+(defn- arena-by
+  ([arena]
+   (arena-by arena :type "none"))
+
+  ([arena akey default]
+   (apply concat
+          (map-indexed
+           #(map-indexed
+             (fn [idx itm]
+               (let [coords [idx %1]]
+                 {(keyword (or (get itm akey) default)) [(assoc itm :coords coords)]}))
+             %2)
+           arena))))
 
 (defn sort-arena
   "Returns a sorted arena.
@@ -168,29 +179,17 @@
        [o  f  f]
        [b1 o  o]]
 
-  returns: {:open   [{:match o :coords [0 0]}
-                     {:match o :coords [0 1]}
-                     {:match o :coords [1 2]}
-                     {:match o :coords [2 2]}]
-            :block  [{:match b :coords [1 0]}
-                     {:match b :coords [2 0]}]
-            :food   [{:match f :coords [1 1]}
-                     {:match f :coords [2 1]}]
-            :player [{:match b1 :coords [0 2]}]}"
+  returns: {:open   [(assoc o :coords [0 0])
+                     (assoc o :coords [0 1])
+                     (assoc o :coords [1 2])
+                     (assoc o :coords [2 2])]
+            :block  [(assoc b :coords [1 0])
+                     (assoc b :coords [2 0])]
+            :food   [(assoc f :coords [1 1])
+                     (assoc f :coords [2 1])]
+            :player [(assoc b1 :coords [0 2])]}"
   [arena]
-  (loop [row 0
-         cell 0
-         sorted-arena {}]
-    (let [current-cell (get-in arena [row cell])]
-      (if (= current-cell nil)
-        sorted-arena
-        (let [type-of-cell (keyword (get current-cell :type "none"))
-              update (assoc sorted-arena type-of-cell
-                            (conj (get sorted-arena type-of-cell []) {:match current-cell
-                                                                      :coords [cell row]}))]
-          (if (last-cell-of-row? cell row arena)
-            (recur (inc row) 0 update)
-            (recur row (inc cell) update)))))))
+  (apply merge-with into (arena-by arena)))
 
 (defn draw-line
   "Draw a line from x1,y1 to x2,y2 using Bresenham's Algorithm
