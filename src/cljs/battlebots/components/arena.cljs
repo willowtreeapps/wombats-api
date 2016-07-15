@@ -9,10 +9,13 @@
 (defn render-cell
   "renders a cell of a game board"
   [cell]
-  (fn []
-    (if (:_id cell)
-      [:li.cell.player {:on-click #(show-cell-details cell)}]
-      [:li.cell (:display cell)])))
+  (let [display (:display cell)
+        md (:md cell)
+        class-name (str "cell " (when (> (count md) 0) "shot"))]
+    (fn []
+      (if (:_id cell)
+        [:li.cell.player {:on-click #(show-cell-details cell)}]
+        [:li {:class-name class-name} display]))))
 
 (defn render-row
   "renders a row of a game board"

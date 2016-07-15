@@ -44,7 +44,8 @@
                                   :fog
                                   :shoot}
                     :destructible #{:ai
-                                    :block}})
+                                    :block}
+                    :distance 10})
 
 ;; Example Arena Configurations
 ;; food-freq, block-freq, and poison-freq represent percentages and will scale
