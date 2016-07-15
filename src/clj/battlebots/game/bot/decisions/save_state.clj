@@ -1,6 +1,6 @@
 (ns battlebots.game.bot.decisions.save-state)
 
-(defn set-player-state
+(defn save-state
   "Player state is player described. This means players can choose to save any key
   value data they choose. The state will persist and will be sent back to the player
   each turn. A play can update state as much as they would like"

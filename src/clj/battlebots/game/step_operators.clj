@@ -12,9 +12,9 @@
                                                  within-n-spaces
                                                  get-items-coords
                                                  calculate-direction-from-origin]]
-            [battlebots.game.bot.decisions.move-player :refer [move-player]]
-            [battlebots.game.bot.decisions.save-state :refer [set-player-state]]
-            [battlebots.game.bot.decisions.resolve-shot :refer [resolve-shoot]]))
+            [battlebots.game.bot.decisions.move :refer [move]]
+            [battlebots.game.bot.decisions.save-state :refer [save-state]]
+            [battlebots.game.bot.decisions.shoot :refer [shoot]]))
 
 (defn- ai-random-move
   [{:keys [game-state sorted-arena ai-centered-coords ai-original-coords ai-arena ai-bot]}]
@@ -103,13 +103,13 @@
           updated-game-state (if should-update?
                                (cond
                                 (= cmd "MOVE")
-                                (move-player player-id metadata game-state)
+                                (move player-id metadata game-state)
 
                                 (= cmd "SHOOT")
-                                (resolve-shoot player-id metadata game-state)
+                                (shoot player-id metadata game-state)
 
                                 (= cmd "SET_STATE")
-                                (set-player-state player-id metadata game-state)
+                                (save-state player-id metadata game-state)
 
                                 :else game-state)
                                game-state)]

@@ -1,4 +1,4 @@
-(ns battlebots.game.bot.decisions.resolve-shot
+(ns battlebots.game.bot.decisions.shoot
   (:require [battlebots.constants.arena :as ac]
             [battlebots.arena.utils :as au]
             [battlebots.game.utils :as gu]))
@@ -45,7 +45,7 @@
          :shot-uuid shot-uuid})
       (assoc shoot-state :should-progress? false))))
 
-(defn resolve-shoot
+(defn shoot
   "Main shoot function"
   [player-id
    {:keys [direction energy] :as metadata}
