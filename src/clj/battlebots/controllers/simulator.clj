@@ -1,10 +1,10 @@
-(ns battlebots.controllers.playground
+(ns battlebots.controllers.simulator
   (:require [ring.util.response :refer [response]]
             [battlebots.game.step :refer [process-step]]
             [battlebots.services.github :refer [get-bot]]
             [battlebots.game.utils :as gu]
-            [battlebots.game.initializers-finalizers :refer [initialize-new-round
-                                                             update-volatile-positions]]
+            [battlebots.game.initializers :refer [initialize-new-round]]
+            [battlebots.game.finalizers :refer [update-volatile-cells]]
             [battlebots.schemas.simulation :refer [is-simulation?]]))
 
 (defn- end-simulation-round
@@ -13,7 +13,7 @@
   (let [formatted-round {:arena dirty-arena
                          :players (map gu/sanitize-player players)}]
     (merge game-state {:rounds (conj rounds formatted-round)
-                       :clean-arena (update-volatile-positions dirty-arena)})))
+                       :clean-arena (update-volatile-cells dirty-arena)})))
 
 (defn run-simulation
   "Runs a simulated scenario based off user specified parameters"

@@ -1,10 +1,10 @@
 (ns battlebots.game.game-loop
-  (:require [battlebots.game.initializers-finalizers :refer [initialize-players
-                                                             initialize-game
-                                                             initialize-new-round
-                                                             finalize-segment
-                                                             finalize-round
-                                                             finalize-game]]
+  (:require [battlebots.game.initializers :refer [initialize-players
+                                                  initialize-game
+                                                  initialize-new-round]]
+            [battlebots.game.finalizers :refer [finalize-segment
+                                                finalize-round
+                                                finalize-game]]
             [battlebots.constants.game :refer [segment-length
                                                game-length]]
             [battlebots.game.step :refer [process-step]]))

@@ -8,7 +8,7 @@
             [battlebots.middleware :refer [wrap-middleware]]
             [battlebots.controllers.games :as games]
             [battlebots.controllers.players :as players]
-            [battlebots.controllers.playground :as playground]
+            [battlebots.controllers.simulator :as simulator]
             [battlebots.controllers.authenication :as auth]
             [battlebots.views.index :refer [index]]
             [battlebots.controllers.socket :as ws]))
@@ -137,8 +137,8 @@
             (POST "/" req (games/add-player game-id player-id (:params req)))))))
 
     (context "/simulator" []
-      (POST "/run" req (playground/run-simulation (:params req)
-                                                             (:identity req))))
+      (POST "/run" req (simulator/run-simulation (:params req)
+                                                 (:identity req))))
 
     (context "/player" []
       (GET "/" []  (players/get-players))
