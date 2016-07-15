@@ -1,4 +1,4 @@
-(ns battlebots.game.decisions.move-player
+(ns battlebots.game.bot.decisions.move-player
   (:require [battlebots.game.utils :as gu]
             [battlebots.arena.utils :as au]
             [battlebots.constants.arena :as ac]

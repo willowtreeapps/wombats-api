@@ -4,24 +4,71 @@
                                                partial-arena-radius]]
             [battlebots.arena.occlusion :refer [occluded-arena]]
             [battlebots.arena.partial :refer [get-arena-area]]
-            [battlebots.game.bot-decisions :refer [move
-                                                   save-state
-                                                   shoot]]
             [battlebots.game.utils :as gu]
-            [battlebots.arena.utils :as au]))
+            [battlebots.arena.utils :as au]
+            [battlebots.constants.game :as gc]
+            [battlebots.constants.arena :as ac]
+            [battlebots.game.bot.helpers :refer [sort-arena
+                                                 within-n-spaces
+                                                 get-items-coords
+                                                 calculate-direction-from-origin]]
+            [battlebots.game.bot.decisions.move-player :refer [move-player]]
+            [battlebots.game.bot.decisions.save-state :refer [set-player-state]]
+            [battlebots.game.bot.decisions.resolve-shot :refer [resolve-shoot]]))
+
+(defn- ai-random-move
+  [{:keys [game-state sorted-arena ai-centered-coords ai-original-coords ai-arena ai-bot]}]
+  (let [within-one-space (:1 (within-n-spaces sorted-arena ai-centered-coords 1))
+        ;; TODO Update movement logic to move over food / poision
+        ;; Find an open space for now and take it
+        options (:open within-one-space)
+        direction (when options
+                    (calculate-direction-from-origin
+                     ai-centered-coords
+                     (:coords (rand-nth options))))
+        dirty-arena (:dirty-arena game-state)]
+    (if options
+      (merge game-state {:dirty-arena (au/update-cell
+                                       (au/update-cell dirty-arena
+                                                       (au/adjust-coords ai-original-coords
+                                                                         direction
+                                                                         (au/get-arena-dimensions dirty-arena))
+                                                       ai-bot)
+                                       ai-original-coords
+                                       (:open ac/arena-key))})
+      game-state)))
+
+(defn- ai-calculated-move
+  [{:keys [game-state]}]
+  game-state)
 
 (defn- calculate-ai-move
-  [[x y] {:keys [dirty-arena] :as game-state}]
-  ;; TODO Add bot movement logic
-  game-state)
+  [ai-coords ai-bot {:keys [dirty-arena] :as game-state}]
+  (let [ai-partial-arena (get-arena-area
+                          dirty-arena
+                          ai-coords
+                          gc/ai-partial-arena-radius)
+        ai-centered-coords (get-items-coords ai-bot ai-partial-arena)
+        ai-occluded-arena (occluded-arena ai-partial-arena ai-centered-coords)
+        sorted-arena (sort-arena ai-occluded-arena)
+        ai-parameters {:game-state game-state
+                       :sorted-arena sorted-arena
+                       :ai-bot ai-bot
+                       :ai-arena ai-occluded-arena
+                       :ai-centered-coords ai-centered-coords
+                       :ai-original-coords ai-coords}
+        players (or (:player sorted-arena) [])]
+    (if (empty? players)
+      (ai-random-move ai-parameters)
+      (ai-calculated-move ai-parameters))))
 
 (defn- apply-ai-decision
   [{:keys [dirty-arena] :as game-state} ai-uuid]
-  (let [bot-coords (gu/get-item-coords ai-uuid dirty-arena)
-        ai-bot (au/get-item bot-coords dirty-arena)
+  (let [ai-coords (gu/get-item-coords ai-uuid dirty-arena)
+        ai-bot (au/get-item ai-coords dirty-arena)
         is-current-ai-bot? (= ai-uuid (:uuid ai-bot))]
     (if is-current-ai-bot?
-      (calculate-ai-move bot-coords game-state)
+      (calculate-ai-move ai-coords ai-bot game-state)
       game-state)))
 
 (defn- get-ai-bots
@@ -56,13 +103,13 @@
           updated-game-state (if should-update?
                                (cond
                                 (= cmd "MOVE")
-                                (move player-id metadata game-state)
+                                (move-player player-id metadata game-state)
 
                                 (= cmd "SHOOT")
-                                (shoot player-id metadata game-state)
+                                (resolve-shoot player-id metadata game-state)
 
                                 (= cmd "SET_STATE")
-                                (save-state player-id metadata game-state)
+                                (set-player-state player-id metadata game-state)
 
                                 :else game-state)
                                game-state)]

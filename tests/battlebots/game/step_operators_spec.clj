@@ -5,7 +5,7 @@
             [battlebots.game.test-game :refer [test-players
                                                test-game-state
                                                test-arena
-                                               o b1]])
+                                               o f p b b1 b2]])
   (:use clojure.test))
 
 (deftest randomize-players-spec
