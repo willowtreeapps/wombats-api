@@ -67,12 +67,13 @@
 
 (defn draw-line-from-point
   [arena pos direction dist]
-  (vec (map (fn [idx]
-              (vec (wrap-coords
-                    (map (fn [fnc dim] (fnc dim))
-                         (directional-functions direction idx) pos)
-                    (get-arena-dimensions arena))))
-            (range 1 (inc dist)))))
+  (let [arena-dimensions (get-arena-dimensions arena)]
+    (vec (map (fn [idx]
+                (vec (wrap-coords
+                      (map (fn [fnc dim] (fnc dim))
+                           (directional-functions direction idx) pos)
+                      arena-dimensions)))
+              (range 1 (inc dist))))))
 
 (defn pprint-arena
   "Pretty Print for a given arena"

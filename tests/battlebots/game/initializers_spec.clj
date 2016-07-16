@@ -5,27 +5,25 @@
 
 (deftest update-cell-metadata-spec
   (is (= (assoc o :md {:1 {:type :shot
-                           :decay 0}})
+                           :decay 1}})
          (#'initializers/update-cell-metadata (assoc o :md {:1 {:type :shot
-                                                                :decay 1}})))
+                                                                :decay 2}})))
       "A cell's metadata decay value is decremented")
   (is (= (assoc o :md {})
          (#'initializers/update-cell-metadata (assoc o :md {:1 {:type :shot
-                                                                :decay 0}})))
-      "When a cell's metadata decay value drops below 0, that particular piece of metadata will be removed")
-  (is (= (assoc o :md {:2 {:type :shot
-                           :decay 0}})
-         (#'initializers/update-cell-metadata (assoc o :md {:1 {:type :shot
-                                                                :decay 0}
-                                                            :2 {:type :shot
                                                                 :decay 1}})))
+      "When a cell's metadata decay value drops to or below 0, that particular piece of metadata will be removed")
+  (is (= (assoc o :md {:2 {:type :shot
+                           :decay 1}})
+         (#'initializers/update-cell-metadata (assoc o :md {:1 {:type :shot
+                                                                :decay 1}
+                                                            :2 {:type :shot
+                                                                :decay 2}})))
       "Only metadata that has reached it's decay point will be removed"))
 
 (deftest udpate-volatile-cells-spec
-  (is (= [[(assoc o :md {:1 {:type :shot
-                             :decay 0}})
-           (assoc o :md {:1 {:type :shot
-                             :decay 0}})]
+  (is (= [[(assoc o :md {})
+           (assoc o :md {})]
           [(assoc o :md {:2 {:type :shot
                              :decay 1}})
            (assoc o :md {})]]
