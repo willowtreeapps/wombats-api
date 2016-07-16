@@ -39,11 +39,6 @@
                                          :energy 100
                                          :super-secret-value "shhhh...."}))))
 
-(deftest apply-player-update-spec
-  (is (= {:energy 5} (apply-player-update {:energy 10} {:energy #(- % 5)})))
-  (is (= (assoc (first test-players) :energy 5)
-         (apply-player-update (first test-players) {:energy #(- % 15)}))))
-
 (deftest modify-player-state-spec
   (is (= (assoc-in test-players [0 :energy] 1)
          (modify-player-stats "1" {:energy #(- % 19)} test-players))))

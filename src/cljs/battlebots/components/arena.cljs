@@ -11,7 +11,11 @@
   [cell]
   (let [display (:display cell)
         md (:md cell)
-        class-name (str "cell " (when (> (count md) 0) "shot"))]
+        class-name (str "cell" (apply str
+                                      (map (fn [md-item]
+                                             (str " " (:type (last md-item)))) md)))]
+    #_(if (> (count md) 0)
+      (println md))
     (fn []
       (if (:_id cell)
         [:li.cell.player {:on-click #(show-cell-details cell)}]

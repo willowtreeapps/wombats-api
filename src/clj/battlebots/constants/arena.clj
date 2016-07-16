@@ -20,11 +20,6 @@
                 :fog    {:type "fog"
                          :display "?"
                          :transparent false}
-                :shoot  {:type "shoot"
-                         :display "!"
-                         :transparent true
-                         ;; TODO Remove when shoot no longer uses this
-                         :volatile true}
                 :steel  {:type "steel"
                          :display "&"
                          :transparent false}})
