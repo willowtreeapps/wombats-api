@@ -7,7 +7,7 @@
    :bot s/Str
    :energy s/Int
    :saved-state s/Any
-   :steps s/Int})
+   :frames s/Int})
 
 (defn is-simulation?
   [simulation]

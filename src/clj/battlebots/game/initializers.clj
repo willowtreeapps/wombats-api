@@ -23,15 +23,16 @@
   (map (fn [{:keys [_id bot-repo] :as player}] (merge player {:energy 100
                                                               :bot (get-bot _id bot-repo)
                                                               :saved-state {}
-                                                              :type "player"})) players))
+                                                              :type "player"
+                                                              :messages []})) players))
 
 (defn initialize-game
   "Preps the game"
-  [{:keys [initial-arena players] :as game}]
-  (merge game {:clean-arena initial-arena
-               :rounds []
-               :segment-count 0
-               :players (initialize-players players)}))
+  [{:keys [initial-arena players] :as game-state}]
+  (merge game-state {:clean-arena initial-arena
+                     :rounds []
+                     :segment-count 0
+                     :players (initialize-players players)}))
 
 (defn initialize-new-round
   "Preps game-state for a new round"

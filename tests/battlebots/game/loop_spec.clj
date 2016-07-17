@@ -1,5 +1,5 @@
-(ns battlebots.game.game-loop-spec
-  (:require [battlebots.game.game-loop :refer :all :as game-loop])
+(ns battlebots.game.loop-spec
+  (:require [battlebots.game.loop :refer :all :as game-loop])
   (:use clojure.test))
 
 (deftest total-rounds-spec

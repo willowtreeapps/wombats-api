@@ -3,7 +3,7 @@
             [battlebots.services.mongodb :as db]
             [battlebots.arena.generation :as generate]
             [battlebots.constants.arena :refer [small-arena large-arena]]
-            [battlebots.game.game-loop :as game-loop]
+            [battlebots.game.loop :as game-loop]
             [monger.result :as mr])
   (:import org.bson.types.ObjectId))
 

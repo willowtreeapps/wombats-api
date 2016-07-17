@@ -1,6 +1,6 @@
 (ns battlebots.controllers.simulator
   (:require [ring.util.response :refer [response]]
-            [battlebots.game.step :refer [process-step]]
+            [battlebots.game.frame.processor :refer [process-frame]]
             [battlebots.services.github :refer [get-bot]]
             [battlebots.game.utils :as gu]
             [battlebots.game.initializers :refer [initialize-new-round]]
@@ -16,7 +16,7 @@
 
 (defn run-simulation
   "Runs a simulated scenario based off user specified parameters"
-  [{:keys [arena bot saved-state energy steps] :as simulation} {:keys [_id login]}]
+  [{:keys [arena bot saved-state energy frames] :as simulation} {:keys [_id login]}]
   (is-simulation? simulation)
   (let [player {:_id _id
                 :type "player"
@@ -28,9 +28,9 @@
         initial-game-state {:clean-arena arena
                             :players [player]}]
     (loop [game-state initial-game-state
-           step-count steps]
-      (if (= step-count 0)
+           frame-count frames]
+      (if (= frame-count 0)
         (response (select-keys game-state [:rounds]))
         (recur
-         ((comp end-simulation-round process-step initialize-new-round) game-state)
-         (dec step-count))))))
+         ((comp end-simulation-round process-frame initialize-new-round) game-state)
+         (dec frame-count))))))

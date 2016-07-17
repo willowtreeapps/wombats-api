@@ -1,4 +1,4 @@
-(ns battlebots.game.game-loop
+(ns battlebots.game.loop
   (:require [battlebots.game.initializers :refer [initialize-players
                                                   initialize-game
                                                   initialize-new-round]]
@@ -7,7 +7,7 @@
                                                 finalize-game]]
             [battlebots.constants.game :refer [segment-length
                                                game-length]]
-            [battlebots.game.step :refer [process-step]]))
+            [battlebots.game.frame.processor :refer [process-frame]]))
 
 (defn- total-rounds
   "Calculates the total number of rounds that have elapsed"
@@ -19,7 +19,7 @@
   [initial-game-state]
   (loop [{:keys [rounds segment-count] :as game-state} initial-game-state]
     (if (< (total-rounds (count rounds) segment-count) game-length)
-      (let [updated-game-state (process-step (initialize-new-round game-state))]
+      (let [updated-game-state (process-frame (initialize-new-round game-state))]
         (recur (finalize-round updated-game-state)))
       game-state)))
 
