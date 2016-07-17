@@ -58,12 +58,12 @@
 (defn- reward-shooter
   "Shooters get rewarded for hitting a cell with energy. How much depends on the cell type."
   [{:keys [players shooter-id cell damage] :as player-shot-update}]
-  (let [updated-players
-        (condp = (:type cell)
-          "player" (gu/modify-player-stats shooter-id {:energy #(+ % (* 2 damage))} players)
-          "ai"     (gu/modify-player-stats shooter-id {:energy #(+ % (* 2 damage))} players)
-          "block"  (gu/modify-player-stats shooter-id {:energy #(+ % damage)} players)
-          players)]
+  (let [hit-reward (get-in ac/shot-settings [:hit-reward (keyword (:type cell))] nil)
+        update-function (when hit-reward
+                          (hit-reward damage))
+        updated-players (if update-function
+                          (gu/modify-player-stats shooter-id {:energy update-function} players)
+                          players)]
     (assoc player-shot-update :players updated-players)))
 
 (defn- process-shot

@@ -38,6 +38,12 @@
                                   :poison
                                   :fog
                                   :shoot}
+                    :hit-reward {:ai     (fn [damage]
+                                           #(+ % (* 2 damage)))
+                                 :player (fn [damage]
+                                           #(+ % (* 2 damage)))
+                                 :block  (fn [damage]
+                                           #(+ % damage))}
                     :destructible #{:ai
                                     :block}
                     :distance 10})
