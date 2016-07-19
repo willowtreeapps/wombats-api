@@ -3,7 +3,7 @@
             [battlebots.services.mongodb :as db]
             [battlebots.arena.generation :as generate]
             [battlebots.constants.arena :refer [small-arena large-arena]]
-            [battlebots.game.game-loop :as game-loop]
+            [battlebots.game.loop :as game-loop]
             [monger.result :as mr])
   (:import org.bson.types.ObjectId))
 
@@ -50,15 +50,15 @@
   (db/remove-game game-id)
   (response "ok"))
 
-(defn get-rounds
-  "returns all rounds, or a specifed round, for a given game"
+(defn get-frames
+  "returns all frames, or a specifed frame, for a given game"
   ([game-id]
     (response []))
-  ([game-id round-id]
+  ([game-id frame-id]
     (response {})))
 
-(defn add-round
-  "adds a new round to a given game"
+(defn add-frame
+  "adds a new frame to a given game"
   [game-id]
     (response {}))
 

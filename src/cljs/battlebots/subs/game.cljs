@@ -13,6 +13,6 @@
    (reaction (:active-game @db))))
 
 (re-frame/register-sub
- :active-round
+ :active-frame
  (fn [db _]
-   (reaction (:active-round @db))))
+   (reaction (:active-frame @db))))

@@ -1,12 +1,23 @@
 (ns battlebots.game.test-game
-  (:require [battlebots.constants.arena :refer [arena-key]]
-            [battlebots.game.utils :as gu]))
+  (:require [battlebots.game.utils :as gu]))
 
-(def o (:open arena-key))
-(def b (:block arena-key))
-(def f (:food arena-key))
-(def p (:poison arena-key))
-(def a (:ai arena-key))
+(def o {:type "open"
+        :display " "
+        :transparent true})
+(def b {:type "block"
+        :display "X"
+        :transparent false
+        :energy 20})
+(def f {:type "food"
+        :display "+"
+        :transparent true})
+(def p {:type "poison"
+        :display "-"
+        :transparent true})
+(def a {:type "ai"
+        :display "@"
+        :transparent true
+        :energy 20})
 
 (def bot1-private {:_id "1"
                    :type "player"
@@ -48,7 +59,7 @@
 (def test-game-state {:initial-arena test-arena
                       :clean-arena test-arena
                       :dirty-arena test-arena
-                      :rounds []
+                      :frames []
                       :segment-count 0
                       :_id "1"
                       :players [bot1-private bot2-private]})

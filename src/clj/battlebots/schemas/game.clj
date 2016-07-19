@@ -1,11 +1,11 @@
 (ns battlebots.schemas.game
   (:require [schema.core :as s]
-            [battlebots.schemas.round :refer [Round]]
+            [battlebots.schemas.frame :refer [Frame]]
             [battlebots.schemas.player :refer [Player]]))
 
 (s/defschema Game
   "game schema"
   {:_id s/Int
-   :rounds [Round]
+   :frames [Frame]
    :players [Player]
    :state s/Str})

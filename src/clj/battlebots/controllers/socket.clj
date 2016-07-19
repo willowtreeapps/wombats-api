@@ -4,17 +4,17 @@
             [taoensso.timbre :as timbre :refer [debugf]]
             [battlebots.services.mongodb :as db]))
 
-(defn total-rounds
-  [{:keys [rounds] :as segment}]
-  (count rounds))
+(defn total-frames
+  [{:keys [frames] :as segment}]
+  (count frames))
 
 (defn segment-over?
-  [segment round]
-  (= (total-rounds segment) round))
+  [segment frame]
+  (= (total-frames segment) frame))
 
 (defn game-over?
-  [segment next-segment round]
-  (and (segment-over? segment round) (not next-segment)))
+  [segment next-segment frame]
+  (and (segment-over? segment frame) (not next-segment)))
 
 (defn get-uid
   [{:keys [access-token] :as params}]
@@ -69,27 +69,27 @@
     (future
       (loop [current-segment first-segment
              next-segement second-segment
-             current-round 0]
+             current-frame 0]
         (cond
          ;; When the game is over break out of the loop
-         (game-over? current-segment next-segement current-round)
+         (game-over? current-segment next-segement current-frame)
          (do)
 
-         ;; When a segment of rounds has been passed to the client, move
+         ;; When a segment of frames has been passed to the client, move
          ;; to the next segment and fetch the next segment
-         (segment-over? current-segment current-round)
+         (segment-over? current-segment current-frame)
          (do
            (recur
             next-segement
             @(future (db/get-game-segment game-id (inc (:segment next-segement))))
             0))
 
-         ;; Pass the next round and sleep the thread in between each
+         ;; Pass the next frame and sleep the thread in between each
          :else
          (do
-           (Thread/sleep 200) ;; TODO Once client side rendering has improved, adjust this value
-           (chsk-send! uid [:game/display-round (nth (:rounds current-segment) current-round)])
-           (recur current-segment next-segement (inc current-round))))))))
+           (Thread/sleep 400) ;; TODO Once client side rendering has improved, adjust this value
+           (chsk-send! uid [:game/display-frame (nth (:frames current-segment) current-frame)])
+           (recur current-segment next-segement (inc current-frame))))))))
 
 (defonce router_ (atom nil))
 (defn  stop-router! [] (when-let [stop-fn @router_] (stop-fn)))

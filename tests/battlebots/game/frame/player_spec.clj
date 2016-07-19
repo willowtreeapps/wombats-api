@@ -1,7 +1,7 @@
-(ns battlebots.game.step-operators-spec
-  (:require [battlebots.game.utils :as gu]
+(ns battlebots.game.frame.player-spec
+  (:require [battlebots.game.frame.player :refer :all :as player]
+            [battlebots.game.utils :as gu]
             [battlebots.arena.utils :as au]
-            [battlebots.game.step-operators :refer :all :as step-operators]
             [battlebots.game.test-game :refer [test-players
                                                test-game-state
                                                test-arena
@@ -10,18 +10,18 @@
 
 (deftest randomize-players-spec
   (is (= (count test-players)
-         (count (set (repeatedly 100 (partial #'step-operators/randomize-players test-players)))))
+         (count (set (repeatedly 100 (partial #'player/randomize-players test-players)))))
       "Players are randomized. NOTE: While not likely, this test could fail if one permutation
   is not calculated."))
 
 (deftest process-command-spec
-  (is (= 50 (:remaining-time ((#'step-operators/process-command "1" {:SHOOT {:tu 50}})
+  (is (= 50 (:remaining-time ((#'player/process-command "1" {:SHOOT {:tu 50}})
                               {:game-state test-game-state
                                :remaining-time 100} {:cmd "SHOOT"
                                                      :metadata {:energy 5
                                                                 :direction 4}})))
       "When a player passes a command and has enough banked time to execute the command, remaining-time is decremented")
-  (is (= 50 (:remaining-time ((#'step-operators/process-command "1" {:SHOOT {:tu 60}})
+  (is (= 50 (:remaining-time ((#'player/process-command "1" {:SHOOT {:tu 60}})
                               {:game-state test-game-state
                                :remaining-time 50} {:cmd "SHOOT"
                                                     :metadata {:energy 5
@@ -29,7 +29,7 @@
       "When a player passas a command and does not have enough time to execute the command, remaining time does not change.")
   (is (= {:game-state test-game-state
           :remaining-time 20}
-         ((#'step-operators/process-command "1" {:SHOOT {:tu 10}})
+         ((#'player/process-command "1" {:SHOOT {:tu 10}})
           {:game-state test-game-state
            :remaining-time 20} {:cmd "SOME_INVALID_COMMAND"
                                 :metadata {}}))
@@ -49,7 +49,7 @@
            [6 0] b1))
          (gu/get-player-coords
           "1"
-          (:dirty-arena ((#'step-operators/apply-decisions {:MOVE {:tu 33}}) test-game-state
+          (:dirty-arena ((#'player/apply-decisions {:MOVE {:tu 33}}) test-game-state
                          {:decision {:commands [{:cmd "MOVE"
                                                  :metadata {:direction 1}}
                                                 {:cmd "MOVE"
@@ -69,7 +69,7 @@
             [6 1] b1))
          (gu/get-player-coords
           "1"
-          (:dirty-arena ((#'step-operators/apply-decisions {:MOVE {:tu 50}}) test-game-state
+          (:dirty-arena ((#'player/apply-decisions {:MOVE {:tu 50}}) test-game-state
                          {:decision {:commands [{:cmd "MOVE"
                                                  :metadata {:direction 1}}
                                                 {:cmd "MOVE"

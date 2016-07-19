@@ -11,7 +11,11 @@
   [cell]
   (let [display (:display cell)
         md (:md cell)
-        class-name (str "cell " (when (> (count md) 0) "shot"))]
+        class-name (str "cell" (apply str
+                                      (map (fn [md-item]
+                                             (str " " (:type (last md-item)))) md)))]
+    #_(if (> (count md) 0)
+      (println md))
     (fn []
       (if (:_id cell)
         [:li.cell.player {:on-click #(show-cell-details cell)}]
@@ -38,7 +42,7 @@
 (defn render-arena
   []
   (let [{:keys [initial-arena] :as active-game} @(re-frame/subscribe [:active-game])
-        {:keys [map players] :as active-round} @(re-frame/subscribe [:active-round])
+        {:keys [map players] :as active-frame} @(re-frame/subscribe [:active-frame])
         arena (or map initial-arena)]
     [:div.active-game
      [:div.arena

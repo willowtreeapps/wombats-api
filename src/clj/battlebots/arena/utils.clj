@@ -67,12 +67,13 @@
 
 (defn draw-line-from-point
   [arena pos direction dist]
-  (vec (map (fn [idx]
-              (vec (wrap-coords
-                    (map (fn [fnc dim] (fnc dim))
-                         (directional-functions direction idx) pos)
-                    (get-arena-dimensions arena))))
-            (range 1 (inc dist)))))
+  (let [arena-dimensions (get-arena-dimensions arena)]
+    (vec (map (fn [idx]
+                (vec (wrap-coords
+                      (map (fn [fnc dim] (fnc dim))
+                           (directional-functions direction idx) pos)
+                      arena-dimensions)))
+              (range 1 (inc dist))))))
 
 (defn pprint-arena
   "Pretty Print for a given arena"
@@ -86,6 +87,12 @@
                                               (string/join "  " (map #(or (:display %) "B") row))))
                                     arena)))))
 
+;; https://gist.github.com/gorsuch/1418850#file-gistfile1-clj
+(defn uuid
+  "generates a random UUID"
+  []
+  (str (java.util.UUID/randomUUID)))
+
 (comment
   (require '[battlebots.arena.generation :refer [empty-arena]])
   (defn test-draw-line
@@ -94,9 +101,3 @@
           line (draw-line x1 y1 x2 y2)
           res-arena (reduce (fn [a p] (update-cell a p {:display "*"})) arena line)]
       res-arena)))
-
-;; https://gist.github.com/gorsuch/1418850#file-gistfile1-clj
-(defn uuid
-  "generates a random UUID"
-  []
-  (str (java.util.UUID/randomUUID)))

@@ -1,4 +1,4 @@
-(ns battlebots.game.bot.decisions.move-player
+(ns battlebots.game.bot.decisions.move
   (:require [battlebots.game.utils :as gu]
             [battlebots.arena.utils :as au]
             [battlebots.constants.arena :as ac]
@@ -84,7 +84,7 @@
      (let [updated-arena (au/update-cell dirty-arena coords (:open ac/arena-key))]
        (merge game-state {:dirty-arena updated-arena}))))
 
-(defn move-player
+(defn move
   "Determine if a player can move to the space they have requested, if they can then update
   the board by moving the player and apply any possible consequences of the move to the player."
   [player-id {:keys [direction] :as metadata} {:keys [dirty-arena players] :as game-state}]

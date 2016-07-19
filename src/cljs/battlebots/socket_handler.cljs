@@ -23,7 +23,7 @@
   [[_ event]]
   (let [[event-name data] event]
     (cond
-     (= event-name :game/display-round) (re-frame/dispatch [:game/display-round data]))))
+     (= event-name :game/display-frame) (re-frame/dispatch [:game/display-frame data]))))
 
 (defmulti -event-msg-handler
   "Multimethod to handle Sente `event-msg`s"

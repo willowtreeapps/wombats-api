@@ -21,25 +21,31 @@
   (first (filter #(= (:_id %) player-id) players)))
 
 (defn update-player-with
-  "Updates a player in the private player collection"
+  "Updates a player in the private player collection with an object.
+
+  NOTE: This will overwrite previous values with a merge. If you don't know
+  the value you want to modify but know how you want to modify it, use
+  `modify-player-stats`"
   [player-id players update]
   (map #(if (= player-id (:_id %))
           (merge % update)
           %) players))
 
-(defn apply-player-update
-  "Applies an update to a player object"
-  [player update]
-  (reduce (fn [player [prop update-fn]]
-            (assoc player prop (update-fn (get player prop)))) player update))
-
 (defn modify-player-stats
-  "maps over all players and applies an update if the pred matches"
+  "maps over player collection and applies an update to the matching player.
+
+  ex update: {:energy #(+ % 10)
+              :something-other-player-prop #(* % 5)}"
   [player-id update players]
-  (map (fn [{:keys [_id] :as player}]
-         (if (= player-id _id)
-           (apply-player-update player update)
-           player)) players))
+  (map
+   (fn [{:keys [_id] :as player}]
+     (if (= player-id _id)
+       (reduce (fn [player [prop update-fn]]
+                 (assoc player prop (update-fn (get player prop))))
+               player
+               update)
+       player))
+   players))
 
 (defn get-item-coords
   "Returns a tuple of a given players coords
