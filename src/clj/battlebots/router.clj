@@ -68,7 +68,7 @@
 ;;
 ;; NOTE: Access Rules do not cascade. The first match will resolve
 ;; the request
-(def access-rules {:rules [;; Authenication
+(def access-rules {:rules [;; Authentication
                            {:uri "/api/v1/auth/account-details"
                             :handler authenticated-user}
 
@@ -106,7 +106,7 @@
                             :handler any-access}]})
 
 ;;
-;; Route Deffinitions
+;; Route Definitions
 ;;
 (defroutes
   routes

@@ -20,9 +20,10 @@
 
 (defn finalize-frame
   "Modifies game state to close out a frame"
-  [{:keys [frames dirty-arena players] :as game-state}]
+  [{:keys [frames dirty-arena players messages] :as game-state}]
   (let [formatted-frame {:map dirty-arena
-                         :players (map gu/sanitize-player players)}
+                         :players (map gu/sanitize-player players)
+                         :messages messages}
         updated-game-state (merge game-state {:frames (conj frames formatted-frame)
                                               :clean-arena dirty-arena})]
     (if (= (count (:frames updated-game-state)) segment-length)

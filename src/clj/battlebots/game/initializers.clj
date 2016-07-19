@@ -2,6 +2,7 @@
   (:require [battlebots.services.github :refer [get-bot]]))
 
 (defn- update-cell-metadata
+  "Cleanes up a cell's metadata over a specified period of time."
   [{:keys [md] :as cell}]
   (assoc cell :md (into {} (map (fn [md-entry]
                                   (let [md-uuid (first md-entry)
@@ -26,15 +27,17 @@
                                                               :type "player"
                                                               :messages []})) players))
 
+(defn initialize-frame
+  "Preps game-state for a new frame"
+  [{:keys [clean-arena] :as game-state}]
+  (merge game-state {:dirty-arena (update-volatile-cells clean-arena)
+                     :messages []}))
+
 (defn initialize-game
   "Preps the game"
   [{:keys [initial-arena players] :as game-state}]
   (merge game-state {:clean-arena initial-arena
                      :frames []
                      :segment-count 0
-                     :players (initialize-players players)}))
-
-(defn initialize-frame
-  "Preps game-state for a new frame"
-  [{:keys [clean-arena] :as game-state}]
-  (merge game-state {:dirty-arena (update-volatile-cells clean-arena)}))
+                     :players (initialize-players players)
+                     :messages []}))
