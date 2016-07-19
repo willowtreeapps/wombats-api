@@ -25,6 +25,7 @@
                    :login "oconn"
                    :bot-repo "bot"
                    :energy 20
+                   :messages []
                    :bot "{:commands [{:cmd \"MOVE\"
                                       :metadata {:direction (rand-nth [0])}}
                                      {:cmd \"SET_STATE\"
@@ -36,6 +37,7 @@
                    :login "Mr. Robot"
                    :bot-repo "bot"
                    :energy 50
+                   :messages []
                    :bot "{:commands [{:cmd \"MOVE\"
                                       :metadata {:direction (rand-nth [0])}}
                                      {:cmd \"SET_STATE\"
@@ -62,4 +64,5 @@
                       :frames []
                       :segment-count 0
                       :_id "1"
+                      :messages []
                       :players [bot1-private bot2-private]})
