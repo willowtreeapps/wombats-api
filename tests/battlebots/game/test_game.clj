@@ -59,7 +59,7 @@
 (def test-game-state {:initial-arena test-arena
                       :clean-arena test-arena
                       :dirty-arena test-arena
-                      :rounds []
+                      :frames []
                       :segment-count 0
                       :_id "1"
                       :players [bot1-private bot2-private]})

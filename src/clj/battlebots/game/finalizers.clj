@@ -5,27 +5,27 @@
             [battlebots.constants.game :refer [segment-length]]))
 
 (defn- save-segment
-  [{:keys [_id players rounds segment-count] :as game-state}]
+  [{:keys [_id players frames segment-count] :as game-state}]
   (db/save-game-segment {:game-id _id
                          :players (map gu/sanitize-player players)
-                         :rounds rounds
+                         :frames frames
                          :segment segment-count}))
 
 (defn finalize-segment
-  "Batches a segment of rounds together, persists them, and returns a clean segment"
+  "Batches a segment of frames together, persists them, and returns a clean segment"
   [{:keys [segment-count] :as game-state}]
   (save-segment game-state)
   (merge game-state {:segment-count (inc segment-count)
-                     :rounds []}))
+                     :frames []}))
 
-(defn finalize-round
-  "Modifies game state to close out a round"
-  [{:keys [rounds dirty-arena players] :as game-state}]
-  (let [formatted-round {:map dirty-arena
+(defn finalize-frame
+  "Modifies game state to close out a frame"
+  [{:keys [frames dirty-arena players] :as game-state}]
+  (let [formatted-frame {:map dirty-arena
                          :players (map gu/sanitize-player players)}
-        updated-game-state (merge game-state {:rounds (conj rounds formatted-round)
+        updated-game-state (merge game-state {:frames (conj frames formatted-frame)
                                               :clean-arena dirty-arena})]
-    (if (= (count (:rounds updated-game-state)) segment-length)
+    (if (= (count (:frames updated-game-state)) segment-length)
       (finalize-segment updated-game-state)
       updated-game-state)))
 
@@ -36,6 +36,6 @@
   (merge (dissoc game-state
                  :clean-arena
                  :dirty-arena
-                 :rounds
+                 :frames
                  :segment-count) {:state "finalized"
                                   :players (map gu/sanitize-player players)}))

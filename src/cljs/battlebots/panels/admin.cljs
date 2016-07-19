@@ -84,7 +84,7 @@
                                               [:div])
                                    :remove (fn [record]
                                              [:button {:on-click #(remove-game-action record)} "Remove Game"])
-                                   :rounds (fn [record]
+                                   :frames (fn [record]
                                              [:div])
                                    :game-action (fn [record]
                                                   (cond

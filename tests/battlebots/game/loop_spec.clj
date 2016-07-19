@@ -2,6 +2,6 @@
   (:require [battlebots.game.loop :refer :all :as game-loop])
   (:use clojure.test))
 
-(deftest total-rounds-spec
-  (is (= 75 (#'game-loop/total-rounds 15 2)))
-  (is (= 103 (#'game-loop/total-rounds 13 3))))
+(deftest total-frames-spec
+  (is (= 75 (#'game-loop/total-frames 15 2)))
+  (is (= 103 (#'game-loop/total-frames 13 3))))

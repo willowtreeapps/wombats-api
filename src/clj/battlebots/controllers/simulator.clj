@@ -3,15 +3,15 @@
             [battlebots.game.frame.processor :refer [process-frame]]
             [battlebots.services.github :refer [get-bot]]
             [battlebots.game.utils :as gu]
-            [battlebots.game.initializers :refer [initialize-new-round]]
+            [battlebots.game.initializers :refer [initialize-frame]]
             [battlebots.schemas.simulation :refer [is-simulation?]]))
 
-(defn- end-simulation-round
-  "Cleans up a simulated round"
-  [{:keys [rounds dirty-arena players] :as game-state}]
-  (let [formatted-round {:arena dirty-arena
+(defn- end-simulation-frame
+  "Cleans up a simulated frame"
+  [{:keys [frames dirty-arena players] :as game-state}]
+  (let [formatted-frame {:arena dirty-arena
                          :players (map gu/sanitize-player players)}]
-    (merge game-state {:rounds (conj rounds formatted-round)
+    (merge game-state {:frames (conj frames formatted-frame)
                        :clean-arena dirty-arena})))
 
 (defn run-simulation
@@ -24,13 +24,13 @@
                 :energy energy
                 :bot (get-bot _id bot)
                 :saved-state saved-state
-                :rounds []}
+                :frames []}
         initial-game-state {:clean-arena arena
                             :players [player]}]
     (loop [game-state initial-game-state
            frame-count frames]
       (if (= frame-count 0)
-        (response (select-keys game-state [:rounds]))
+        (response (select-keys game-state [:frames]))
         (recur
-         ((comp end-simulation-round process-frame initialize-new-round) game-state)
+         ((comp end-simulation-frame process-frame initialize-frame) game-state)
          (dec frame-count))))))

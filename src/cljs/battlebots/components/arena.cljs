@@ -42,7 +42,7 @@
 (defn render-arena
   []
   (let [{:keys [initial-arena] :as active-game} @(re-frame/subscribe [:active-game])
-        {:keys [map players] :as active-round} @(re-frame/subscribe [:active-round])
+        {:keys [map players] :as active-frame} @(re-frame/subscribe [:active-frame])
         arena (or map initial-arena)]
     [:div.active-game
      [:div.arena
