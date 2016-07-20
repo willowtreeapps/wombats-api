@@ -1,7 +1,7 @@
 (ns battlebots.services.mongodb
   (:require [monger.core :as mg]
             [monger.collection :as mc]
-            [monger.query :refer :all]
+            [monger.query :as q]
             [monger.operators :refer :all])
   (:import org.bson.types.ObjectId))
 
@@ -46,16 +46,16 @@
 ;; GAME OPERATIONS
 (defn get-all-games
   []
-  (with-collection (get-db) games-coll
-    (find {})
-    (fields game-fields)))
+  (q/with-collection (get-db) games-coll
+    (q/find {})
+    (q/fields game-fields)))
 
 (defn get-game
   [game-id]
-  (first (with-collection (get-db) games-coll
-             (find {:_id (ObjectId. game-id)})
-             (fields game-fields)
-             (limit 1))))
+  (first (q/with-collection (get-db) games-coll
+             (q/find {:_id (ObjectId. game-id)})
+             (q/fields game-fields)
+             (q/limit 1))))
 
 (defn add-game
   [game]
@@ -99,23 +99,23 @@
 
 (defn get-all-players
   []
-  (with-collection (get-db) player-coll
-    (find {})
-    (fields player-fields)))
+  (q/with-collection (get-db) player-coll
+    (q/find {})
+    (q/fields player-fields)))
 
 (defn get-player
   [player-id]
-  (first (with-collection (get-db) player-coll
-           (find {:_id (ObjectId. player-id)})
-           (limit 1)
-           (fields player-fields))))
+  (first (q/with-collection (get-db) player-coll
+           (q/find {:_id (ObjectId. player-id)})
+           (q/limit 1)
+           (q/fields player-fields))))
 
 (defn get-player-with-token
   [player-id]
-  (first (with-collection (get-db) player-coll
-           (find {:_id (ObjectId. player-id)})
-           (limit 1)
-           (fields (conj player-fields :access-token)))))
+  (first (q/with-collection (get-db) player-coll
+           (q/find {:_id (ObjectId. player-id)})
+           (q/limit 1)
+           (q/fields (conj player-fields :access-token)))))
 
 (defn add-or-update-player
   [player]
@@ -123,10 +123,10 @@
 
 (defn get-player-by-github-id
   [github-id]
-  (first (with-collection (get-db) player-coll
-           (find {:github-id github-id})
-           (limit 1)
-           (fields player-fields))))
+  (first (q/with-collection (get-db) player-coll
+           (q/find {:github-id github-id})
+           (q/limit 1)
+           (q/fields player-fields))))
 
 (defn get-player-by-auth-token
   "NOTE: get-player-by-auth-token is used by the middleware layer and exposes

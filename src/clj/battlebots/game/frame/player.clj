@@ -1,13 +1,13 @@
 (ns battlebots.game.frame.player
-  (require [battlebots.arena.partial :refer [get-arena-area]]
-           [battlebots.arena.occlusion :refer [occluded-arena]]
-           [battlebots.constants.game :refer [command-map
-                                              initial-time-unit-count
-                                              partial-arena-radius]]
-           [battlebots.game.utils :as gu]
-           [battlebots.game.bot.decisions.move :refer [move]]
-           [battlebots.game.bot.decisions.save-state :refer [save-state]]
-           [battlebots.game.bot.decisions.shoot :refer [shoot]]))
+  (:require [battlebots.arena.partial :refer [get-arena-area]]
+            [battlebots.arena.occlusion :refer [occluded-arena]]
+            [battlebots.constants.game :refer [command-map
+                                               initial-time-unit-count
+                                               partial-arena-radius]]
+            [battlebots.game.utils :as gu]
+            [battlebots.game.bot.decisions.move :refer [move]]
+            [battlebots.game.bot.decisions.save-state :refer [save-state]]
+            [battlebots.game.bot.decisions.shoot :refer [shoot]]))
 
 (defn- randomize-players
   "Randomizes player ids"

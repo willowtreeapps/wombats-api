@@ -86,6 +86,7 @@
             [lein-cljsbuild "1.1.1"]
             [lein-less "1.7.5"]
             [jonase/eastwood "0.2.3"]
+            [lein-cloverage "1.0.6"]
             [lein-asset-minifier "0.2.7" :exclusions [org.clojure/clojure]]]
 
   :less {:source-paths ["src/less"]
