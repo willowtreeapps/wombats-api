@@ -2,7 +2,8 @@
   (:require [battlebots.game.utils :as gu]
             [battlebots.arena.utils :as au]
             [battlebots.constants.arena :as ac]
-            [battlebots.constants.game :refer [collision-damage-amount]]))
+            [battlebots.constants.game :refer [collision-damage-amount]]
+            [battlebots.game.messages :refer [log-collision-event]]))
 
 (defn- player-occupy-space
   "Updates the game state by applying a vaild move to the dirty arena"
@@ -100,4 +101,7 @@
                                                            player-coords
                                                            desired-space-contents
                                                            desired-coords
-                                                           collision-damage-amount)]))))
+                                                           collision-damage-amount)
+                                   (log-collision-event player-id
+                                                        desired-space-contents
+                                                        collision-damage-amount)]))))

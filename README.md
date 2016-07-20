@@ -22,6 +22,7 @@ Each player writes their own bot in clojure (other language support may become a
    - **BATTLEBOTS_GITHUB_CLIENT_ID** (GitHub Client ID)
    - **BATTLEBOTS_GITHUB_CLIENT_SECRET** (GitHub Client Secret)
    - **BATTLEBOTS_OAUTH_SIGNING_SECRET** (Random secret string)
+   - **BATTLEBOTS_WEB_CLIENT_URL** (Root URL that the user will be redirected to once Auth is complete)
 1. (OPTIONAL) If running a remote database, add the following environment variables. (This is required if running in production.
    - **BATTLEBOTS_MONGOD_USER_NAME**
    - **BATTLEBOTS_MONGOD_USER_PW**

@@ -15,9 +15,13 @@
 (def client-id (System/getenv "BATTLEBOTS_GITHUB_CLIENT_ID"))
 (def client-secret (System/getenv "BATTLEBOTS_GITHUB_CLIENT_SECRET"))
 (def signing-secret (System/getenv "BATTLEBOTS_OAUTH_SIGNING_SECRET"))
+(def web-client-url (System/getenv "BATTLEBOTS_WEB_CLIENT_URL"))
 
-(if (not (and client-id client-secret signing-secret))
+(if-not (and client-id client-secret signing-secret)
   (throw (Exception. "Missing OAuth Environment Variable. Check out the README for more information.")))
+
+(if-not web-client-url
+  (throw (Exception. "Missing Web Client URL Environment Variable.")))
 
 ;; The base player map ensure all new users will contain these values
 (def base-player
@@ -76,5 +80,5 @@
                  (let [access-token (:access_token (parse-string body true))
                        profile (build-profile access-token)]
                    (update-user profile)
-                   (redirect (str "/?access-token=" access-token)))))
-    (redirect "/")))
+                   (redirect (str web-client-url "?access-token=" access-token)))))
+    (redirect web-client-url)))

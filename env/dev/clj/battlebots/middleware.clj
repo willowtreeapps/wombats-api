@@ -23,7 +23,8 @@
   "attaches a user object to a req"
   [request token]
   (let [user (db/get-player-by-auth-token token)]
-    (merge user {:_id (str (:_id user))})))
+    (when user
+      (merge user {:_id (str (:_id user))}))))
 
 (def backend (backends/token {:authfn auth-user}))
 

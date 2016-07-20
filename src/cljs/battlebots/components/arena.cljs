@@ -42,7 +42,7 @@
 (defn render-arena
   []
   (let [{:keys [initial-arena] :as active-game} @(re-frame/subscribe [:active-game])
-        {:keys [map players] :as active-frame} @(re-frame/subscribe [:active-frame])
+        {:keys [map players messages] :as active-frame} @(re-frame/subscribe [:active-frame])
         arena (or map initial-arena)]
     [:div.active-game
      [:div.arena
@@ -54,4 +54,8 @@
       [:p.header "Energy"]
       [:ul.player-stats
        (for [player players]
-         ^{:key (rand 10)} [render-player-stats player])]]]))
+         ^{:key (rand 10)} [render-player-stats player])]]
+     [:div.messages
+      [:ul.message
+       (for [message (:global messages)]
+         ^{:key (rand 10)} [:li message])]]]))

@@ -62,4 +62,5 @@
                       :frames []
                       :segment-count 0
                       :_id "1"
+                      :messages {}
                       :players [bot1-private bot2-private]})

@@ -4,15 +4,8 @@
             [battlebots.services.github :refer [get-bot]]
             [battlebots.game.utils :as gu]
             [battlebots.game.initializers :refer [initialize-frame]]
+            [battlebots.game.finalizers :refer [finalize-frame]]
             [battlebots.schemas.simulation :refer [is-simulation?]]))
-
-(defn- end-simulation-frame
-  "Cleans up a simulated frame"
-  [{:keys [frames dirty-arena players] :as game-state}]
-  (let [formatted-frame {:arena dirty-arena
-                         :players (map gu/sanitize-player players)}]
-    (merge game-state {:frames (conj frames formatted-frame)
-                       :clean-arena dirty-arena})))
 
 (defn run-simulation
   "Runs a simulated scenario based off user specified parameters"
@@ -32,5 +25,5 @@
       (if (= frame-count 0)
         (response (select-keys game-state [:frames]))
         (recur
-         ((comp end-simulation-frame process-frame initialize-frame) game-state)
+         ((comp finalize-frame process-frame initialize-frame) game-state)
          (dec frame-count))))))

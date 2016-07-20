@@ -1,14 +1,6 @@
 (ns battlebots.arena.partial
   (:require [battlebots.arena.utils :as au]))
 
-(comment
-  ;; Uncomment for testing
-)
-(require '[clojure.edn :as edn])
-(require '[clojure.java.io :as io])
-(require '[battlebots.arena.utils :refer [pprint-arena]])
-(def t-arena (edn/read-string (slurp "test-resources/test-arena.edn")))
-
 (defn- caclulate-nradius
   [[x-dim y-dim] requested-radius]
   (let [max-radius (int (/ x-dim 2))]

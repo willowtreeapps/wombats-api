@@ -14,13 +14,25 @@
   [num-frames num-segments]
   (+ (* num-segments segment-length) num-frames))
 
+(defn- game-over?
+  "Determines if a game is over"
+  [{:keys [frames segment-count] :as game-state}]
+  (>= (total-frames (count frames) segment-count) game-length))
+
+(defn- round-over?
+  "Determines if a game is over"
+  [{:keys [frames] :as game-state}]
+  (= (count frames) segment-length))
+
 (defn- game-loop
   "Game loop"
   [initial-game-state]
   (loop [{:keys [frames segment-count] :as game-state} initial-game-state]
-    (if (< (total-frames (count frames) segment-count) game-length)
-      (let [updated-game-state (process-frame (initialize-frame game-state))]
-        (recur (finalize-frame updated-game-state)))
+    (if-not (game-over? game-state)
+      (let [updated-game-state ((comp finalize-frame process-frame initialize-frame) game-state)]
+        (if (round-over? updated-game-state)
+          (recur (finalize-segment updated-game-state))
+          (recur updated-game-state)))
       game-state)))
 
 (defn start-game

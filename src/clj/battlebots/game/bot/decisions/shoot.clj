@@ -75,15 +75,15 @@
     (if (shot-should-progress? should-progress? cell-at-point energy)
       (let [cell-energy (:energy cell-at-point)
             remaining-energy (Math/max 0 (- energy (or cell-energy 0)))
-            energy-delta (- energy remaining-energy)
-            updated-cell (resolve-shot-cell cell-at-point energy-delta shot-uuid)
+            damage (- energy remaining-energy)
+            updated-cell (resolve-shot-cell cell-at-point damage shot-uuid)
             updated-dirty-arena (au/update-cell dirty-arena point updated-cell)
             updated-players (:players (reduce (fn [players update-fn]
                                                 (update-fn players))
                                               {:players players
                                                :shooter-id shooter-id
                                                :cell cell-at-point
-                                               :damage energy-delta}
+                                               :damage damage}
                                               [reward-shooter
                                                update-victim-energy]))]
         {:game-state (merge game-state {:dirty-arena updated-dirty-arena
