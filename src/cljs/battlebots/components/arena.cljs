@@ -57,5 +57,5 @@
          ^{:key (rand 10)} [render-player-stats player])]]
      [:div.messages
       [:ul.message
-       (for [message messages]
-         ^{:key (rand 10)} [:li (:message message)])]]]))
+       (for [message (:global messages)]
+         ^{:key (rand 10)} [:li message])]]]))

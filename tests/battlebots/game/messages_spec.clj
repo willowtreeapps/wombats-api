@@ -6,19 +6,21 @@
                                                test-game-state]])
   (:use clojure.test))
 
-(deftest add-player-message-spec
-  (is (= [{:type :info
-           :message "Some Message"}] (:messages (first (#'messages/add-player-message "1"
-                                                                                      test-players
-                                                                                      {:type :info
-                                                                                       :message "Some Message"}))))
-      "Adds a message to a players message collection"))
-
-(deftest log-collision-event-spec
-  (is (= 1 (count (:messages ((log-collision-event "1" b2 10) test-game-state))))
-      "A frame message is added when there is a collision")
-  (is (= 1 (count (:messages (first (:players ((log-collision-event "1" b 10) test-game-state))))))
-      "When a bot collides with an object, a player message is logged")
-  (is (some? (and (= 1 (count (:messages (first (:players ((log-collision-event "1" b1 10) test-game-state))))))
-                  (= 1 (count (:messages (last (:players ((log-collision-event "1" b 10) test-game-state))))))))
-      "When a bot collides with another bot, a player message is logged with both bots"))
+(deftest add-messages-spec
+  (is (= {:messages {:global ["This message will be displayed to all users"]
+                     :1234 ["This message will be displayed to user 1234"]}}
+         (#'messages/add-messages {:messages {}}
+                                  [{:chan :global
+                                    :message "This message will be displayed to all users"}
+                                   {:chan "1234"
+                                    :message "This message will be displayed to user 1234"}]))
+      "Messages are add to their respecive channels")
+  (is (= {:messages {:global ["This is an old global message"
+                              "This message will be displayed to all users"]
+                     :1234 ["This message will be displayed to user 1234"]}}
+         (#'messages/add-messages {:messages {:global ["This is an old global message"]}}
+                                  [{:chan :global
+                                    :message "This message will be displayed to all users"}
+                                   {:chan "1234"
+                                    :message "This message will be displayed to user 1234"}]))
+      "New messages are added to existing message collections"))

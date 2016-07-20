@@ -24,14 +24,13 @@
   (map (fn [{:keys [_id bot-repo] :as player}] (merge player {:energy 100
                                                               :bot (get-bot _id bot-repo)
                                                               :saved-state {}
-                                                              :type "player"
-                                                              :messages []})) players))
+                                                              :type "player"})) players))
 
 (defn initialize-frame
   "Preps game-state for a new frame"
   [{:keys [clean-arena] :as game-state}]
   (merge game-state {:dirty-arena (update-volatile-cells clean-arena)
-                     :messages []}))
+                     :messages {}}))
 
 (defn initialize-game
   "Preps the game"
@@ -40,4 +39,4 @@
                      :frames []
                      :segment-count 0
                      :players (initialize-players players)
-                     :messages []}))
+                     :messages {}}))
