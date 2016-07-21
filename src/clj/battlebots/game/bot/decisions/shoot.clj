@@ -1,7 +1,9 @@
 (ns battlebots.game.bot.decisions.shoot
   (:require [battlebots.constants.arena :as ac]
             [battlebots.arena.utils :as au]
-            [battlebots.game.utils :as gu]))
+            [battlebots.game.utils :as gu]
+            [battlebots.game.messages :refer [log-shoot-event
+                                              log-victim-shot-event]]))
 
 (defn- add-shot-metadata
   [uuid]
@@ -47,24 +49,42 @@
                (ac/can-occupy? (:type cell-at-point) ac/shot-settings))))
 
 (defn- update-victim-energy
-  [{:keys [players shooter-id cell damage] :as player-shot-update}]
+  "Updates a victim's energy when shoot"
+  [shooter-id cell damage {:keys [players] :as game-state}]
   (if (gu/is-player? cell)
-    (assoc player-shot-update :players (gu/modify-player-stats
-                                        (:_id cell)
-                                        {:energy #(- % damage)}
-                                        players))
-    player-shot-update))
+    (-> game-state
+        (assoc :players (gu/modify-player-stats
+                         (:_id cell)
+                         {:energy #(- % damage)}
+                         players))
+        (log-victim-shot-event (:id cell) shooter-id damage))
+    game-state))
 
 (defn- reward-shooter
   "Shooters get rewarded for hitting a cell with energy. How much depends on the cell type."
-  [{:keys [players shooter-id cell damage] :as player-shot-update}]
+  [shooter-id cell damage {:keys [players] :as game-state}]
   (let [hit-reward (get-in ac/shot-settings [:hit-reward (keyword (:type cell))] nil)
         update-function (when hit-reward
                           (hit-reward damage))
-        updated-players (if update-function
-                          (gu/modify-player-stats shooter-id {:energy update-function} players)
-                          players)]
-    (assoc player-shot-update :players updated-players)))
+        updated-players (when update-function
+                          (gu/modify-player-stats shooter-id {:energy update-function} players))]
+    (if updated-players
+      (-> game-state
+       (assoc :players updated-players)
+       (log-shoot-event cell damage shooter-id))
+      game-state)))
+
+(defn- update-arena
+  [cell-at-point damage shot-uuid point {:keys [dirty-arena] :as game-state}]
+  (let [updated-cell (resolve-shot-cell cell-at-point damage shot-uuid)
+        updated-dirty-arena (au/update-cell dirty-arena point updated-cell)]
+    (assoc game-state :dirty-arena updated-dirty-arena)))
+
+(defn- update-players
+  [cell-at-point damage shooter-id game-state]
+  (->> game-state
+       (reward-shooter shooter-id cell-at-point damage)
+       (update-victim-energy shooter-id cell-at-point damage)))
 
 (defn- process-shot
   "Process a cell that a shot passes through"
@@ -76,18 +96,10 @@
       (let [cell-energy (:energy cell-at-point)
             remaining-energy (Math/max 0 (- energy (or cell-energy 0)))
             damage (- energy remaining-energy)
-            updated-cell (resolve-shot-cell cell-at-point damage shot-uuid)
-            updated-dirty-arena (au/update-cell dirty-arena point updated-cell)
-            updated-players (:players (reduce (fn [players update-fn]
-                                                (update-fn players))
-                                              {:players players
-                                               :shooter-id shooter-id
-                                               :cell cell-at-point
-                                               :damage damage}
-                                              [reward-shooter
-                                               update-victim-energy]))]
-        {:game-state (merge game-state {:dirty-arena updated-dirty-arena
-                                        :players updated-players})
+            updated-game-state (->> game-state
+                                    (update-arena cell-at-point damage shot-uuid point)
+                                    (update-players cell-at-point damage shooter-id))]
+        {:game-state updated-game-state
          :energy remaining-energy
          :should-progress? true
          :shot-uuid shot-uuid

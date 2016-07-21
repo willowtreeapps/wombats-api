@@ -19,7 +19,7 @@
                       (str "mongodb://" db-username ":" db-password "@" db-host "/battlebots")
                       "mongodb://127.0.0.1/battlebots"))
 
-(defn setup-db
+(defn configure-db
   "Ensures collection indexes exist"
   [db]
   (let [players "players"]
@@ -29,13 +29,19 @@
                                  :github-id 1
                                  :access-token 1) {:unique true})))
 
-(def conn
-  (let [conn (atom (mg/connect-via-uri connection-uri))
-        db (:db @conn)]
-    (setup-db db)
-    conn))
+(def conn (atom nil))
 
-(defn get-db [] (:db @conn))
+(defn get-db
+  "Retrieves the db connection"
+  [] (:db @conn))
+
+(defn initialize-db
+  "Initializes the db connection"
+  []
+  (let [connection (mg/connect-via-uri connection-uri)
+        db (:db connection)]
+    (configure-db db)
+    (swap! conn merge connection)))
 
 (def games-coll "games")
 (def frames-coll "frames")
