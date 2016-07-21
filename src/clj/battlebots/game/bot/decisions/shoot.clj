@@ -2,7 +2,8 @@
   (:require [battlebots.constants.arena :as ac]
             [battlebots.arena.utils :as au]
             [battlebots.game.utils :as gu]
-            [battlebots.game.messages :refer [log-shoot-event]]))
+            [battlebots.game.messages :refer [log-shoot-event
+                                              log-victim-shot-event]]))
 
 (defn- add-shot-metadata
   [uuid]
@@ -49,12 +50,14 @@
 
 (defn- update-victim-energy
   "Updates a victim's energy when shoot"
-  [cell damage {:keys [players] :as game-state}]
+  [shooter-id cell damage {:keys [players] :as game-state}]
   (if (gu/is-player? cell)
-    (assoc game-state :players (gu/modify-player-stats
-                                (:_id cell)
-                                {:energy #(- % damage)}
-                                players))
+    (-> game-state
+        (assoc :players (gu/modify-player-stats
+                         (:_id cell)
+                         {:energy #(- % damage)}
+                         players))
+        (log-victim-shot-event (:id cell) shooter-id damage))
     game-state))
 
 (defn- reward-shooter
@@ -63,10 +66,13 @@
   (let [hit-reward (get-in ac/shot-settings [:hit-reward (keyword (:type cell))] nil)
         update-function (when hit-reward
                           (hit-reward damage))
-        updated-players (if update-function
-                          (gu/modify-player-stats shooter-id {:energy update-function} players)
-                          players)]
-    (assoc game-state :players updated-players)))
+        updated-players (when update-function
+                          (gu/modify-player-stats shooter-id {:energy update-function} players))]
+    (if updated-players
+      (-> game-state
+       (assoc :players updated-players)
+       (log-shoot-event cell damage shooter-id))
+      game-state)))
 
 (defn- update-arena
   [cell-at-point damage shot-uuid point {:keys [dirty-arena] :as game-state}]
@@ -78,7 +84,7 @@
   [cell-at-point damage shooter-id game-state]
   (->> game-state
        (reward-shooter shooter-id cell-at-point damage)
-       (update-victim-energy cell-at-point damage)))
+       (update-victim-energy shooter-id cell-at-point damage)))
 
 (defn- process-shot
   "Process a cell that a shot passes through"
@@ -92,8 +98,7 @@
             damage (- energy remaining-energy)
             updated-game-state (->> game-state
                                     (update-arena cell-at-point damage shot-uuid point)
-                                    (update-players cell-at-point damage shooter-id)
-                                    (log-shoot-event cell-at-point damage shooter-id))]
+                                    (update-players cell-at-point damage shooter-id))]
         {:game-state updated-game-state
          :energy remaining-energy
          :should-progress? true

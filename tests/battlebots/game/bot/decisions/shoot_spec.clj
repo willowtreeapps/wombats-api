@@ -63,27 +63,27 @@
 
 (deftest update-victim-energy-spec
   (is (= {:players test-players}
-         (#'shoot/update-victim-energy b 20 {:players test-players}))
+         (#'shoot/update-victim-energy "1" b 20 {:players test-players}))
       "No damage is applied if the cell is not a player")
   (is (= {:players [bot1-private
-                    (assoc bot2-private :energy 30)]}
-         (#'shoot/update-victim-energy b2 20 {:players test-players}))
+                      (assoc bot2-private :energy 30)]}
+         (dissoc (#'shoot/update-victim-energy "1" b2 20 {:players test-players}) :messages))
       "Damage is applied to the victim if the cell is a player"))
 
 (deftest reward-shooter-spec
   (is (= {:players [(assoc bot1-private :energy 120)
                     bot2-private]}
-         (#'shoot/reward-shooter "1" b2 50 {:players test-players}))
+         (dissoc (#'shoot/reward-shooter "1" b2 50 {:players test-players}) :messages))
       "When a player strikes another player, they will recieve energy in the amount of 2x the damage applied to the victim.")
   (is (= {:players [(assoc bot1-private :energy 70)
                     bot2-private]}
-         (#'shoot/reward-shooter "1" b 50 {:players test-players}))
+         (dissoc (#'shoot/reward-shooter "1" b 50 {:players test-players}) :messages))
       "When a player strikes a wall, they will recieve energy in the amount of the damage applied to the wall.")
   (is (= {:players test-players}
          (#'shoot/reward-shooter "1" o 50 {:players test-players}))
       "When a player strikes an open space, they will recieve no additional energy"))
 
-#_(deftest process-shot-spec
+(deftest process-shot-spec
   (is (= {:game-state {:dirty-arena (au/update-cell
                                      test-arena
                                      [0 1]
@@ -95,14 +95,15 @@
           :should-progress? true
           :shot-uuid "1234"
           :shooter-id "99999"}
-         (#'shoot/process-shot
-          {:game-state {:dirty-arena test-arena
-                        :players test-players}
-           :energy 10
-           :should-progress? true
-           :shot-uuid "1234"
-           :shooter-id "99999"}
-          [0 1]))
+         (update-in (#'shoot/process-shot
+                     {:game-state {:dirty-arena test-arena
+                                   :players test-players}
+                      :energy 10
+                      :should-progress? true
+                      :shot-uuid "1234"
+                      :shooter-id "99999"}
+                     [0 1])
+                    [:game-state] dissoc :messages))
       "If a shot passes through a cell what container more energy than is left in the shot. There should be no energy left over.")
   (is (= {:game-state {:dirty-arena (au/update-cell
                                      test-arena
@@ -114,14 +115,15 @@
           :should-progress? true
           :shot-uuid "1234"
           :shooter-id "99999"}
-         (#'shoot/process-shot
-          {:game-state {:dirty-arena test-arena
-                        :players test-players}
-           :energy 32
-           :should-progress? true
-           :shot-uuid "1234"
-           :shooter-id "99999"}
-          [0 1]))
+         (update-in (#'shoot/process-shot
+                     {:game-state {:dirty-arena test-arena
+                                   :players test-players}
+                      :energy 32
+                      :should-progress? true
+                      :shot-uuid "1234"
+                      :shooter-id "99999"}
+                     [0 1])
+                    [:game-state] dissoc :messages))
       "If a shot contains more energy than a cell has, the delta energy should be returned in the shot state.")
   (is (= {:game-state {:dirty-arena test-arena
                        :players test-players}
@@ -129,12 +131,13 @@
           :should-progress? false
           :shot-uuid "1234"
           :shooter-id "99999"}
-         (#'shoot/process-shot
-          {:game-state {:dirty-arena test-arena
-                        :players test-players}
-           :energy 32
-           :should-progress? false
-           :shot-uuid "1234"
-           :shooter-id "99999"}
-          [0 1]))
+         (update-in (#'shoot/process-shot
+                     {:game-state {:dirty-arena test-arena
+                                   :players test-players}
+                      :energy 32
+                      :should-progress? false
+                      :shot-uuid "1234"
+                      :shooter-id "99999"}
+                     [0 1])
+                    [:game-state] dissoc :messages))
       "If a shot should not progress, shot state is not updated"))

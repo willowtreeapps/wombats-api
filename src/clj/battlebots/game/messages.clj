@@ -24,10 +24,13 @@
       (add-messages game-state messages))))
 
 (defn log-shoot-event
-  [target-cell damage shooter-id {:keys [players] :as game-state}]
-  ;; TODO This is very basic logging, Shoot will have to be further refactored to support
-  ;; fine grain logging of shoot events.
-  (if (:energy target-cell)
-    (add-messages game-state [{:chan :global
-                               :message (str "Player " shooter-id " shot " (:type target-cell))}])
-    game-state))
+  [game-state target-cell damage shooter-id]
+  (add-messages game-state [{:chan :global
+                             :message (str "Player " shooter-id " shot " (:type target-cell))}
+                            {:chan shooter-id
+                             :message (str "You shot " (:type target-cell) "!")}]))
+
+(defn log-victim-shot-event
+  [game-state victim-id shooter-id damage]
+  (add-messages game-state [{:chan victim-id
+                             :message (str "You were shot by " shooter-id "! You took " damage " damage.")}]))
