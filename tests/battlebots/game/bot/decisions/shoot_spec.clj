@@ -83,7 +83,7 @@
          ((#'shoot/reward-shooter "1" o 50) {:players test-players}))
       "When a player strikes an open space, they will recieve no additional energy"))
 
-(deftest process-shot-spec
+#_(deftest process-shot-spec
   (is (= {:game-state {:dirty-arena (au/update-cell
                                      test-arena
                                      [0 1]
