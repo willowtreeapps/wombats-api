@@ -42,7 +42,7 @@
    0 1 2
    7   3
    6 5 4"
-  ([] (directional-functions 1))
+  ([direction] (directional-functions direction 1))
   ([direction dist]
    (condp = direction
      0 [(incx (- dist)) (incx (- dist))]
