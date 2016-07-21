@@ -23,3 +23,13 @@
         (add-messages game-state (conj messages {:chan (:_id collision-item)
                                                  :message (str "Player " player-id " collided with you!")}))
         (add-messages game-state messages)))))
+
+(defn log-shoot-event
+  [target-cell damage shooter-id]
+  (fn [{:keys [players] :as game-state}]
+    ;; TODO This is very basic logging, Shoot will have to be further refactored to support
+    ;; fine grain logging of shoot events.
+    (if (:energy target-cell)
+      (add-messages game-state [{:chan :global
+                                 :message (str "Player " shooter-id " shot " (:type target-cell))}])
+      game-state)))

@@ -62,55 +62,25 @@
       "Returns true when all of the above test cases return true"))
 
 (deftest update-victim-energy-spec
-  (is (= {:players test-players
-          :shooter-id "1"
-          :cell b
-          :damage 20}
-         (#'shoot/update-victim-energy {:players test-players
-                                        :shooter-id "1"
-                                        :cell b
-                                        :damage 20}))
+  (is (= {:players test-players}
+         ((#'shoot/update-victim-energy b 20) {:players test-players}))
       "No damage is applied if the cell is not a player")
   (is (= {:players [bot1-private
-                    (assoc bot2-private :energy 30)]
-          :shooter-id "1"
-          :cell b2
-          :damage 20}
-         (#'shoot/update-victim-energy {:players test-players
-                                        :shooter-id "1"
-                                        :cell b2
-                                        :damage 20}))
+                    (assoc bot2-private :energy 30)]}
+         ((#'shoot/update-victim-energy b2 20) {:players test-players}))
       "Damage is applied to the victim if the cell is a player"))
 
 (deftest reward-shooter-spec
   (is (= {:players [(assoc bot1-private :energy 120)
-                    bot2-private]
-          :shooter-id "1"
-          :cell b2
-          :damage 50}
-         (#'shoot/reward-shooter {:players test-players
-                                  :shooter-id "1"
-                                  :cell b2
-                                  :damage 50}))
+                    bot2-private]}
+         ((#'shoot/reward-shooter "1" b2 50) {:players test-players}))
       "When a player strikes another player, they will recieve energy in the amount of 2x the damage applied to the victim.")
   (is (= {:players [(assoc bot1-private :energy 70)
-                    bot2-private]
-          :shooter-id "1"
-          :cell b
-          :damage 50}
-         (#'shoot/reward-shooter {:players test-players
-                                  :shooter-id "1"
-                                  :cell b
-                                  :damage 50}))
+                    bot2-private]}
+         ((#'shoot/reward-shooter "1" b 50) {:players test-players}))
       "When a player strikes a wall, they will recieve energy in the amount of the damage applied to the wall.")
-  (is (= {:players test-players
-          :shooter-id "1"
-          :cell o
-          :damage 50}
-         (#'shoot/reward-shooter {:players test-players
-                                  :shooter-id "1"
-                                  :cell o
-                                  :damage 50}))
+  (is (= {:players test-players}
+         ((#'shoot/reward-shooter "1" o 50) {:players test-players}))
       "When a player strikes an open space, they will recieve no additional energy"))
 
 (deftest process-shot-spec
