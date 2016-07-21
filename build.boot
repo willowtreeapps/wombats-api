@@ -36,13 +36,13 @@
                              (quot (System/currentTimeMillis) 1000))]
     (condp = status
         200 {:code (decode-bot (:content (parse-string body true)))
-             :ratelimit-message (str "Note: You can pass a github API token to increase your rate limit\n\n"
+             :ratelimit-message (str (if-not token "Note: You can pass a github API token to increase your rate limit\n")
                                      "You have "
                                      x-ratelimit-remaining
-                                     " ramaining API calls"
-                                     "\nMax Limit: "
+                                     " remaining API calls"
+                                     "\nMax Rate Limit: "
                                      x-ratelimit-limit
-                                     "\nTime till refresh: "
+                                     "\nTime Till Refresh: "
                                      time-till-refresh " seconds")}
         401 (println "Invalid API Token")
         (println "Failed to retrive " username "/" repo "/bot.clj"))))
@@ -52,7 +52,7 @@
   [u username USERNAME  str  "github username"
    r repo     REPO      str  "bot repo"
    e energy   ENERGY    int  "energy"
-   f frames   FRAMES    int  "number of frames to process"
+   f frames   FRAMES    int  "number of frames to process (max 50)"
    t token    TOKEN     str  "github API token"]
   (let [{:keys [code ratelimit-message]} (get-bot-code-simulator username repo token)
         player {:_id "1"
@@ -67,15 +67,16 @@
                                           [a b p (gu/sanitize-player player) o b]
                                           [f f o o b o]
                                           [f b f o b o]]
-                            :players [player]}]
+                            :players [player]}
+        initial-frame-count (min 50 (or frames 1))]
     (println "Running Simulation...")
 
     (when code
       (loop [{:keys [clean-arena messages players] :as game-state} initial-game-state
-             frame-count (or frames 1)
+             frame-count initial-frame-count
              frame-display "Starting Arena"]
 
-        (println "\nFrame: " frame-display)
+        (println "\nFRAME: " frame-display)
         (au/pprint-arena clean-arena)
         (println (str "\n\nMessages: " (or messages {})
                       "\nEnergy: " (:energy (first players))))
@@ -86,4 +87,4 @@
           (recur
            ((comp finalize-frame process-frame initialize-frame) game-state)
            (dec frame-count)
-           (- frames (dec frame-count))))))))
+           (- initial-frame-count (dec frame-count))))))))
