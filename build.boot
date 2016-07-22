@@ -47,7 +47,7 @@
         401 (println "Invalid API Token")
         (println "Failed to retrive " username "/" repo "/bot.clj"))))
 
-(defn arena1
+(defn arena-1
   [player]
   [[o o b o b o]
    [f f p o f p]
@@ -55,14 +55,48 @@
    [f f o o b o]
    [f b f o b o]])
 
+(defn arena-2
+  [player]
+  [[b b b b b b b b b b]
+   [b f o o a o o o a b]
+   [b o o p o f o o f b]
+   [b f o o o o o o f b]
+   [b f o o o o o o o b]
+   [b p o o o o o o o b]
+   [b o o o (gu/sanitize-player player) f o o o b]
+   [b o o o p o o b o b]
+   [b f o o o o f o o b]
+   [b b b b b b b b b b]])
+
 (deftask sim
   "Runs the Battlebots simulator"
   [u username USERNAME  str  "github username"
    r repo     REPO      str  "bot repo"
    e energy   ENERGY    int  "energy"
    f frames   FRAMES    int  "number of frames to process (max 50)"
-   t token    TOKEN     str  "github API token"]
+   t token    TOKEN     str  "github API token"
+   a arena    ARENA     int  "arena number: (default 1)
+
+  Arena 1:
+   o o b o b o
+   f f p o f p
+   a b p B o b
+   f f o o b o
+   f b f o b o
+
+  Arena 2:
+   b b b b b b b b b b
+   b f o o a o o o a b
+   b o p p o f o o f b
+   b f o o o o o o f b
+   b f o o o o o o f b
+   b p o o o o o o o b
+   b o o o B f o o o b
+   b o o o p o o b o b
+   b f o o o o f o o b
+   b b b b b b b b b b"]
   (let [{:keys [code ratelimit-message]} (get-bot-code-simulator username repo token)
+        arena-number (min 2 (or arena 1))
         player {:_id "1"
                 :type "player"
                 :login username
@@ -70,7 +104,7 @@
                 :bot code
                 :saved-state {}
                 :frames []}
-        initial-game-state {:clean-arena (arena1 player)
+        initial-game-state {:clean-arena ((ns-resolve *ns* (symbol (str "arena-" arena-number))) player)
                             :players [player]}
         initial-frame-count (min 50 (or frames 1))]
     (println "Running Simulation...")
