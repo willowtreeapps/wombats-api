@@ -57,24 +57,33 @@
 
 (defn arena-2
   [player]
-  [[b b b b b b b b b b]
-   [b f o o a o o o a b]
-   [b o o p o f o o f b]
-   [b f o o o o o o f b]
-   [b f o o o o o o o b]
-   [b p o o o o o o o b]
-   [b o o o (gu/sanitize-player player) f o o o b]
-   [b o o o p o o b o b]
-   [b f o o o o f o o b]
-   [b b b b b b b b b b]])
+  (let [w (gu/sanitize-player player)]
+    [[b b b b b b b b b b b b b b b b]
+     [b a o o a o o o o o o o o o o b]
+     [b o o p o f o o f o o p o o o b]
+     [b f o o o o o o f o a o o o o b]
+     [b f o o o o o o o o o o o o o b]
+     [b p o o o o o o f o o f o o o b]
+     [b b b b o f o o o o o o o o o b]
+     [b o o o p o o b o o o o f b o b]
+     [b f o o o o f o o f o o o b o b]
+     [b f o o o o f o o f o b b b o b]
+     [b f o o o o o o o o o o o o o b]
+     [b o o o o o f o o o f o f a o b]
+     [b f o o o o o o o o o o o o o b]
+     [b f o o o o f o o o o f o o o b]
+     [b w o o o o p o o o o o o o o b]
+     [b b b b b b b b b b b b b b b b]]))
 
 (deftask sim
   "Runs the Battlebots simulator"
   [u username USERNAME  str  "github username"
    r repo     REPO      str  "bot repo"
-   e energy   ENERGY    int  "energy"
-   f frames   FRAMES    int  "number of frames to process (max 50)"
+   e energy   ENERGY    int  "energy (default 100)"
+   f frames   FRAMES    int  "number of frames to process (default 1, max 100)"
    t token    TOKEN     str  "github API token"
+   l live               bool "enable live preview (default disabled)"
+   s sleep    SLEEP     int  "sleep time in milliseconds when live is enabled (default 2000)"
    a arena    ARENA     int  "arena number: (default 1)
 
   Arena 1:
@@ -85,16 +94,22 @@
    f b f o b o
 
   Arena 2:
-   b b b b b b b b b b
-   b f o o a o o o a b
-   b o p p o f o o f b
-   b f o o o o o o f b
-   b f o o o o o o f b
-   b p o o o o o o o b
-   b o o o B f o o o b
-   b o o o p o o b o b
-   b f o o o o f o o b
-   b b b b b b b b b b"]
+   [[b b b b b b b b b b b b b b b b]
+    [b a o o a o o o o o o o o o o b]
+    [b o o p o f o o f o o p o o o b]
+    [b f o o o o o o f o a o o o o b]
+    [b f o o o o o o o o o o o o o b]
+    [b p o o o o o o f o o f o o o b]
+    [b b b b o f o o o o o o o o o b]
+    [b o o o p o o b o o o o f b o b]
+    [b f o o o o f o o f o o o b o b]
+    [b f o o o o f o o f o b b b o b]
+    [b f o o o o o o o o o o o o o b]
+    [b o o o o o f o o o f o f a o b]
+    [b f o o o o o o o o o o o o o b]
+    [b f o o o o f o o o o f o o o b]
+    [b B o o o o p o o o o o o o o b]
+    [b b b b b b b b b b b b b b b b]]"]
   (let [{:keys [code ratelimit-message]} (get-bot-code-simulator username repo token)
         arena-number (min 2 (or arena 1))
         player {:_id "1"
@@ -106,7 +121,8 @@
                 :frames []}
         initial-game-state {:clean-arena ((ns-resolve *ns* (symbol (str "arena-" arena-number))) player)
                             :players [player]}
-        initial-frame-count (min 50 (or frames 1))]
+        initial-frame-count (min 100 (or frames 1))
+        sleep-time (or sleep 2000)]
     (println "Running Simulation...")
 
     (when code
@@ -114,10 +130,19 @@
              frame-count initial-frame-count
              frame-display "Starting Arena"]
 
+        (when live
+          ;; clear screen
+          (print (str (char 27) "[2J"))
+          ;; move cursor to the top left corner of the screen
+          (print (str (char 27) "[;H")))
+
         (println "\nFRAME: " frame-display)
         (au/pprint-arena clean-arena)
         (println (str "\n\nMessages: " (or messages {})
                       "\nEnergy: " (:energy (first players))))
+
+        (when live
+          (Thread/sleep sleep-time))
 
         (if (= frame-count 0)
           (println (str "\nDone!\n"

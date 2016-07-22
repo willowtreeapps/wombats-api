@@ -75,6 +75,20 @@
                       arena-dimensions)))
               (range 1 (inc dist))))))
 
+(defn- print-item
+  "Prints the individual cell"
+  [{:keys [display md] :as item}]
+  (let [metadata (reduce #(let [metadata (last %2)]
+                            (if metadata
+                              (conj %1 metadata)
+                              %1)) [] md)
+        is-shot? (some #(= (:type %1) :shot) metadata)
+        is-destroyed? (some #(= (:type %1) :destroyed) metadata)]
+    (cond
+     is-destroyed? "!"
+     is-shot? "·"
+     :else (or display "B"))))
+
 (defn pprint-arena
   "Pretty Print for a given arena"
   [arena]
@@ -84,7 +98,7 @@
     (print
      (string/join "\n" (map-indexed (fn [idx row]
                                       (format "%2d %s" idx
-                                              (string/join "  " (map #(or (:display %) "B") row))))
+                                              (string/join "  " (map print-item row))))
                                     arena)))))
 
 ;; https://gist.github.com/gorsuch/1418850#file-gistfile1-clj
