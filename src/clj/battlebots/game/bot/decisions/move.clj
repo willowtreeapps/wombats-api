@@ -3,7 +3,8 @@
             [battlebots.arena.utils :as au]
             [battlebots.constants.arena :as ac]
             [battlebots.constants.game :refer [collision-damage-amount]]
-            [battlebots.game.messages :refer [log-collision-event]]))
+            [battlebots.game.messages :refer [log-collision-event
+                                              log-occupy-space-event]]))
 
 (defn- apply-player-on-player-damage
   "Applies damage to players when they collide with each other"
@@ -81,8 +82,10 @@
         player-update (ac/determine-effects (:type cell-contents) ac/move-settings)
         updated-arena (au/update-cell dirty-arena coords (gu/sanitize-player player))
         updated-players (gu/modify-player-stats player-id player-update players)]
-    (merge game-state {:dirty-arena updated-arena
-                       :players updated-players})))
+    (-> game-state
+        (merge {:dirty-arena updated-arena
+                :players updated-players})
+        (log-occupy-space-event cell-contents player-update player))))
 
 (defn move
   "Determine if a player can move to the space they have requested, if they can then update

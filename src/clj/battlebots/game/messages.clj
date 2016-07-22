@@ -23,6 +23,11 @@
                                                :message (str "Player " player-id " collided with you!")}))
       (add-messages game-state messages))))
 
+(defn log-occupy-space-event
+  [game-state cell-contents update-func player]
+  (add-messages game-state [{:chan (:_id player)
+                             :message (str "You move into a(n) " (:type cell-contents) " space.")}]))
+
 (defn log-shoot-event
   [game-state target-cell damage shooter-id]
   (add-messages game-state [{:chan :global

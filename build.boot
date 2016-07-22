@@ -47,6 +47,14 @@
         401 (println "Invalid API Token")
         (println "Failed to retrive " username "/" repo "/bot.clj"))))
 
+(defn arena1
+  [player]
+  [[o o b o b o]
+   [f f p o f p]
+   [a b p (gu/sanitize-player player) o b]
+   [f f o o b o]
+   [f b f o b o]])
+
 (deftask sim
   "Runs the Battlebots simulator"
   [u username USERNAME  str  "github username"
@@ -62,11 +70,7 @@
                 :bot code
                 :saved-state {}
                 :frames []}
-        initial-game-state {:clean-arena [[o o b o b o]
-                                          [f f p o f p]
-                                          [a b p (gu/sanitize-player player) o b]
-                                          [f f o o b o]
-                                          [f b f o b o]]
+        initial-game-state {:clean-arena (arena1 player)
                             :players [player]}
         initial-frame-count (min 50 (or frames 1))]
     (println "Running Simulation...")

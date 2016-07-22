@@ -29,7 +29,7 @@
                                   :poison}
                     :effects {:open {}
                               :food {:energy #(+ % 10)}
-                              :poision {:energy #(- % 5)}}})
+                              :poison {:energy #(- % 5)}}})
 
 (def shot-settings {:can-occupy #{:open
                                   :ai
