@@ -57,11 +57,14 @@
 
 (defn arena-2
   [player]
-  (let [w (gu/sanitize-player player)]
+  (let [w (gu/sanitize-player player)
+        a1 (assoc a :uuid "a1")
+        a2 (assoc a :uuid "a2")
+        a3 (assoc a :uuid "a3")]
     [[b b b b b b b b b b b b b b b b]
-     [b a o o a o o o o o o o o o o b]
+     [b a1 o o a2 o o o o o o o o o o b]
      [b o o p o f o o f o o p o o o b]
-     [b f o o o o o o f o a o o o o b]
+     [b f o o o o o o f o p o o o o b]
      [b f o o o o o o o o o o o o o b]
      [b p o o o o o o f o o f o o o b]
      [b b b b o f o o o o o o o o o b]
@@ -69,7 +72,7 @@
      [b f o o o o f o o f o o o b o b]
      [b f o o o o f o o f o b b b o b]
      [b f o o o o o o o o o o o o o b]
-     [b o o o o o f o o o f o f a o b]
+     [b o o o o o f o o o f o f a3 o b]
      [b f o o o o o o o o o o o o o b]
      [b f o o o o f o o o o f o o o b]
      [b w o o o o p o o o o o o o o b]
@@ -94,22 +97,22 @@
    f b f o b o
 
   Arena 2:
-   [[b b b b b b b b b b b b b b b b]
-    [b a o o a o o o o o o o o o o b]
-    [b o o p o f o o f o o p o o o b]
-    [b f o o o o o o f o a o o o o b]
-    [b f o o o o o o o o o o o o o b]
-    [b p o o o o o o f o o f o o o b]
-    [b b b b o f o o o o o o o o o b]
-    [b o o o p o o b o o o o f b o b]
-    [b f o o o o f o o f o o o b o b]
-    [b f o o o o f o o f o b b b o b]
-    [b f o o o o o o o o o o o o o b]
-    [b o o o o o f o o o f o f a o b]
-    [b f o o o o o o o o o o o o o b]
-    [b f o o o o f o o o o f o o o b]
-    [b B o o o o p o o o o o o o o b]
-    [b b b b b b b b b b b b b b b b]]"]
+    [[b b b b b b b b b b b b b b b b]
+     [b a o o a o o o o o o o o o o b]
+     [b o o p o f o o f o o p o o o b]
+     [b f o o o o o o f o p o o o o b]
+     [b f o o o o o o o o o o o o o b]
+     [b p o o o o o o f o o f o o o b]
+     [b b b b o f o o o o o o o o o b]
+     [b o o o p o o b o o o o f b o b]
+     [b f o o o o f o o f o o o b o b]
+     [b f o o o o f o o f o b b b o b]
+     [b f o o o o o o o o o o o o o b]
+     [b o o o o o f o o o f o f a o b]
+     [b f o o o o o o o o o o o o o b]
+     [b f o o o o f o o o o f o o o b]
+     [b B o o o o p o o o o o o o o b]
+     [b b b b b b b b b b b b b b b b]]"]
   (let [{:keys [code ratelimit-message]} (get-bot-code-simulator username repo token)
         arena-number (min 2 (or arena 1))
         player {:_id "1"
