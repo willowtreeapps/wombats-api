@@ -4,13 +4,13 @@
                           [cheshire "5.1.1"]
                           [com.novemberain/monger "3.0.2"]])
 
-(require '[battlebots.game.frame.processor :refer [process-frame]]
-         '[battlebots.game.initializers :refer [initialize-frame]]
-         '[battlebots.game.finalizers :refer [finalize-frame]]
-         '[battlebots.arena.utils :as au]
-         '[battlebots.game.utils :as gu]
-         '[battlebots.services.github :refer [decode-bot]]
-         '[battlebots.game.test-game :refer [o b a f p]]
+(require '[wombats.game.frame.processor :refer [process-frame]]
+         '[wombats.game.initializers :refer [initialize-frame]]
+         '[wombats.game.finalizers :refer [finalize-frame]]
+         '[wombats.arena.utils :as au]
+         '[wombats.game.utils :as gu]
+         '[wombats.services.github :refer [decode-bot]]
+         '[wombats.game.test-game :refer [o b a f p]]
          '[org.httpkit.client :as http]
          '[cheshire.core :refer [parse-string]])
 
@@ -79,7 +79,7 @@
      [b b b b b b b b b b b b b b b b]]))
 
 (deftask sim
-  "Runs the Battlebots simulator"
+  "Runs the Wombats simulator"
   [u username USERNAME  str  "github username"
    r repo     REPO      str  "bot repo"
    e energy   ENERGY    int  "energy (default 100)"

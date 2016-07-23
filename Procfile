@@ -1,1 +1,1 @@
-web: java $JVM_OPTS -cp target/battlebots.jar clojure.main -m battlebots.server
+web: java $JVM_OPTS -cp target/wombats.jar clojure.main -m wombats.server

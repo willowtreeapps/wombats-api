@@ -1,8 +1,8 @@
-## WillowTree Battlebots
+## WillowTree Wombats
 
-![](https://circleci.com/gh/willowtreeapps/battlebots.svg?style=shield&circle-token=:circle-token)
+![](https://circleci.com/gh/willowtreeapps/wombats.svg?style=shield&circle-token=:circle-token)
 
-Battlebots is multiplayer game inspired by [scalatron](https://scalatron.github.io/) written in [clojure](https://clojure.org/).
+Wombats is multiplayer game inspired by [scalatron](https://scalatron.github.io/) written in [clojure](https://clojure.org/).
 
 ### How it works
 
@@ -19,14 +19,14 @@ Each player writes their own bot in clojure (other language support may become a
 
 1. For development, [Register](https://github.com/settings/applications/new) a new GitHub OAuth Application NOTE: This step will be removed when we get a WillowTree GitHub App.
 1. (REQUIRED) Add the following environment variables.
-   - **BATTLEBOTS_GITHUB_CLIENT_ID** (GitHub Client ID)
-   - **BATTLEBOTS_GITHUB_CLIENT_SECRET** (GitHub Client Secret)
-   - **BATTLEBOTS_OAUTH_SIGNING_SECRET** (Random secret string)
-   - **BATTLEBOTS_WEB_CLIENT_URL** (Root URL that the user will be redirected to once Auth is complete)
+   - **WOMBATS_GITHUB_CLIENT_ID** (GitHub Client ID)
+   - **WOMBATS_GITHUB_CLIENT_SECRET** (GitHub Client Secret)
+   - **WOMBATS_OAUTH_SIGNING_SECRET** (Random secret string)
+   - **WOMBATS_WEB_CLIENT_URL** (Root URL that the user will be redirected to once Auth is complete)
 1. (OPTIONAL) If running a remote database, add the following environment variables. (This is required if running in production.
-   - **BATTLEBOTS_MONGOD_USER_NAME**
-   - **BATTLEBOTS_MONGOD_USER_PW**
-   - **BATTLEBOTS_MONGOD_HOST_LIST**
+   - **WOMBATS_MONGOD_USER_NAME**
+   - **WOMBATS_MONGOD_USER_PW**
+   - **WOMBATS_MONGOD_HOST_LIST**
 1. (REQUIRED) Run `lein run` in root directory (builds project and runs server)
 1. (REQUIRED - CLIENT DEV ONLY) Run `lein figwheel` in root directory (compiles clojurescript and watches)
 1. (REQUIRED - CLIENT DEV ONLY) Run `lein less auto` in root directory (watches styles)

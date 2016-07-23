@@ -1,4 +1,4 @@
-(defproject battlebots "0.1.0-SNAPSHOT"
+(defproject wombats "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -93,14 +93,14 @@
   :less {:source-paths ["src/less"]
          :target-path  "resources/public/css"}
 
-  :ring {:handler battlebots.handler/app
-         :uberwar-name "battlebots.war"}
+  :ring {:handler wombats.handler/app
+         :uberwar-name "wombats.war"}
 
   :min-lein-version "2.5.0"
 
-  :uberjar-name "battlebots.jar"
+  :uberjar-name "wombats.jar"
 
-  :main battlebots.server
+  :main wombats.server
 
   :clean-targets ^{:protect false} [:target-path [:cljsbuild :builds :app :compiler :output-dir]
                                                  [:cljsbuild :builds :app :compiler :output-to]]
@@ -118,7 +118,7 @@
                                         :optimizations :none
                                         :pretty-print  true}}}}
 
-  :profiles {:dev {:repl-options {:init-ns battlebots.repl}
+  :profiles {:dev {:repl-options {:init-ns wombats.repl}
 
                    :dependencies [[ring/ring-mock "0.3.0"]
                                   [ring/ring-devel "1.4.0"]
@@ -158,12 +158,12 @@
                               :nrepl-port 7002
                               :nrepl-middleware ["cemerick.piggieback/wrap-cljs-repl"]
                               :css-dirs ["resources/public/css"]
-                              :ring-handler battlebots.router/app}
+                              :ring-handler wombats.router/app}
 
                    :env {:dev true}
 
                    :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
-                                              :compiler {:main "battlebots.dev"
+                                              :compiler {:main "wombats.dev"
                                                          :source-map true}}}}}
 
              :uberjar {:hooks [minify-assets.plugin/hooks]
