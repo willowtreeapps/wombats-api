@@ -1,6 +1,6 @@
 ## WillowTree Wombats
 
-![](https://circleci.com/gh/willowtreeapps/wombats.svg?style=shield&circle-token=:circle-token)
+![](https://circleci.com/gh/willowtreeapps/wombats-api.svg?style=shield&circle-token=:circle-token)
 
 Wombats is multiplayer game inspired by [scalatron](https://scalatron.github.io/) written in [clojure](https://clojure.org/).
 
