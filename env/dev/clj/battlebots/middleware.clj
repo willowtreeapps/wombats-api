@@ -1,5 +1,6 @@
 (ns battlebots.middleware
   (:require [ring.middleware.defaults :refer [api-defaults site-defaults wrap-defaults]]
+            [ring.middleware.cors :refer [wrap-cors]]
             [prone.middleware :refer [wrap-exceptions]]
             [buddy.auth.backends :as backends]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
@@ -30,6 +31,8 @@
 
 (defn wrap-middleware [handler]
   (-> handler
+      (wrap-cors :access-control-allow-origin [#".*"]
+                 :access-control-allow-methods [:get :put :post :delete])
       (wrap-defaults api-defaults) ;; api-defaults should only be set for api endpoints. TODO refactor out site endpoints
       wrap-json-params
       wrap-transit-params
