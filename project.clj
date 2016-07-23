@@ -24,6 +24,7 @@
                  [ring/ring-json "0.4.0"]
                  [ring-server "0.4.0"]
                  [http-kit "2.1.19"]
+                 [ring-cors "0.1.8"]
 
                  ;; Routing
                  [compojure "1.5.0"]
