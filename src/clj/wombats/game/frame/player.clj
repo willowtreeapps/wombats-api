@@ -85,7 +85,7 @@
 (defn resolve-player-turns
   "Updates the arena by applying each players' movement logic"
   [{:keys [players clean-arena] :as game-state}]
-  (let [execution-order (randomize-players players)
+  (let [execution-order (rotate-players players)
         player-decisions (resolve-player-decisions players clean-arena)
         sorted-player-decisions (sort-decisions player-decisions execution-order)
         updated-game-state (reduce (apply-decisions command-map)
