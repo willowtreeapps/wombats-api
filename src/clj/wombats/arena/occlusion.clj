@@ -1,6 +1,13 @@
 (ns wombats.arena.occlusion
   (:require [wombats.constants.arena :refer [arena-key]]))
 
+(defn- opaque-md?
+  [cell]
+  (let [md (get cell :md)]
+    (some (fn [kv]
+            (let [v (get kv 1)]
+              (= :smokescreen (get v :type)))) md)))
+
 (def ^:private slopes [[1 0] [-1 0] [0 1] [0 -1]])
 
 (defn- normalize-slope
@@ -25,7 +32,10 @@
 
 (defn- blocked-pos?
   [arena [x y]]
-  (not (get-in arena [x y :transparent])))
+  (let [cell (get-in arena [x y])]
+    (or
+     (opaque-md? cell)
+     (not (get cell :transparent)))))
 
 (defn- fog-of-war
   [arena pos]

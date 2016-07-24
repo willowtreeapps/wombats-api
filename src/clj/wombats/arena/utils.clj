@@ -83,10 +83,12 @@
                               (conj %1 metadata)
                               %1)) [] md)
         is-shot? (some #(= (:type %1) :shot) metadata)
-        is-destroyed? (some #(= (:type %1) :destroyed) metadata)]
+        is-destroyed? (some #(= (:type %1) :destroyed) metadata)
+        is-smokescreen? (some #(= (:type %1) :smokescreen) metadata)]
     (cond
      is-destroyed? "!"
      is-shot? "·"
+     is-smokescreen? "*"
      :else (or display "B"))))
 
 (defn pprint-arena

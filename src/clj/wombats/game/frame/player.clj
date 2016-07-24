@@ -7,7 +7,8 @@
             [wombats.game.utils :as gu]
             [wombats.game.bot.decisions.move :refer [move]]
             [wombats.game.bot.decisions.save-state :refer [save-state]]
-            [wombats.game.bot.decisions.shoot :refer [shoot]]))
+            [wombats.game.bot.decisions.shoot :refer [shoot]]
+            [wombats.game.bot.decisions.smokescreen :refer [smokescreen]]))
 
 (defn- randomize-players
   "Randomizes player ids"
@@ -45,6 +46,9 @@
 
                                 (= cmd "SET_STATE")
                                 (save-state player-id metadata game-state)
+
+                                (= cmd "SMOKESCREEN")
+                                (smokescreen player-id game-state)
 
                                 :else game-state)
                                game-state)]
