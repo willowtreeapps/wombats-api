@@ -14,6 +14,14 @@
   [players]
   (shuffle (map #(:_id %) players)))
 
+(defn- rotate-players
+  "rotates last player to front of list"
+  ([players] (rotate-players players 1))
+  ([players n]
+   (let [cv (count players)
+         n (mod n cv)]
+     (concat (subvec (mapv #(:_id %) players) n cv) (subvec (mapv #(:_id %) players) 0 n)))))
+
 (defn- sort-decisions
   "Sorts player decisions based of of a provided execution-order"
   [decisions execution-order]
@@ -59,7 +67,7 @@
   "Returns a vecor of player decisions based off of the logic provided by
   their bots and an identical clean version of the arena"
   [players clean-arena]
-  (map (fn [{:keys [_id bot saved-state energy] :as player}]
+  (map-indexed (fn [idx {:keys [_id bot saved-state energy] :as player}]
          (let [partial-arena (get-arena-area
                               clean-arena
                               (gu/get-player-coords _id clean-arena)
@@ -71,13 +79,15 @@
                         :saved-state saved-state
                         :bot-id _id
                         :energy energy
-                        :spawn-bot? false})
+                        :spawn-bot? false
+                        :initiative-order idx
+                        :wombat-count (count players)})
             :_id _id})) players))
 
 (defn resolve-player-turns
   "Updates the arena by applying each players' movement logic"
   [{:keys [players clean-arena] :as game-state}]
-  (let [execution-order (randomize-players players)
+  (let [execution-order (rotate-players players)
         player-decisions (resolve-player-decisions players clean-arena)
         sorted-player-decisions (sort-decisions player-decisions execution-order)
         updated-game-state (reduce (apply-decisions command-map)
