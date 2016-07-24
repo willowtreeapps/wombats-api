@@ -21,10 +21,10 @@
   the one that is contained inside of the arena and will contain private data
   including energy, decision logic, and saved state."
   [players]
-  (map (fn [{:keys [_id bot-repo] :as player}] (merge player {:energy 100
-                                                              :bot (get-bot _id bot-repo)
-                                                              :saved-state {}
-                                                              :type "player"})) players))
+  (shuffle (map (fn [{:keys [_id bot-repo] :as player}] (merge player {:energy 100
+                                                                      :bot (get-bot _id bot-repo)
+                                                                      :saved-state {}
+                                                                      :type "player"})) players)))
 
 (defn initialize-frame
   "Preps game-state for a new frame"
