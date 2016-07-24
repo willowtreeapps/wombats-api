@@ -67,7 +67,7 @@
   "Returns a vecor of player decisions based off of the logic provided by
   their bots and an identical clean version of the arena"
   [players clean-arena]
-  (map (fn [{:keys [_id bot saved-state energy] :as player}]
+  (map-indexed (fn [idx {:keys [_id bot saved-state energy] :as player}]
          (let [partial-arena (get-arena-area
                               clean-arena
                               (gu/get-player-coords _id clean-arena)
@@ -79,7 +79,9 @@
                         :saved-state saved-state
                         :bot-id _id
                         :energy energy
-                        :spawn-bot? false})
+                        :spawn-bot? false
+                        :initiative-order idx
+                        :wombat-count (count players)})
             :_id _id})) players))
 
 (defn resolve-player-turns
