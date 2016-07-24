@@ -14,6 +14,14 @@
   [players]
   (shuffle (map #(:_id %) players)))
 
+(defn- rotate-players
+  "rotates last player to front of list"
+  ([players] (rotate-players players 1))
+  ([players n]
+   (let [cv (count players)
+         n (mod n cv)]
+     (concat (subvec players n cv) (subvec players 0 n)))))
+
 (defn- sort-decisions
   "Sorts player decisions based of of a provided execution-order"
   [decisions execution-order]
