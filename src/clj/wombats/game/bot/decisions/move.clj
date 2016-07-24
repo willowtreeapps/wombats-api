@@ -2,7 +2,6 @@
   (:require [wombats.game.utils :as gu]
             [wombats.arena.utils :as au]
             [wombats.constants.arena :as ac]
-            [wombats.constants.game :refer [collision-damage-amount]]
             [wombats.game.messages :refer [log-collision-event
                                               log-occupy-space-event]]))
 
@@ -90,7 +89,10 @@
 (defn move
   "Determine if a player can move to the space they have requested, if they can then update
   the board by moving the player and apply any possible consequences of the move to the player."
-  [player-id {:keys [direction] :as metadata} {:keys [dirty-arena players] :as game-state}]
+  [player-id
+   {:keys [direction] :as metadata}
+   {:keys [dirty-arena players] :as game-state}
+   {:keys [collision-damage-amount]}]
   (let [player-coords (gu/get-player-coords player-id dirty-arena)
         dimensions (au/get-arena-dimensions dirty-arena)
         desired-coords (au/adjust-coords player-coords direction dimensions)

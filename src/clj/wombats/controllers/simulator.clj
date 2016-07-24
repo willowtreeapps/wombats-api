@@ -1,5 +1,6 @@
 (ns wombats.controllers.simulator
   (:require [ring.util.response :refer [response]]
+            [wombats.config.game :as game]
             [wombats.game.frame.processor :refer [process-frame]]
             [wombats.services.github :refer [get-bot]]
             [wombats.game.utils :as gu]
@@ -25,5 +26,5 @@
       (if (= frame-count 0)
         (response (select-keys game-state [:frames]))
         (recur
-         ((comp finalize-frame process-frame initialize-frame) game-state)
+         ((comp finalize-frame #(process-frame % game/config) initialize-frame) game-state)
          (dec frame-count))))))

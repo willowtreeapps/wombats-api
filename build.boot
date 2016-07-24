@@ -4,7 +4,8 @@
                           [cheshire "5.1.1"]
                           [com.novemberain/monger "3.0.2"]])
 
-(require '[wombats.game.frame.processor :refer [process-frame]]
+(require '[wombats.config.game :as game]
+         '[wombats.game.frame.processor :refer [process-frame]]
          '[wombats.game.initializers :refer [initialize-frame]]
          '[wombats.game.finalizers :refer [finalize-frame]]
          '[wombats.arena.utils :as au]
@@ -154,6 +155,6 @@
           (println (str "\nDone!\n"
                         ratelimit-message))
           (recur
-           ((comp finalize-frame process-frame initialize-frame) game-state)
+           ((comp finalize-frame #(process-frame % game/config) initialize-frame) game-state)
            (dec frame-count)
            (- initial-frame-count (dec frame-count))))))))

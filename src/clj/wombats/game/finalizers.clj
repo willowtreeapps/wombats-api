@@ -4,17 +4,17 @@
             [wombats.constants.arena :as ac]))
 
 (defn- save-segment
-  [{:keys [_id players frames segment-count] :as game-state}]
+  [{:keys [_id players frames round-count] :as game-state}]
   (db/save-game-segment {:game-id _id
                          :players (map gu/sanitize-player players)
                          :frames frames
-                         :segment segment-count}))
+                         :segment round-count}))
 
 (defn finalize-segment
   "Batches a segment of frames together, persists them, and returns a clean segment"
-  [{:keys [segment-count] :as game-state}]
+  [{:keys [round-count] :as game-state}]
   (save-segment game-state)
-  (merge game-state {:segment-count (inc segment-count)
+  (merge game-state {:round-count (inc round-count)
                      :frames []}))
 
 (defn finalize-frame
@@ -34,5 +34,5 @@
                  :clean-arena
                  :dirty-arena
                  :frames
-                 :segment-count) {:state "finalized"
-                                  :players (map gu/sanitize-player players)}))
+                 :round-count) {:state "finalized"
+                                :players (map gu/sanitize-player players)}))

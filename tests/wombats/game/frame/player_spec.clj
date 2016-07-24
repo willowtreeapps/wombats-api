@@ -1,5 +1,5 @@
 (ns wombats.game.frame.player-spec
-  (:require [wombats.game.frame.player :refer :all :as player]
+  (:require [wombats.game.frame.player :as player]
             [wombats.game.utils :as gu]
             [wombats.arena.utils :as au]
             [wombats.game.test-game :refer [test-players
@@ -15,13 +15,13 @@
   is not calculated."))
 
 (deftest process-command-spec
-  (is (= 50 (:remaining-time ((#'player/process-command "1" {:SHOOT {:tu 50}})
+  (is (= 50 (:remaining-time ((#'player/process-command "1" {:command-map {:SHOOT {:tu 50}}})
                               {:game-state test-game-state
                                :remaining-time 100} {:cmd "SHOOT"
                                                      :metadata {:energy 5
                                                                 :direction 4}})))
       "When a player passes a command and has enough banked time to execute the command, remaining-time is decremented")
-  (is (= 50 (:remaining-time ((#'player/process-command "1" {:SHOOT {:tu 60}})
+  (is (= 50 (:remaining-time ((#'player/process-command "1" {:command-map {:SHOOT {:tu 60}}})
                               {:game-state test-game-state
                                :remaining-time 50} {:cmd "SHOOT"
                                                     :metadata {:energy 5
@@ -29,56 +29,65 @@
       "When a player passas a command and does not have enough time to execute the command, remaining time does not change.")
   (is (= {:game-state test-game-state
           :remaining-time 20}
-         ((#'player/process-command "1" {:SHOOT {:tu 10}})
+         ((#'player/process-command "1" {:command-map {:SHOOT {:tu 10}}})
           {:game-state test-game-state
            :remaining-time 20} {:cmd "SOME_INVALID_COMMAND"
                                 :metadata {}}))
       "When a player passes an invalid command, nothing is modified"))
 
 (deftest apply-decisions-spec
-  (is (= (gu/get-player-coords
-          "1"
-          (au/update-cell
-           (au/update-cell
+  (testing "Player 1 is moved 3 spaces up when passed 3 {:MOVE 1} commands, each costing 33 time units"
+    (is (= (gu/get-player-coords
+            "1"
             (au/update-cell
              (au/update-cell
-              test-arena
-              [6 3] o)
-             [6 2] o)
-            [6 1] o)
-           [6 0] b1))
-         (gu/get-player-coords
-          "1"
-          (:dirty-arena ((#'player/apply-decisions {:MOVE {:tu 33}}) test-game-state
-                         {:decision {:commands [{:cmd "MOVE"
-                                                 :metadata {:direction 1}}
-                                                {:cmd "MOVE"
-                                                 :metadata {:direction 1}}
-                                                {:cmd "MOVE"
-                                                 :metadata {:direction 1}}]}
-                          :_id "1"}))))
-      "Player 1 is moved 3 spaces up when passed 3 {:MOVE 1} commands, each costing 33 time units")
-  (is (= (gu/get-player-coords
-          "1"
-          (au/update-cell
+              (au/update-cell
+               (au/update-cell
+                test-arena
+                [6 3] o)
+               [6 2] o)
+              [6 1] o)
+             [6 0] b1))
+           (gu/get-player-coords
+            "1"
+            (:dirty-arena ((#'player/apply-decisions {:command-map {:MOVE {:tu 33}}
+                                                      :initial-time-unit-count 100})
+                           test-game-state
+                           {:decision {:commands [{:cmd "MOVE"
+                                                   :metadata {:direction 1}}
+                                                  {:cmd "MOVE"
+                                                   :metadata {:direction 1}}
+                                                  {:cmd "MOVE"
+                                                   :metadata {:direction 1}}]}
+                            :_id "1"}))))))
+  (testing "Player 1 is moved 2 spaces up when passed 5 {:MOVE 1} commands, each costing 50 time units"
+    (is (= (gu/get-player-coords
+            "1"
             (au/update-cell
              (au/update-cell
-              test-arena
-              [6 3] 0)
-             [6 2] o)
-            [6 1] b1))
-         (gu/get-player-coords
-          "1"
-          (:dirty-arena ((#'player/apply-decisions {:MOVE {:tu 50}}) test-game-state
-                         {:decision {:commands [{:cmd "MOVE"
-                                                 :metadata {:direction 1}}
-                                                {:cmd "MOVE"
-                                                 :metadata {:direction 1}}
-                                                {:cmd "MOVE"
-                                                 :metadata {:direction 1}}
-                                                {:cmd "MOVE"
-                                                 :metadata {:direction 1}}
-                                                {:cmd "MOVE"
-                                                 :metadata {:direction 1}}]}
-                          :_id "1"}))))
-      "Player 1 is moved 2 spaces up when passed 5 {:MOVE 1} commands, each costing 50 time units"))
+              (au/update-cell
+               test-arena
+               [6 3] 0)
+              [6 2] o)
+             [6 1] b1))
+           (gu/get-player-coords
+            "1"
+            (:dirty-arena ((#'player/apply-decisions {:command-map {:MOVE {:tu 50}}
+                                                      :initial-time-unit-count 100})
+                           test-game-state
+                           {:decision {:commands [{:cmd "MOVE"
+                                                   :metadata {:direction 1}}
+                                                  {:cmd "MOVE"
+                                                   :metadata {:direction 1}}
+                                                  {:cmd "MOVE"
+                                                   :metadata {:direction 1}}
+                                                  {:cmd "MOVE"
+                                                   :metadata {:direction 1}}
+                                                  {:cmd "MOVE"
+                                                   :metadata {:direction 1}}]}
+                            :_id "1"})))))))
+
+;; (deftest resolving-player-turns
+;;   (is (= (prn (player/resolve-turns test-game-state game/config))
+;;          test-game-state))
+;;   )

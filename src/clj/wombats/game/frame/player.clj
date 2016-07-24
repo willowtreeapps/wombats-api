@@ -1,11 +1,8 @@
 (ns wombats.game.frame.player
   (:require [wombats.arena.partial :refer [get-arena-area]]
             [wombats.arena.occlusion :refer [occluded-arena]]
-            [wombats.constants.game :refer [command-map
-                                               initial-time-unit-count
-                                               partial-arena-radius]]
             [wombats.game.utils :as gu]
-            [wombats.game.bot.decisions.move :refer [move]]
+            [wombats.game.bot.decisions.move :as m]
             [wombats.game.bot.decisions.save-state :refer [save-state]]
             [wombats.game.bot.decisions.shoot :refer [shoot]]))
 
@@ -15,12 +12,14 @@
   (shuffle (map #(:_id %) players)))
 
 (defn- rotate-players
-  "rotates last player to front of list"
-  ([players] (rotate-players players 1))
-  ([players n]
+  "rotates `n` players to the front of list"
+  ([players initiative-order] (rotate-players players 1 initiative-order))
+  ([players n initiative-order]
+   {:pre [(< n (count players))]}
    (let [cv (count players)
-         n (mod n cv)]
-     (concat (subvec (mapv #(:_id %) players) n cv) (subvec (mapv #(:_id %) players) 0 n)))))
+         ids (or initiative-order
+                 (randomize-players players))]
+     (concat (take-last n ids) (drop-last n ids)))))
 
 (defn- sort-decisions
   "Sorts player decisions based of of a provided execution-order"
@@ -29,16 +28,16 @@
 
 (defn- process-command
   "Processes a single command for a given player if the player has enough time for that command."
-  [player-id command-map]
+  [player-id {:keys [command-map] :as config}]
   (fn [{:keys [game-state remaining-time]} command]
     (let [{:keys [cmd metadata]} command
-          time-cost (or (get-in command-map [(keyword cmd) :tu]) 0)
+          time-cost (get-in command-map [(keyword cmd) :tu] 0)
           updated-time (- remaining-time time-cost)
           should-update? (>= updated-time 0)
           updated-game-state (if should-update?
                                (cond
                                 (= cmd "MOVE")
-                                (move player-id metadata game-state)
+                                (m/move player-id metadata game-state config)
 
                                 (= cmd "SHOOT")
                                 (shoot player-id metadata game-state)
@@ -55,42 +54,43 @@
 
 (defn- apply-decisions
   "Applies player decision to the current state of the game"
-  [command-map]
-  (fn [game-state {:keys [decision _id] :as player}]
-    (let [{:keys [commands]} decision]
-      (:game-state (reduce (process-command _id command-map)
-                           {:game-state game-state
-                            :remaining-time initial-time-unit-count}
-                           commands)))))
+  [{:keys [initial-time-unit-count] :as config}]
+  (fn [game-state {:keys [_id]
+                  {:keys [commands]} :decision
+                  :as player}]
+    (:game-state (reduce (process-command _id config)
+                         {:game-state game-state
+                          :remaining-time initial-time-unit-count}
+                         commands))))
 
 (defn- resolve-player-decisions
   "Returns a vecor of player decisions based off of the logic provided by
-  their bots and an identical clean version of the arena"
-  [players clean-arena]
+   their bots and an identical clean version of the arena"
+  [players clean-arena {{:keys [partial-arena-radius]} :player}]
   (map-indexed (fn [idx {:keys [_id bot saved-state energy] :as player}]
-         (let [partial-arena (get-arena-area
-                              clean-arena
-                              (gu/get-player-coords _id clean-arena)
-                              partial-arena-radius)]
-           {:decision ((load-string bot)
-                       {:arena (occluded-arena
-                                partial-arena
-                                (gu/get-player-coords _id partial-arena))
-                        :saved-state saved-state
-                        :bot-id _id
-                        :energy energy
-                        :spawn-bot? false
-                        :initiative-order idx
-                        :wombat-count (count players)})
-            :_id _id})) players))
+                 (let [partial-arena (get-arena-area
+                                      clean-arena
+                                      (gu/get-player-coords _id clean-arena)
+                                      partial-arena-radius)]
+                   {:decision ((load-string bot)
+                               {:arena (occluded-arena
+                                        partial-arena
+                                        (gu/get-player-coords _id partial-arena))
+                                :saved-state saved-state
+                                :bot-id _id
+                                :energy energy
+                                :spawn-bot? false
+                                :initiative-order idx
+                                :wombat-count (count players)})
+                    :_id _id})) players))
 
-(defn resolve-player-turns
+(defn resolve-turns
   "Updates the arena by applying each players' movement logic"
-  [{:keys [players clean-arena] :as game-state}]
-  (let [execution-order (rotate-players players)
-        player-decisions (resolve-player-decisions players clean-arena)
-        sorted-player-decisions (sort-decisions player-decisions execution-order)
-        updated-game-state (reduce (apply-decisions command-map)
-                                   game-state
-                                   sorted-player-decisions)]
-    updated-game-state))
+  [{:keys [players clean-arena initiative-order] :as game-state} config]
+  (let [execution-order (rotate-players players initiative-order)
+        player-decisions (resolve-player-decisions players clean-arena config)
+        sorted-player-decisions (sort-decisions player-decisions execution-order)]
+    (assoc (reduce (apply-decisions config)
+                   game-state
+                   sorted-player-decisions)
+           :initiative-order execution-order)))
