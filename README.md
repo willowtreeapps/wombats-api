@@ -4,12 +4,12 @@
 
 ### What is Wombats?
 
-Wombats is multiplayer game where players write code to control a wombat in an areana filled with obstacles, enemies, and other wombats.
+Wombats is multiplayer game where players write code to control a wombat in an arena filled with obstacles, enemies, and other wombats.
 Wombats was inspired by [scalatron](https://scalatron.github.io/) and is written in [clojure](https://clojure.org/).
 
 ### How it works
 
-1. Visit wombats.willowtreemobile.com and signup. (Signup will ask for GitHub read only permission. This is used for user authenication and wombat registration / tracking)
+1. Visit wombats.willowtreemobile.com and sign up. (Sign up will ask for GitHub read only permission. This is used for user authenication and wombat registration / tracking)
 1. Register a wombat under your user settings. (Don't have a wombat? Check out "Writing your first Wombat")
 1. Join a game to play!
 
