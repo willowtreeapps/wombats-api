@@ -2,6 +2,8 @@
 
 ![](https://circleci.com/gh/willowtreeapps/wombats-api.svg?style=shield&circle-token=:circle-token)
 
+![wombat_git](https://cloud.githubusercontent.com/assets/4649439/17083937/59e5a5f0-517d-11e6-92a2-976aee52d95c.png)
+
 ### What is Wombats?
 
 Wombats is multiplayer game where players write code to control a wombat in an arena filled with obstacles, enemies, and other wombats.
