@@ -56,8 +56,9 @@
    [f b f o b o]])
 
 (defn arena-2
-  [player]
+  [player player2]
   (let [w (gu/sanitize-player player)
+        w2 (gu/sanitize-player player2)
         a1 (assoc a :uuid "a1")
         a2 (assoc a :uuid "a2")
         a3 (assoc a :uuid "a3")]
@@ -65,7 +66,7 @@
      [b a1 o o a2 o o o o o o o o o o b]
      [b o o p o f o o f o o p o o o b]
      [b f o o o o o o f o p o o o o b]
-     [b f o o o o o o o o o o o o o b]
+     [b f o o o o o o o w2 o o o o o b]
      [b p o o o o o o f o o f o o o b]
      [b b b b o f o o o o o o o o o b]
      [b o o o p o o b o o o o f b o b]
@@ -122,8 +123,10 @@
                 :bot code
                 :saved-state {}
                 :frames []}
-        initial-game-state {:clean-arena ((ns-resolve *ns* (symbol (str "arena-" arena-number))) player)
-                            :players [player]}
+        player2 (assoc player :_id "2")
+
+        initial-game-state {:clean-arena ((ns-resolve *ns* (symbol (str "arena-" arena-number))) player player2)
+                            :players [player player2]}
         initial-frame-count (min 100 (or frames 1))
         sleep-time (or sleep 2000)]
     (println "Running Simulation...")

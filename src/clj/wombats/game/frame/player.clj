@@ -20,7 +20,7 @@
   ([players n]
    (let [cv (count players)
          n (mod n cv)]
-     (concat (subvec players n cv) (subvec players 0 n)))))
+     (concat (subvec (mapv #(:_id %) players) n cv) (subvec (mapv #(:_id %) players) 0 n)))))
 
 (defn- sort-decisions
   "Sorts player decisions based of of a provided execution-order"
