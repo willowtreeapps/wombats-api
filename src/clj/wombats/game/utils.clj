@@ -34,7 +34,7 @@
 (defn modify-player-stats
   "maps over player collection and applies an update to the matching player.
 
-  ex update: {:energy #(+ % 10)
+  ex update: {:hp #(+ % 10)
               :something-other-player-prop #(* % 5)}"
   [player-id update players]
   (map
@@ -82,17 +82,17 @@
 (defn sanitize-player
   "Sanitizes the full player object returning the partial used on the game map"
   [player]
-  (select-keys player [:_id :uuid :login :energy :type]))
+  (select-keys player [:_id :uuid :login :hp :type]))
 
 (defn apply-damage
-  "applies damage to items that have energy. If the item does not have energy, return the item.
-  If the item after receiving damage has 0 or less energy, replace it with an open space"
+  "applies damage to items that have hp. If the item does not have hp, return the item.
+  If the item after receiving damage has 0 or less hp, replace it with an open space"
   ([item damage] (apply-damage item damage true))
-  ([{:keys [energy] :as item} damage replace-item?]
-   (if energy
-     (let [updated-energy (- energy damage)
-           updated-item (assoc item :energy updated-energy)
-           destroyed? (>= 0 updated-energy)]
+  ([{:keys [hp] :as item} damage replace-item?]
+   (if hp
+     (let [updated-hp (- hp damage)
+           updated-item (assoc item :hp updated-hp)
+           destroyed? (>= 0 updated-hp)]
        (if (and destroyed? replace-item?)
          (:open arena-key)
          updated-item))

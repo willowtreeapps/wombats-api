@@ -132,7 +132,7 @@
 
   Note: Only use this if you are going to perform a scan and only care about one type
         or you want to perform an advanced arena query (i.e. all cells that are ai and have
-        more than 20 energy). Otherwise it is more performant to use sort arena once and
+        more than 20 hp). Otherwise it is more performant to use sort arena once and
         then operate on the results.
 
   ex: o  o  o

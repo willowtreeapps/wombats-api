@@ -80,18 +80,18 @@
   (mc/remove (get-db) frames-coll {:game-id (ObjectId. game-id)})
   (mc/remove-by-id (get-db) games-coll (ObjectId. game-id)))
 
-(defn save-game-segment
-  [game-segment]
-  (mc/insert (get-db) frames-coll game-segment))
+(defn save-game-round
+  [game-round]
+  (mc/insert (get-db) frames-coll game-round))
 
-(defn get-game-segment-count
+(defn get-game-round-count
   [game-id]
   (mc/count (get-db) frames-coll {:game-id (ObjectId. game-id)}))
 
-(defn get-game-segment
-  [game-id segment-number]
+(defn get-game-round
+  [game-id round-number]
   (mc/find-one-as-map (get-db) frames-coll {:game-id (ObjectId. game-id)
-                                            :segment segment-number}))
+                                            :round round-number}))
 ;; PLAYER OPERATIONS
 
 (def player-coll "players")

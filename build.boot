@@ -84,7 +84,7 @@
   "Runs the Wombats simulator"
   [u username USERNAME  str  "github username"
    r repo     REPO      str  "bot repo"
-   e energy   ENERGY    int  "energy (default 100)"
+   h hp       HP        int  "hp (default 100)"
    f frames   FRAMES    int  "number of frames to process (default 1, max 100)"
    t token    TOKEN     str  "github API token"
    l live               bool "enable live preview (default disabled)"
@@ -120,7 +120,7 @@
         player {:_id "1"
                 :type "player"
                 :login username
-                :energy (or energy 100)
+                :hp (or hp 100)
                 :bot code
                 :saved-state {}
                 :frames []}
@@ -146,7 +146,7 @@
         (println "\nFRAME: " frame-display)
         (au/pprint-arena clean-arena)
         (println (str "\n\nMessages: " (or messages {})
-                      "\nEnergy: " (:energy (first players))))
+                      "\nHP: " (:hp (first players))))
 
         (when live
           (Thread/sleep sleep-time))

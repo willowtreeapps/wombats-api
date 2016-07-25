@@ -8,7 +8,7 @@
 
 (def config
   {:frames-per-round 30
-   :rounds-per-game 5
+   :rounds-per-game 2
    :collision-damage-amount 10
    :command-map {:MOVE {:tu 50}
                  :SHOOT {:tu 100}

@@ -18,13 +18,13 @@
   (is (= 50 (:remaining-time ((#'player/process-command "1" {:command-map {:SHOOT {:tu 50}}})
                               {:game-state test-game-state
                                :remaining-time 100} {:cmd "SHOOT"
-                                                     :metadata {:energy 5
+                                                     :metadata {:hp 5
                                                                 :direction 4}})))
       "When a player passes a command and has enough banked time to execute the command, remaining-time is decremented")
   (is (= 50 (:remaining-time ((#'player/process-command "1" {:command-map {:SHOOT {:tu 60}}})
                               {:game-state test-game-state
                                :remaining-time 50} {:cmd "SHOOT"
-                                                    :metadata {:energy 5
+                                                    :metadata {:hp 5
                                                                :direction 4}})))
       "When a player passas a command and does not have enough time to execute the command, remaining time does not change.")
   (is (= {:game-state test-game-state

@@ -19,11 +19,10 @@
 (defn initialize-players
   "Preps each player map for the game. This player map is different from
   the one that is contained inside of the arena and will contain private data
-  including energy, decision logic, and saved state."
-  [players {{:keys [energy]} :player :as config}]
-  (map (fn [{:keys [_id bot-repo]
-            :as player}]
-         (merge player {:energy energy
+  including hp, decision logic, and saved state."
+  [players {{:keys [initial-hp]} :player :as config}]
+  (map (fn [{:keys [_id bot-repo] :as player}]
+         (merge player {:hp initial-hp
                         :bot (get-bot _id bot-repo)
                         :saved-state {}
                         :type "player"})) players))

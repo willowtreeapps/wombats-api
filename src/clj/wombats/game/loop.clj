@@ -23,7 +23,7 @@
                                    (p/process-frame config)
                                    f/finalize-frame)]
         (if (round-over? updated-game-state config)
-          (recur (f/finalize-segment updated-game-state))
+          (recur (f/finalize-round updated-game-state))
           (recur updated-game-state)))
       game-state)))
 

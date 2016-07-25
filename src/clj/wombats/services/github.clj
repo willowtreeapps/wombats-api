@@ -4,6 +4,17 @@
             [base64-clj.core :as b64]
             [cheshire.core :refer [parse-string]]))
 
+(def ^:private mocked-bot-code
+"(defn run
+  [{:keys  [arena state bot_id hp spawn-bot?] :as step-details}]
+  (let [command-options [[{:cmd \"SHOOT\"
+                           :metadata  {:direction (rand-nth  [0 1 2 3 4 5 6 7]) :hp 20}}
+                          {:cmd  \"SET_STATE\"
+                           :metadata  {}}]
+                         [{:cmd  \"MOVE\"
+                           :metadata  {:direction (rand-nth  [0 1 2 3 4 5 6 7])}}]]]
+    {:commands (rand-nth command-options)}))")
+
 (defn decode-bot
   [content]
   (let [base64-string (clojure.string/replace content #"\n" "")]
@@ -20,7 +31,8 @@
 (defn get-bot
   "Returns the code a bot executes"
   [player-id repo]
-  (let [{:keys [bots access-token] :as player} (db/get-player-with-token player-id)
+  mocked-bot-code
+  #_(let [{:keys [bots access-token] :as player} (db/get-player-with-token player-id)
         {:keys [contents-url] :as bot} (reduce (fn [memo bot]
                                                  (if (= (:repo bot) repo)
                                                    bot

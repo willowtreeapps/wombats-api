@@ -15,7 +15,7 @@
   "rotates `n` players to the front of list"
   ([players initiative-order] (rotate-players players 1 initiative-order))
   ([players n initiative-order]
-   {:pre [(< n (count players))]}
+   {:pre [(<= n (count players))]}
    (let [cv (count players)
          ids (or initiative-order
                  (randomize-players players))]
@@ -67,7 +67,7 @@
   "Returns a vecor of player decisions based off of the logic provided by
    their bots and an identical clean version of the arena"
   [players clean-arena {{:keys [partial-arena-radius]} :player}]
-  (map-indexed (fn [idx {:keys [_id bot saved-state energy] :as player}]
+  (map-indexed (fn [idx {:keys [_id bot saved-state hp] :as player}]
                  (let [partial-arena (get-arena-area
                                       clean-arena
                                       (gu/get-player-coords _id clean-arena)
@@ -78,7 +78,7 @@
                                         (gu/get-player-coords _id partial-arena))
                                 :saved-state saved-state
                                 :bot-id _id
-                                :energy energy
+                                :hp hp
                                 :spawn-bot? false
                                 :initiative-order idx
                                 :wombat-count (count players)})
@@ -87,10 +87,10 @@
 (defn resolve-turns
   "Updates the arena by applying each players' movement logic"
   [{:keys [players clean-arena initiative-order] :as game-state} config]
-  (let [execution-order (rotate-players players initiative-order)
+  (let [updated-initiative-order (rotate-players players initiative-order)
         player-decisions (resolve-player-decisions players clean-arena config)
-        sorted-player-decisions (sort-decisions player-decisions execution-order)]
+        sorted-player-decisions (sort-decisions player-decisions updated-initiative-order)]
     (assoc (reduce (apply-decisions config)
                    game-state
                    sorted-player-decisions)
-           :initiative-order execution-order)))
+      :initiative-order updated-initiative-order)))

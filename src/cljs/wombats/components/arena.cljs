@@ -31,11 +31,11 @@
 
 (defn render-player-stats
   "renders players score & details"
-  [{:keys [login energy] :as player}]
+  [{:keys [login hp] :as player}]
   (fn []
     [:li.player-row
      [:p.name login]
-     [:p.score energy]]))
+     [:p.score hp]]))
 
 ;; TODO Components are not being updated so we are passing a unique key for each one...
 ;; this is going to be slow. Look into update components without this work around
@@ -51,7 +51,7 @@
 
      [:div.score-board
       [:p.header.name "Name"]
-      [:p.header "Energy"]
+      [:p.header "HP"]
       [:ul.player-stats
        (for [player players]
          ^{:key (rand 10)} [render-player-stats player])]]

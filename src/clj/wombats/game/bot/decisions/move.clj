@@ -47,7 +47,7 @@
 (defn- apply-collision-damage
   "Apply collision damage is responsible for updating the game-state with applied collision damage.
   Bots that run into item spaces that cannot be occupied will receive damage. If the item that is
-  collided with has energy, it to will receive damage. If the item collided with has an energy level
+  collided with has hp, it to will receive damage. If the item collided with has an hp level
   of 0 or less after the collision, that item will disappear and the bot will occupy its space."
   [player-id player-coords
    collision-item collision-coords

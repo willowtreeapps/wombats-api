@@ -10,12 +10,12 @@
 
 (defn run-simulation
   "Runs a simulated scenario based off user specified parameters"
-  [{:keys [arena bot saved-state energy frames] :as simulation} {:keys [_id login]}]
+  [{:keys [arena bot saved-state hp frames] :as simulation} {:keys [_id login]}]
   (is-simulation? simulation)
   (let [player {:_id _id
                 :type "player"
                 :login login
-                :energy energy
+                :hp hp
                 :bot (get-bot _id bot)
                 :saved-state saved-state
                 :frames []}
