@@ -18,7 +18,7 @@
 (defn add-game
   "adds a new game"
   []
-  (let [arena (generate/new-arena large-arena)
+  (let [arena (generate/new-arena small-arena)
         game {:initial-arena arena
               :players []
               :state "pending"}]

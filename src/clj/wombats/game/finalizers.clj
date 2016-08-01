@@ -13,6 +13,7 @@
 (defn finalize-round
   "Batches a round of frames together, persists them, and returns a clean round"
   [{:keys [round-count] :as game-state}]
+  ;; TODO Add persistence back in
   (save-round game-state)
   (merge game-state {:round-count (inc round-count)
                      :frames []}))
@@ -30,9 +31,11 @@
   "Finializes game"
   [{:keys [players] :as game-state}]
   (save-round game-state)
+  ;; (throw (Exception. "Stop Here"))
   (merge (dissoc game-state
                  :clean-arena
                  :dirty-arena
                  :frames
+                 :initiative-order
                  :round-count) {:state "finalized"
                                 :players (map gu/sanitize-player players)}))

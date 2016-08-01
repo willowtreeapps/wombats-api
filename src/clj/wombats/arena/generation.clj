@@ -148,7 +148,7 @@
 (defn- players
   "place players around the arena and returns a new arena"
   [players arena]
-  (reduce replacer arena players))
+  (reduce replacer arena (map #(assoc % :type "player") players)))
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;
 ;; END PLACE ITEMS

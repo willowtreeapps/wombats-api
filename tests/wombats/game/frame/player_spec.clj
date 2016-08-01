@@ -86,8 +86,3 @@
                                                   {:cmd "MOVE"
                                                    :metadata {:direction 1}}]}
                             :_id "1"})))))))
-
-;; (deftest resolving-player-turns
-;;   (is (= (prn (player/resolve-turns test-game-state game/config))
-;;          test-game-state))
-;;   )

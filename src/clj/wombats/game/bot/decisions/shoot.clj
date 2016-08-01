@@ -3,7 +3,7 @@
             [wombats.arena.utils :as au]
             [wombats.game.utils :as gu]
             [wombats.game.messages :refer [log-shoot-event
-                                              log-victim-shot-event]]))
+                                           log-victim-shot-event]]))
 
 (defn- add-shot-metadata
   [uuid]
@@ -108,23 +108,24 @@
 
 (defn shoot
   "Main shoot function"
-  [player-id
-   {:keys [direction hp] :as metadata}
-   {:keys [dirty-arena players] :as game-state}]
-  (let [player-coords (gu/get-player-coords player-id dirty-arena)
-        shoot-coords (au/draw-line-from-point dirty-arena
-                                              player-coords
-                                              direction
-                                              (:distance ac/shot-settings))
-        players-update-shooter-hp (gu/modify-player-stats
-                                   player-id
-                                   {:hp #(- % hp)}
-                                   players)]
-    (:game-state (reduce
-                  process-shot
-                  {:game-state (assoc game-state
-                                 :players players-update-shooter-hp)
-                   :hp hp
-                   :should-progress? true
-                   :shot-uuid (au/uuid)
-                   :shooter-id player-id} shoot-coords))))
+  [{:keys [direction hp] :as metadata}
+   {:keys [dirty-arena players] :as game-state}
+   {:keys [decision-maker decision-maker-coords uuid is-player?]}]
+  (if (and decision-maker is-player?)
+    (let [shoot-coords (au/draw-line-from-point dirty-arena
+                                                decision-maker-coords
+                                                direction
+                                                (:distance ac/shot-settings))
+          players-update-shooter-hp (gu/modify-player-stats
+                                     uuid
+                                     {:hp #(- % hp)}
+                                     players)]
+      (:game-state (reduce
+                    process-shot
+                    {:game-state (assoc game-state
+                                   :players players-update-shooter-hp)
+                     :hp hp
+                     :should-progress? true
+                     :shot-uuid (au/uuid)
+                     :shooter-id uuid} shoot-coords)))
+    game-state))

@@ -1,6 +1,6 @@
 (ns wombats.config.game)
 
-(def ^:private initial-player {:initial-hp 100
+(def ^:private initial-player {:initial-hp 10000
                                :partial-arena-radius 10})
 
 (def ^:private initial-ai {:partial-arena-radius 2

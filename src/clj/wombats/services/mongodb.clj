@@ -44,7 +44,7 @@
     (swap! conn merge connection)))
 
 (def games-coll "games")
-(def frames-coll "frames")
+(def rounds-coll "rounds")
 (def game-fields [:initial-arena
                   :players
                   :state])
@@ -77,20 +77,20 @@
 
 (defn remove-game
   [game-id]
-  (mc/remove (get-db) frames-coll {:game-id (ObjectId. game-id)})
+  (mc/remove (get-db) rounds-coll {:game-id (ObjectId. game-id)})
   (mc/remove-by-id (get-db) games-coll (ObjectId. game-id)))
 
 (defn save-game-round
   [game-round]
-  (mc/insert (get-db) frames-coll game-round))
+  (mc/insert (get-db) rounds-coll game-round))
 
 (defn get-game-round-count
   [game-id]
-  (mc/count (get-db) frames-coll {:game-id (ObjectId. game-id)}))
+  (mc/count (get-db) rounds-coll {:game-id (ObjectId. game-id)}))
 
 (defn get-game-round
   [game-id round-number]
-  (mc/find-one-as-map (get-db) frames-coll {:game-id (ObjectId. game-id)
+  (mc/find-one-as-map (get-db) rounds-coll {:game-id (ObjectId. game-id)
                                             :round round-number}))
 ;; PLAYER OPERATIONS
 

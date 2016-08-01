@@ -15,10 +15,27 @@
   [item]
   (= (:type item) "player"))
 
+(defn is-open?
+  "Checks to see if an item is open"
+  [item]
+  (= (:type item) "open"))
+
 (defn get-player
   "Retrieves a player from the private player collection"
-  [player-id players]
-  (first (filter #(= (:_id %) player-id) players)))
+  [_id players]
+  (first (filter #(= (:_id %) _id) players)))
+
+(defn update-with
+  "Applies an update map to an existing map.
+
+  ex update: {:hp #(+ % 10)
+              :something-other-prop #(* % 5)}"
+  [target-map update]
+  (reduce (fn [target-map [prop update-fn]]
+            (assoc target-map prop (update-fn
+                                    (get target-map prop))))
+          target-map
+          update))
 
 (defn update-player-with
   "Updates a player in the private player collection with an object.
@@ -40,15 +57,12 @@
   (map
    (fn [{:keys [_id] :as player}]
      (if (= player-id _id)
-       (reduce (fn [player [prop update-fn]]
-                 (assoc player prop (update-fn (get player prop))))
-               player
-               update)
+       (update-with player update)
        player))
    players))
 
 (defn get-item-coords
-  "Returns a tuple of a given players coords
+  "Returns a tuple of a given items coords
 
   TODO: There's most likely a better way to accomplish this"
   [uuid arena]
@@ -56,22 +70,6 @@
                      (if (:coords memo)
                        memo
                        (let [idx (position #(= (:uuid %) uuid) row)
-                             row-number (:row memo)]
-                         (if idx
-                           {:row (+ 1 row-number)
-                            :coords [idx row-number]}
-                           {:row (+ 1 row-number)}))))
-                   {:row 0} arena)))
-
-(defn get-player-coords
-  "Returns a tuple of a given players coords
-
-  TODO: There's most likely a better way to accomplish this"
-  [_id arena]
-  (:coords (reduce (fn [memo row]
-                     (if (:coords memo)
-                       memo
-                       (let [idx (position #(= (:_id %) _id) row)
                              row-number (:row memo)]
                          (if idx
                            {:row (+ 1 row-number)

@@ -7,13 +7,13 @@
 (def ^:private mocked-bot-code
 "(defn run
   [{:keys  [arena state bot_id hp spawn-bot?] :as step-details}]
-  (let [command-options [[{:cmd \"SHOOT\"
-                           :metadata  {:direction (rand-nth  [0 1 2 3 4 5 6 7]) :hp 20}}
-                          {:cmd  \"SET_STATE\"
-                           :metadata  {}}]
-                         [{:cmd  \"MOVE\"
-                           :metadata  {:direction (rand-nth  [0 1 2 3 4 5 6 7])}}]]]
-    {:commands (rand-nth command-options)}))")
+  (let [command-options [
+  [{:cmd \"SHOOT\"
+    :metadata  {:direction (rand-nth  [0 1 2 3 4 5 6 7]) :hp 20}}]
+  [{:cmd  \"MOVE\"
+  :metadata  {:direction (rand-nth  [0 1 2 3 4 5 6 7])}}]
+  ]]
+  {:commands (rand-nth command-options)}))")
 
 (defn decode-bot
   [content]

@@ -1,5 +1,7 @@
 (ns wombats.game.initializers
-  (:require [wombats.services.github :refer [get-bot]]))
+  (:require [wombats.services.github :refer [get-bot]]
+            [wombats.game.utils :as gu]
+            [wombats.arena.utils :refer [uuid]]))
 
 (defn- update-cell-metadata
   "Cleanes up a cell's metadata over a specified period of time."
@@ -25,7 +27,18 @@
          (merge player {:hp initial-hp
                         :bot (get-bot _id bot-repo)
                         :saved-state {}
+                        :uuid (uuid)
                         :type "player"})) players))
+
+(defn initialize-arena
+  [arena players]
+  (map (fn [row]
+         (map (fn [cell]
+                (cond
+                 (gu/is-player? cell) (gu/sanitize-player
+                                       (gu/get-player (:_id cell)
+                                                      players))
+                 :else cell)) row)) arena))
 
 (defn initialize-frame
   "Preps game-state for a new frame"
@@ -36,9 +49,11 @@
 (defn initialize-game
   "Preps the game"
   [{:keys [initial-arena players] :as game-state} config]
-  (merge game-state {:clean-arena initial-arena
-                     :frames []
-                     :round-count 0
-                     :initiative-order nil
-                     :players (initialize-players players config)
-                     :messages {}}))
+  (let [initialized-players (initialize-players players config)]
+    (-> game-state
+        (merge {:clean-arena (initialize-arena initial-arena initialized-players)
+                :frames []
+                :round-count 0
+                :initiative-order nil
+                :players initialized-players
+                :messages {}}))))
