@@ -1,4 +1,4 @@
-(ns wombats.game.frame.player
+(ns wombats.game.frame.turns
   (:require [wombats.arena.partial :refer [get-arena-area]]
             [wombats.arena.occlusion :refer [occluded-arena]]
             [wombats.arena.utils :as au]
@@ -6,11 +6,6 @@
             [wombats.game.bot.decisions.move :as move]
             [wombats.game.bot.decisions.save-state :as save]
             [wombats.game.bot.decisions.shoot :as shoot]))
-
-(defn- sort-decisions
-  "Sorts player decisions based of of a provided execution-order"
-  [decisions execution-order]
-  (map #(gu/get-player % decisions) execution-order))
 
 (defn- get-decision-maker-data
   [uuid arena]

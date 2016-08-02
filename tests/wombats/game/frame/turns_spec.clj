@@ -1,27 +1,21 @@
-(ns wombats.game.frame.player-spec
-  (:require [wombats.game.frame.player :as player]
+(ns wombats.game.frame.turns-spec
+  (:require [wombats.game.frame.turns :as turns]
             [wombats.game.utils :as gu]
             [wombats.arena.utils :as au]
             [wombats.game.test-game :refer [test-players
-                                               test-game-state
-                                               test-arena
-                                               o f p b b1 b2]])
+                                            test-game-state
+                                            test-arena
+                                            o f p b b1 b2]])
   (:use clojure.test))
 
-(deftest randomize-players-spec
-  (is (= (count test-players)
-         (count (set (repeatedly 100 (partial #'player/randomize-players test-players)))))
-      "Players are randomized. NOTE: While not likely, this test could fail if one permutation
-  is not calculated."))
-
 (deftest process-command-spec
-  (is (= 50 (:remaining-time ((#'player/process-command "1" {:command-map {:SHOOT {:tu 50}}})
+  (is (= 50 (:remaining-time ((#'turns/process-command "1" {:command-map {:SHOOT {:tu 50}}})
                               {:game-state test-game-state
                                :remaining-time 100} {:cmd "SHOOT"
                                                      :metadata {:hp 5
                                                                 :direction 4}})))
       "When a player passes a command and has enough banked time to execute the command, remaining-time is decremented")
-  (is (= 50 (:remaining-time ((#'player/process-command "1" {:command-map {:SHOOT {:tu 60}}})
+  (is (= 50 (:remaining-time ((#'turns/process-command "1" {:command-map {:SHOOT {:tu 60}}})
                               {:game-state test-game-state
                                :remaining-time 50} {:cmd "SHOOT"
                                                     :metadata {:hp 5
@@ -29,7 +23,7 @@
       "When a player passas a command and does not have enough time to execute the command, remaining time does not change.")
   (is (= {:game-state test-game-state
           :remaining-time 20}
-         ((#'player/process-command "1" {:command-map {:SHOOT {:tu 10}}})
+         ((#'turns/process-command "1" {:command-map {:SHOOT {:tu 10}}})
           {:game-state test-game-state
            :remaining-time 20} {:cmd "SOME_INVALID_COMMAND"
                                 :metadata {}}))
@@ -50,7 +44,7 @@
              [6 0] b1))
            (gu/get-player-coords
             "1"
-            (:dirty-arena ((#'player/apply-decisions {:command-map {:MOVE {:tu 33}}
+            (:dirty-arena ((#'turns/apply-decisions {:command-map {:MOVE {:tu 33}}
                                                       :initial-time-unit-count 100})
                            test-game-state
                            {:decision {:commands [{:cmd "MOVE"
@@ -72,7 +66,7 @@
              [6 1] b1))
            (gu/get-player-coords
             "1"
-            (:dirty-arena ((#'player/apply-decisions {:command-map {:MOVE {:tu 50}}
+            (:dirty-arena ((#'turns/apply-decisions {:command-map {:MOVE {:tu 50}}
                                                       :initial-time-unit-count 100})
                            test-game-state
                            {:decision {:commands [{:cmd "MOVE"
