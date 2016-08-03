@@ -57,9 +57,8 @@
    [f b f o b o]])
 
 (defn arena-2
-  [player player2]
+  [player]
   (let [w (gu/sanitize-player player)
-        w2 (gu/sanitize-player player2)
         a1 (assoc a :uuid "a1")
         a2 (assoc a :uuid "a2")
         a3 (assoc a :uuid "a3")]
@@ -67,9 +66,9 @@
      [b a1 o o a2 o o o o o o o o o o b]
      [b o o p o f o o f o o p o o o b]
      [b f o o o o o o f o p o o o o b]
-     [b f o o o o o o o w2 o o o o o b]
+     [b f o o o o o o o o o o o o o b]
      [b p o o o o o o f o o f o o o b]
-     [b b b b o f o o o o o o o o o b]
+     [b b b b o f o o w o o o o o o b]
      [b o o o p o o b o o o o f b o b]
      [b f o o o o f o o f o o o b o b]
      [b f o o o o f o o f o b b b o b]
@@ -77,7 +76,7 @@
      [b o o o o o f o o o f o f a3 o b]
      [b f o o o o o o o o o o o o o b]
      [b f o o o o f o o o o f o o o b]
-     [b w o o o o p o o o o o o o o b]
+     [b o o o o o p o o o o o o o o b]
      [b b b b b b b b b b b b b b b b]]))
 
 (deftask sim
@@ -118,16 +117,15 @@
   (let [{:keys [code ratelimit-message]} (get-bot-code-simulator username repo token)
         arena-number (min 2 (or arena 1))
         player {:_id "1"
+                :uuid "1"
                 :type "player"
                 :login username
                 :hp (or hp 100)
                 :bot code
                 :saved-state {}
                 :frames []}
-        player2 (assoc player :_id "2")
-
-        initial-game-state {:clean-arena ((ns-resolve *ns* (symbol (str "arena-" arena-number))) player player2)
-                            :players [player player2]}
+        initial-game-state {:clean-arena ((ns-resolve *ns* (symbol (str "arena-" arena-number))) player)
+                            :players [player]}
         initial-frame-count (min 100 (or frames 1))
         sleep-time (or sleep 2000)]
     (println "Running Simulation...")
