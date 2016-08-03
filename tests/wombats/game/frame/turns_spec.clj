@@ -31,8 +31,8 @@
 
 (deftest apply-decisions-spec
   (testing "Player 1 is moved 3 spaces up when passed 3 {:MOVE 1} commands, each costing 33 time units"
-    (is (= (gu/get-player-coords
-            "1"
+    (is (= (gu/get-item-coords
+            "1111-1111-1111-1111"
             (au/update-cell
              (au/update-cell
               (au/update-cell
@@ -42,8 +42,8 @@
                [6 2] o)
               [6 1] o)
              [6 0] b1))
-           (gu/get-player-coords
-            "1"
+           (gu/get-item-coords
+            "1111-1111-1111-1111"
             (:dirty-arena ((#'turns/apply-decisions {:command-map {:MOVE {:tu 33}}
                                                       :initial-time-unit-count 100})
                            test-game-state
@@ -55,8 +55,8 @@
                                                    :metadata {:direction 1}}]}
                             :_id "1"}))))))
   (testing "Player 1 is moved 2 spaces up when passed 5 {:MOVE 1} commands, each costing 50 time units"
-    (is (= (gu/get-player-coords
-            "1"
+    (is (= (gu/get-item-coords
+            "1111-1111-1111-1111"
             (au/update-cell
              (au/update-cell
               (au/update-cell
@@ -64,8 +64,8 @@
                [6 3] 0)
               [6 2] o)
              [6 1] b1))
-           (gu/get-player-coords
-            "1"
+           (gu/get-item-coords
+            "1111-1111-1111-1111"
             (:dirty-arena ((#'turns/apply-decisions {:command-map {:MOVE {:tu 50}}
                                                       :initial-time-unit-count 100})
                            test-game-state

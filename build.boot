@@ -82,14 +82,14 @@
 
 (deftask sim
   "Runs the Wombats simulator"
-  [u username USERNAME  str  "github username"
-   r repo     REPO      str  "bot repo"
-   h hp       HP        int  "hp (default 100)"
-   f frames   FRAMES    int  "number of frames to process (default 1, max 100)"
-   t token    TOKEN     str  "github API token"
-   l live               bool "enable live preview (default disabled)"
-   s sleep    SLEEP     int  "sleep time in milliseconds when live is enabled (default 2000)"
-   a arena    ARENA     int  "arena number: (default 1)
+  [u  username USERNAME  str  "github username"
+   r  repo     REPO      str  "bot repo"
+   e  hp       HP        int  "hp (default 100)"
+   f  frames   FRAMES    int  "number of frames to process (default 1, max 100)"
+   t  token    TOKEN     str  "github API token"
+   l  live               bool "enable live preview (default disabled)"
+   s  sleep    SLEEP     int  "sleep time in milliseconds when live is enabled (default 2000)"
+   a  arena    ARENA     int  "arena number: (default 1)
 
   Arena 1:
    o o b o b o
