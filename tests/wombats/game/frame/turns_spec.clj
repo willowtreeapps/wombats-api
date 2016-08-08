@@ -9,13 +9,13 @@
   (:use clojure.test))
 
 (deftest process-command-spec
-  (is (= 50 (:remaining-time ((#'turns/process-command "1" {:command-map {:SHOOT {:tu 50}}})
+  (is (= 50 (:remaining-time ((#'turns/process-command "1111-1111-1111-1111" {:command-map {:SHOOT {:tu 50}}})
                               {:game-state test-game-state
                                :remaining-time 100} {:cmd "SHOOT"
                                                      :metadata {:hp 5
                                                                 :direction 4}})))
       "When a player passes a command and has enough banked time to execute the command, remaining-time is decremented")
-  (is (= 50 (:remaining-time ((#'turns/process-command "1" {:command-map {:SHOOT {:tu 60}}})
+  (is (= 50 (:remaining-time ((#'turns/process-command "1111-1111-1111-1111" {:command-map {:SHOOT {:tu 60}}})
                               {:game-state test-game-state
                                :remaining-time 50} {:cmd "SHOOT"
                                                     :metadata {:hp 5
@@ -23,7 +23,7 @@
       "When a player passas a command and does not have enough time to execute the command, remaining time does not change.")
   (is (= {:game-state test-game-state
           :remaining-time 20}
-         ((#'turns/process-command "1" {:command-map {:SHOOT {:tu 10}}})
+         ((#'turns/process-command "1111-1111-1111-1111" {:command-map {:SHOOT {:tu 10}}})
           {:game-state test-game-state
            :remaining-time 20} {:cmd "SOME_INVALID_COMMAND"
                                 :metadata {}}))
@@ -53,7 +53,7 @@
                                                    :metadata {:direction 1}}
                                                   {:cmd "MOVE"
                                                    :metadata {:direction 1}}]}
-                            :_id "1"}))))))
+                            :uuid "1111-1111-1111-1111"}))))))
   (testing "Player 1 is moved 2 spaces up when passed 5 {:MOVE 1} commands, each costing 50 time units"
     (is (= (gu/get-item-coords
             "1111-1111-1111-1111"
@@ -79,4 +79,4 @@
                                                    :metadata {:direction 1}}
                                                   {:cmd "MOVE"
                                                    :metadata {:direction 1}}]}
-                            :_id "1"})))))))
+                            :uuid "1111-1111-1111-1111"})))))))

@@ -23,8 +23,7 @@
   (fn [{:keys [game-state remaining-time]} command]
     (let [{:keys [cmd metadata]} command
           {:keys [dirty-arena]} game-state
-          {:keys [decision-maker]
-           :as decision-maker-data} (get-decision-maker-data uuid dirty-arena)
+          {:keys [decision-maker] :as decision-maker-data} (get-decision-maker-data uuid dirty-arena)
           time-cost (get-in command-map [(keyword cmd) :tu] 0)
           updated-time (- remaining-time time-cost)
           should-update? (and (>= updated-time 0) decision-maker)
