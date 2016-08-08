@@ -3,18 +3,19 @@
             [wombats.game.utils :as gu]
             [wombats.constants.arena :as ac]))
 
-(defn- save-segment
-  [{:keys [_id players frames segment-count] :as game-state}]
-  (db/save-game-segment {:game-id _id
-                         :players (map gu/sanitize-player players)
-                         :frames frames
-                         :segment segment-count}))
+(defn- save-round
+  [{:keys [_id players frames round-count] :as game-state}]
+  (db/save-game-round {:game-id _id
+                       :players (map gu/sanitize-player players)
+                       :frames frames
+                       :round round-count}))
 
-(defn finalize-segment
-  "Batches a segment of frames together, persists them, and returns a clean segment"
-  [{:keys [segment-count] :as game-state}]
-  (save-segment game-state)
-  (merge game-state {:segment-count (inc segment-count)
+(defn finalize-round
+  "Batches a round of frames together, persists them, and returns a clean round"
+  [{:keys [round-count] :as game-state}]
+  ;; TODO Add persistence back in
+  (save-round game-state)
+  (merge game-state {:round-count (inc round-count)
                      :frames []}))
 
 (defn finalize-frame
@@ -29,10 +30,12 @@
 (defn finalize-game
   "Finializes game"
   [{:keys [players] :as game-state}]
-  (save-segment game-state)
+  (save-round game-state)
+  ;; (throw (Exception. "Stop Here"))
   (merge (dissoc game-state
                  :clean-arena
                  :dirty-arena
                  :frames
-                 :segment-count) {:state "finalized"
-                                  :players (map gu/sanitize-player players)}))
+                 :initiative-order
+                 :round-count) {:state "finalized"
+                                :players (map gu/sanitize-player players)}))

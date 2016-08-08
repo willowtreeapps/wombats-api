@@ -32,7 +32,7 @@
   [[x y] [m n]]
   {:pre [(integer? x) (integer? y) (pos? m) (pos? n)]
    :post [(let [[x y] %] (and (<= 0 x m) (<= 0 y n)))]}
-  [(mod x m) (mod y n)])
+   [(mod x m) (mod y n)])
 
 (defn- incx [x] (fn [v] (+ x v)))
 

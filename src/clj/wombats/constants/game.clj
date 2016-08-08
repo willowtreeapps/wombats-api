@@ -1,7 +1,7 @@
 (ns wombats.constants.game)
 
-;; Number of frames in a chunked segment
-(def segment-length 30)
+;; Number of frames in a chunked round
+(def round-length 30)
 ;; Number of frames in a game
 (def game-length 120)
 ;; Ammount of damage that occurs when a collsion occurs
