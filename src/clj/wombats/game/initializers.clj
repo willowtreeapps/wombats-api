@@ -22,22 +22,23 @@
   "Preps each player map for the game. This player map is different from
   the one that is contained inside of the arena and will contain private data
   including hp, decision logic, and saved state."
-  [players {{:keys [initial-hp]} :player :as config}]
+  [players]
   (map (fn [{:keys [_id bot-repo] :as player}]
-         (merge player {:hp initial-hp
+         (merge player {:score 0
                         :bot (get-bot _id bot-repo)
                         :saved-state {}
                         :uuid (uuid)
                         :type "player"})) players))
 
 (defn initialize-arena
-  [arena players]
+  [arena players {{:keys [initial-hp]} :player :as config}]
   (map (fn [row]
          (map (fn [cell]
                 (cond
-                 (gu/is-player? cell) (gu/sanitize-player
-                                       (gu/get-player (:_id cell)
-                                                      players))
+                  (gu/is-player? cell) (assoc (gu/sanitize-player
+                                                (gu/get-player (:_id cell)
+                                                               players))
+                                              :hp initial-hp)
                  :else cell)) row)) arena))
 
 (defn initialize-frame
@@ -49,9 +50,9 @@
 (defn initialize-game
   "Preps the game"
   [{:keys [initial-arena players] :as game-state} config]
-  (let [initialized-players (initialize-players players config)]
+  (let [initialized-players (initialize-players players)]
     (-> game-state
-        (merge {:clean-arena (initialize-arena initial-arena initialized-players)
+        (merge {:clean-arena (initialize-arena initial-arena initialized-players config)
                 :frames []
                 :round-count 0
                 :initiative-order nil
