@@ -57,8 +57,8 @@
    [f b f o b o]])
 
 (defn arena-2
-  [player]
-  (let [w (gu/sanitize-player player)
+  [player hp]
+  (let [w (assoc (gu/sanitize-player player) :hp hp)
         a1 (assoc a :uuid "a1")
         a2 (assoc a :uuid "a2")
         a3 (assoc a :uuid "a3")]
@@ -120,11 +120,10 @@
                 :uuid "1"
                 :type "player"
                 :login username
-                :hp (or hp 100)
                 :bot code
                 :saved-state {}
                 :frames []}
-        initial-game-state {:clean-arena ((ns-resolve *ns* (symbol (str "arena-" arena-number))) player)
+        initial-game-state {:clean-arena ((ns-resolve *ns* (symbol (str "arena-" arena-number))) player (or hp 100))
                             :players [player]}
         initial-frame-count (min 100 (or frames 1))
         sleep-time (or sleep 2000)]
