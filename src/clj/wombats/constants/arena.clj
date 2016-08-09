@@ -45,6 +45,7 @@
                                  :block  (fn [damage]
                                            #(+ % damage))}
                     :destructible #{:ai
+                                    :player
                                     :block}
                     :distance 10})
 

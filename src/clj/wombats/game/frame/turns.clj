@@ -33,7 +33,7 @@
                                  (move/move metadata game-state config decision-maker-data)
 
                                  "SHOOT"
-                                 (shoot/shoot metadata game-state decision-maker-data)
+                                 (shoot/shoot metadata game-state config decision-maker-data)
 
                                  "SET_STATE"
                                  (save/save-state metadata game-state decision-maker-data)
