@@ -5,16 +5,16 @@
             [wombats.services.mongodb :as db]))
 
 (defn total-frames
-  [{:keys [frames] :as segment}]
+  [{:keys [frames] :as round}]
   (count frames))
 
-(defn segment-over?
-  [segment frame]
-  (= (total-frames segment) frame))
+(defn round-over?
+  [round frame]
+  (= (total-frames round) frame))
 
 (defn game-over?
-  [segment next-segment frame]
-  (and (segment-over? segment frame) (not next-segment)))
+  [round next-round frame]
+  (and (round-over? round frame) (not next-round)))
 
 (defn get-uid
   [{:keys [access-token] :as params}]
@@ -62,34 +62,34 @@
 (defmethod -event-msg-handler :game/play
   [{:keys [client-id event uid] :as ev-msg}]
   (let [[_ {:keys [game-id] :as params}] event
-        total-segments (db/get-game-segment-count game-id)
-        first-segment (db/get-game-segment game-id 0)
-        second-segment (db/get-game-segment game-id 1)]
+        total-rounds (db/get-game-round-count game-id)
+        first-round (db/get-game-round game-id 0)
+        second-round (db/get-game-round game-id 1)]
 
     (future
-      (loop [current-segment first-segment
-             next-segement second-segment
+      (loop [current-round first-round
+             next-segement second-round
              current-frame 0]
         (cond
          ;; When the game is over break out of the loop
-         (game-over? current-segment next-segement current-frame)
+         (game-over? current-round next-segement current-frame)
          (do)
 
-         ;; When a segment of frames has been passed to the client, move
-         ;; to the next segment and fetch the next segment
-         (segment-over? current-segment current-frame)
+         ;; When a round of frames has been passed to the client, move
+         ;; to the next round and fetch the next round
+         (round-over? current-round current-frame)
          (do
            (recur
             next-segement
-            @(future (db/get-game-segment game-id (inc (:segment next-segement))))
+            @(future (db/get-game-round game-id (inc (:round next-segement))))
             0))
 
          ;; Pass the next frame and sleep the thread in between each
          :else
          (do
            (Thread/sleep 400) ;; TODO Once client side rendering has improved, adjust this value
-           (chsk-send! uid [:game/display-frame (nth (:frames current-segment) current-frame)])
-           (recur current-segment next-segement (inc current-frame))))))))
+           (chsk-send! uid [:game/display-frame (nth (:frames current-round) current-frame)])
+           (recur current-round next-segement (inc current-frame))))))))
 
 (defonce router_ (atom nil))
 (defn  stop-router! [] (when-let [stop-fn @router_] (stop-fn)))

@@ -2,9 +2,9 @@
   (:require [wombats.constants.arena :refer [arena-key]]
             [clojure.tools.logging :as log]
             [wombats.arena.utils :refer [get-arena-dimensions
-                                            update-cell
-                                            uuid
-                                            wrap-coords]]))
+                                         update-cell
+                                         uuid
+                                         wrap-coords]]))
 
 
 (defn- get-number-of-items
@@ -148,7 +148,7 @@
 (defn- players
   "place players around the arena and returns a new arena"
   [players arena]
-  (reduce replacer arena players))
+  (reduce replacer arena (map #(assoc % :type "player") players)))
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;
 ;; END PLACE ITEMS

@@ -1,5 +1,6 @@
 (ns wombats.controllers.games
   (:require [ring.util.response :refer [response]]
+            [wombats.config.game :refer [config]]
             [wombats.services.mongodb :as db]
             [wombats.arena.generation :as generate]
             [wombats.constants.arena :refer [small-arena large-arena]]
@@ -17,7 +18,7 @@
 (defn add-game
   "adds a new game"
   []
-  (let [arena (generate/new-arena large-arena)
+  (let [arena (generate/new-arena small-arena)
         game {:initial-arena arena
               :players []
               :state "pending"}]
@@ -39,7 +40,7 @@
   [game-id]
   (let [game (db/get-game game-id)
         ;; updated-game (assoc game :state "started")
-        updated-game (game-loop/start-game game)
+        updated-game (game-loop/start-game game config)
         update (db/update-game game-id updated-game)]
     (if (mr/acknowledged? update)
       (response updated-game))))

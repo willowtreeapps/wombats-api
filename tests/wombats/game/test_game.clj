@@ -7,7 +7,7 @@
 (def b {:type "block"
         :display "X"
         :transparent false
-        :energy 20})
+        :hp 20})
 (def f {:type "food"
         :display "+"
         :transparent true})
@@ -17,14 +17,14 @@
 (def a {:type "ai"
         :display "@"
         :transparent true
-        :energy 20})
+        :hp 20})
 
 (def bot1-private {:_id "1"
                    :type "player"
                    :uuid "1111-1111-1111-1111"
                    :login "oconn"
                    :bot-repo "bot"
-                   :energy 20
+                   :hp 20
                    :bot "{:commands [{:cmd \"MOVE\"
                                       :metadata {:direction (rand-nth [0])}}
                                      {:cmd \"SET_STATE\"
@@ -35,7 +35,7 @@
                    :uuid "2222-2222-2222-2222"
                    :login "Mr. Robot"
                    :bot-repo "bot"
-                   :energy 50
+                   :hp 50
                    :bot "{:commands [{:cmd \"MOVE\"
                                       :metadata {:direction (rand-nth [0])}}
                                      {:cmd \"SET_STATE\"
@@ -60,7 +60,7 @@
                       :clean-arena test-arena
                       :dirty-arena test-arena
                       :frames []
-                      :segment-count 0
+                      :round-count 0
                       :_id "1"
                       :messages {}
                       :players [bot1-private bot2-private]})

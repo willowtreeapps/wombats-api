@@ -24,9 +24,11 @@
       (add-messages game-state messages))))
 
 (defn log-occupy-space-event
-  [game-state cell-contents update-func player]
-  (add-messages game-state [{:chan (:_id player)
-                             :message (str "You move into a(n) " (:type cell-contents) " space.")}]))
+  [game-state cell-contents update-func decision-maker]
+  (if (gu/is-player? decision-maker)
+    (add-messages game-state [{:chan (:_id decision-maker)
+                               :message (str "You move into a(n) " (:type cell-contents) " space.")}])
+    game-state))
 
 (defn log-shoot-event
   [game-state target-cell damage shooter-id]

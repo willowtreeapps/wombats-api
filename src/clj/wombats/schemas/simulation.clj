@@ -5,7 +5,7 @@
   "simulation schema"
   {:arena [[s/Any]]
    :bot s/Str
-   :energy s/Int
+   :hp s/Int
    :saved-state s/Any
    :frames s/Int})
 

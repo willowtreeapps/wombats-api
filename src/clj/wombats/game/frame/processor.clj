@@ -1,9 +1,10 @@
 (ns wombats.game.frame.processor
-  (:require [wombats.game.frame.player :refer [resolve-player-turns]]
-            [wombats.game.frame.ai :refer [resolve-ai-turns]]))
+  (:require [wombats.game.frame.initiative :as initiative]
+            [wombats.game.frame.turns :as turns]))
 
 (defn process-frame
   "Calculates a single frame"
-  [game-state]
-  (reduce #(%2 %1) game-state [resolve-player-turns
-                               resolve-ai-turns]))
+  [game-state config]
+  (-> game-state
+      (initiative/update-initiative-order)
+      (turns/resolve-turns config)))

@@ -6,11 +6,11 @@
                 :ai     {:type "ai"
                          :display "@"
                          :transparent true
-                         :energy 20}
+                         :hp 20}
                 :block  {:type "block"
                          :display "X"
                          :transparent false
-                         :energy 20}
+                         :hp 20}
                 :food   {:type "food"
                          :display "+"
                          :transparent true}
@@ -28,8 +28,8 @@
                                   :food
                                   :poison}
                     :effects {:open {}
-                              :food {:energy #(+ % 10)}
-                              :poison {:energy #(- % 5)}}})
+                              :food {:hp #(+ % 10)}
+                              :poison {:hp #(- % 5)}}})
 
 (def shot-settings {:can-occupy #{:open
                                   :ai
@@ -45,6 +45,7 @@
                                  :block  (fn [damage]
                                            #(+ % damage))}
                     :destructible #{:ai
+                                    :player
                                     :block}
                     :distance 10})
 

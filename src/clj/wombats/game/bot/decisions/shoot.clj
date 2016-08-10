@@ -3,29 +3,29 @@
             [wombats.arena.utils :as au]
             [wombats.game.utils :as gu]
             [wombats.game.messages :refer [log-shoot-event
-                                              log-victim-shot-event]]))
+                                           log-victim-shot-event]]))
+
+(defn- add-shot-damage
+  "Add damage to cells that contain the hp prop"
+  [damage]
+  (fn [cell]
+    (if (:hp cell)
+      (assoc cell :hp (- (:hp cell) damage))
+      cell)))
 
 (defn- add-shot-metadata
+  "Adds the client metadata for shot cells"
   [uuid]
   (fn [cell]
     (assoc-in cell [:md (keyword uuid)] {:type :shot
                                          :decay 1})))
 
-(defn- add-shot-damage
-  "Add damage to cells that contain the energy prop"
-  [damage]
-  (fn [cell]
-    (if (:energy cell)
-      (assoc cell :energy (- (:energy cell) damage))
-      cell)))
-
 (defn- replace-destroyed-cell
+  "Replaces cells that are destroyed with an open space"
   [shot-uuid]
   (fn [cell]
     (let [destructible? (ac/destructible? (:type cell) ac/shot-settings)
-          destroyed? (if destructible?
-                       (<= (:energy cell) 0)
-                       false)
+          destroyed? (when destructible? (<= (:hp cell) 0))
           updated-md (when destroyed?
                        (assoc (:md cell) (keyword shot-uuid) {:type :destroyed
                                                               :decay 1}))]
@@ -36,43 +36,17 @@
 (defn- resolve-shot-cell
   "Aggregation pipeline for resolving what should happen to a cell when a shot enters it's space"
   [cell-at-point damage shot-uuid]
-  (reduce (fn [cell update-func]
-            (update-func cell)) cell-at-point [(add-shot-damage damage)
-                                               (add-shot-metadata shot-uuid)
-                                               (replace-destroyed-cell shot-uuid)]))
+  (-> cell-at-point
+      ((add-shot-damage damage))
+      ((add-shot-metadata shot-uuid))
+      ((replace-destroyed-cell shot-uuid))))
 
 (defn- shot-should-progress?
   "Returns a boolean indicating if a shot should continue down it's path"
-  [should-progress? cell-at-point energy]
+  [should-progress? cell-at-point hp]
   (boolean (and should-progress?
-               (> energy 0)
-               (ac/can-occupy? (:type cell-at-point) ac/shot-settings))))
-
-(defn- update-victim-energy
-  "Updates a victim's energy when shoot"
-  [shooter-id cell damage {:keys [players] :as game-state}]
-  (if (gu/is-player? cell)
-    (-> game-state
-        (assoc :players (gu/modify-player-stats
-                         (:_id cell)
-                         {:energy #(- % damage)}
-                         players))
-        (log-victim-shot-event (:id cell) shooter-id damage))
-    game-state))
-
-(defn- reward-shooter
-  "Shooters get rewarded for hitting a cell with energy. How much depends on the cell type."
-  [shooter-id cell damage {:keys [players] :as game-state}]
-  (let [hit-reward (get-in ac/shot-settings [:hit-reward (keyword (:type cell))] nil)
-        update-function (when hit-reward
-                          (hit-reward damage))
-        updated-players (when update-function
-                          (gu/modify-player-stats shooter-id {:energy update-function} players))]
-    (if updated-players
-      (-> game-state
-       (assoc :players updated-players)
-       (log-shoot-event cell damage shooter-id))
-      game-state)))
+                (> hp 0)
+                (ac/can-occupy? (:type cell-at-point) ac/shot-settings))))
 
 (defn- update-arena
   [cell-at-point damage shot-uuid point {:keys [dirty-arena] :as game-state}]
@@ -80,27 +54,19 @@
         updated-dirty-arena (au/update-cell dirty-arena point updated-cell)]
     (assoc game-state :dirty-arena updated-dirty-arena)))
 
-(defn- update-players
-  [cell-at-point damage shooter-id game-state]
-  (->> game-state
-       (reward-shooter shooter-id cell-at-point damage)
-       (update-victim-energy shooter-id cell-at-point damage)))
-
 (defn- process-shot
   "Process a cell that a shot passes through"
-  [{:keys [game-state energy should-progress?
+  [{:keys [game-state shot-damage should-progress?
            shot-uuid shooter-id] :as shoot-state} point]
   (let [{:keys [dirty-arena players]} game-state
         cell-at-point (au/get-item point dirty-arena)]
-    (if (shot-should-progress? should-progress? cell-at-point energy)
-      (let [cell-energy (:energy cell-at-point)
-            remaining-energy (Math/max 0 (- energy (or cell-energy 0)))
-            damage (- energy remaining-energy)
-            updated-game-state (->> game-state
-                                    (update-arena cell-at-point damage shot-uuid point)
-                                    (update-players cell-at-point damage shooter-id))]
+    (if (shot-should-progress? should-progress? cell-at-point shot-damage)
+      (let [cell-hp (:hp cell-at-point)
+            remaining-shot-damage (Math/max 0 (- shot-damage (or cell-hp 0)))
+            damage (- shot-damage remaining-shot-damage)
+            updated-game-state (update-arena cell-at-point damage shot-uuid point game-state)]
         {:game-state updated-game-state
-         :energy remaining-energy
+         :shot-damage remaining-shot-damage
          :should-progress? true
          :shot-uuid shot-uuid
          :shooter-id shooter-id})
@@ -108,23 +74,19 @@
 
 (defn shoot
   "Main shoot function"
-  [player-id
-   {:keys [direction energy] :as metadata}
-   {:keys [dirty-arena players] :as game-state}]
-  (let [player-coords (gu/get-player-coords player-id dirty-arena)
-        shoot-coords (au/draw-line-from-point dirty-arena
-                                              player-coords
-                                              direction
-                                              (:distance ac/shot-settings))
-        players-update-shooter-energy (gu/modify-player-stats
-                                       player-id
-                                       {:energy #(- % energy)}
-                                       players)]
-    (:game-state (reduce
-                  process-shot
-                  {:game-state (assoc game-state
-                                 :players players-update-shooter-energy)
-                   :energy energy
-                   :should-progress? true
-                   :shot-uuid (au/uuid)
-                   :shooter-id player-id} shoot-coords))))
+  [{:keys [direction] :as metadata}
+   {:keys [dirty-arena players] :as game-state}
+   {:keys [shot-damage-amount] :as config}
+   {:keys [decision-maker decision-maker-coords uuid is-player?]}]
+  (if (and decision-maker is-player?)
+    (let [shoot-coords (au/draw-line-from-point dirty-arena
+                                                decision-maker-coords
+                                                direction
+                                                (:distance ac/shot-settings))]
+      (:game-state (reduce process-shot
+                           {:game-state game-state
+                            :shot-damage shot-damage-amount
+                            :should-progress? true
+                            :shot-uuid (au/uuid)
+                            :shooter-id uuid} shoot-coords)))
+    game-state))

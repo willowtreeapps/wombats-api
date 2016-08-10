@@ -1,5 +1,7 @@
 (ns wombats.game.initializers
-  (:require [wombats.services.github :refer [get-bot]]))
+  (:require [wombats.services.github :refer [get-bot]]
+            [wombats.game.utils :as gu]
+            [wombats.arena.utils :refer [uuid]]))
 
 (defn- update-cell-metadata
   "Cleanes up a cell's metadata over a specified period of time."
@@ -19,12 +21,25 @@
 (defn initialize-players
   "Preps each player map for the game. This player map is different from
   the one that is contained inside of the arena and will contain private data
-  including energy, decision logic, and saved state."
+  including hp, decision logic, and saved state."
   [players]
-  (shuffle (map (fn [{:keys [_id bot-repo] :as player}] (merge player {:energy 100
-                                                                      :bot (get-bot _id bot-repo)
-                                                                      :saved-state {}
-                                                                      :type "player"})) players)))
+  (map (fn [{:keys [_id bot-repo] :as player}]
+         (merge player {:score 0
+                        :bot (get-bot _id bot-repo)
+                        :saved-state {}
+                        :uuid (uuid)
+                        :type "player"})) players))
+
+(defn initialize-arena
+  [arena players {{:keys [initial-hp]} :player :as config}]
+  (map (fn [row]
+         (map (fn [cell]
+                (cond
+                  (gu/is-player? cell) (assoc (gu/sanitize-player
+                                                (gu/get-player (:_id cell)
+                                                               players))
+                                              :hp initial-hp)
+                 :else cell)) row)) arena))
 
 (defn initialize-frame
   "Preps game-state for a new frame"
@@ -34,9 +49,12 @@
 
 (defn initialize-game
   "Preps the game"
-  [{:keys [initial-arena players] :as game-state}]
-  (merge game-state {:clean-arena initial-arena
-                     :frames []
-                     :segment-count 0
-                     :players (initialize-players players)
-                     :messages {}}))
+  [{:keys [initial-arena players] :as game-state} config]
+  (let [initialized-players (initialize-players players)]
+    (-> game-state
+        (merge {:clean-arena (initialize-arena initial-arena initialized-players config)
+                :frames []
+                :round-count 0
+                :initiative-order nil
+                :players initialized-players
+                :messages {}}))))

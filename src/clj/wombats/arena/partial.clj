@@ -18,7 +18,7 @@
 (defn- slice-arena-vector
   [arena-vec stop-one stop-two]
   (if (< stop-one stop-two)
-    (vec (subvec arena-vec stop-one (inc stop-two)))
+    (vec (subvec (vec arena-vec) stop-one (inc stop-two)))
     (let [calculated-stop (+ stop-two (count arena-vec))
           padded-vec (vec (concat arena-vec arena-vec))]
       (vec (subvec padded-vec stop-one (inc calculated-stop))))))
