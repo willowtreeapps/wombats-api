@@ -45,8 +45,8 @@
   "Returns a boolean indicating if a shot should continue down it's path"
   [should-progress? cell-at-point hp]
   (boolean (and should-progress?
-               (> hp 0)
-               (ac/can-occupy? (:type cell-at-point) ac/shot-settings))))
+                (> hp 0)
+                (ac/can-occupy? (:type cell-at-point) ac/shot-settings))))
 
 (defn- update-arena
   [cell-at-point damage shot-uuid point {:keys [dirty-arena] :as game-state}]

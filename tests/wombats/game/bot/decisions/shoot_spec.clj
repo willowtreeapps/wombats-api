@@ -1,13 +1,14 @@
 (ns wombats.game.bot.decisions.shoot-spec
   (:require [wombats.game.bot.decisions.shoot :refer :all :as shoot]
+            [wombats.config.game :as gc]
             [wombats.constants.arena :as ac]
             [wombats.arena.utils :as au]
             [wombats.game.test-game :refer [o b
-                                               bot1-private
-                                               bot2-private
-                                               b1 b2
-                                               test-players
-                                               test-arena]])
+                                            bot1-private
+                                            bot2-private
+                                            b1 b2
+                                            test-players
+                                            test-arena]])
   (:use clojure.test))
 
 (deftest add-shot-metadata-spec
@@ -61,28 +62,6 @@
   (is (= true (#'shoot/shot-should-progress? true (:open ac/arena-key) 10))
       "Returns true when all of the above test cases return true"))
 
-(deftest update-victim-hp-spec
-  (is (= {:players test-players}
-         (#'shoot/update-victim-hp "1" b 20 {:players test-players}))
-      "No damage is applied if the cell is not a player")
-  (is (= {:players [bot1-private
-                      (assoc bot2-private :hp 30)]}
-         (dissoc (#'shoot/update-victim-hp "1" b2 20 {:players test-players}) :messages))
-      "Damage is applied to the victim if the cell is a player"))
-
-(deftest reward-shooter-spec
-  (is (= {:players [(assoc bot1-private :hp 120)
-                    bot2-private]}
-         (dissoc (#'shoot/reward-shooter "1" b2 50 {:players test-players}) :messages))
-      "When a player strikes another player, they will recieve hp in the amount of 2x the damage applied to the victim.")
-  (is (= {:players [(assoc bot1-private :hp 70)
-                    bot2-private]}
-         (dissoc (#'shoot/reward-shooter "1" b 50 {:players test-players}) :messages))
-      "When a player strikes a wall, they will recieve hp in the amount of the damage applied to the wall.")
-  (is (= {:players test-players}
-         (#'shoot/reward-shooter "1" o 50 {:players test-players}))
-      "When a player strikes an open space, they will recieve no additional hp"))
-
 (deftest process-shot-spec
   (is (= {:game-state {:dirty-arena (au/update-cell
                                      test-arena
@@ -91,14 +70,14 @@
                                                :md {:1234 {:type :shot
                                                            :decay 1}}}))
                        :players test-players}
-          :hp 0
+          :shot-damage 0
           :should-progress? true
           :shot-uuid "1234"
           :shooter-id "99999"}
          (update-in (#'shoot/process-shot
                      {:game-state {:dirty-arena test-arena
                                    :players test-players}
-                      :hp 10
+                      :shot-damage 10
                       :should-progress? true
                       :shot-uuid "1234"
                       :shooter-id "99999"}
@@ -111,14 +90,14 @@
                                      (merge o {:md {:1234 {:type :destroyed
                                                            :decay 1}}}))
                        :players test-players}
-          :hp 12
+          :shot-damage 12
           :should-progress? true
           :shot-uuid "1234"
           :shooter-id "99999"}
          (update-in (#'shoot/process-shot
                      {:game-state {:dirty-arena test-arena
                                    :players test-players}
-                      :hp 32
+                      :shot-damage 32
                       :should-progress? true
                       :shot-uuid "1234"
                       :shooter-id "99999"}
@@ -127,14 +106,14 @@
       "If a shot contains more hp than a cell has, the delta hp should be returned in the shot state.")
   (is (= {:game-state {:dirty-arena test-arena
                        :players test-players}
-          :hp 32
+          :shot-damage 32
           :should-progress? false
           :shot-uuid "1234"
           :shooter-id "99999"}
          (update-in (#'shoot/process-shot
                      {:game-state {:dirty-arena test-arena
                                    :players test-players}
-                      :hp 32
+                      :shot-damage 32
                       :should-progress? false
                       :shot-uuid "1234"
                       :shooter-id "99999"}
