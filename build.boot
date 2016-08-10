@@ -49,12 +49,14 @@
         (println "Failed to retrive " username "/" repo "/bot.clj"))))
 
 (defn arena-1
-  [player]
-  [[o o b o b o]
-   [f f p o f p]
-   [a b p (gu/sanitize-player player) o b]
-   [f f o o b o]
-   [f b f o b o]])
+  [player hp]
+  (let [w (assoc (gu/sanitize-player player) :hp hp)
+        a (assoc a :uuid "a1")]
+    [[o o b o b o]
+     [f f p o f p]
+     [a b p w o b]
+     [f f o o b o]
+     [f b f o b o]]))
 
 (defn arena-2
   [player hp]
