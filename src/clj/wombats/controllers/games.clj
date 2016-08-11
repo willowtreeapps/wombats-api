@@ -51,6 +51,11 @@
   (db/remove-game game-id)
   (response "ok"))
 
+(defn get-round
+  "Returns a game round"
+  [game-id round-number]
+  (response (db/get-game-round game-id round-number)))
+
 (defn get-frames
   "returns all frames, or a specifed frame, for a given game"
   ([game-id]

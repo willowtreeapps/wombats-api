@@ -91,7 +91,7 @@
 (defn get-game-round
   [game-id round-number]
   (mc/find-one-as-map (get-db) rounds-coll {:game-id (ObjectId. game-id)
-                                            :round round-number}))
+                                            :round (Integer/parseInt round-number)}))
 ;; PLAYER OPERATIONS
 
 (def player-coll "players")
