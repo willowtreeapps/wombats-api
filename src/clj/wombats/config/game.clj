@@ -11,6 +11,7 @@
    :rounds-per-game 2
    :collision-damage-amount 10
    :shot-damage-amount 10
+   :smokescreen-duration 5
    :command-map {:MOVE {:tu 50}
                  :SHOOT {:tu 100}
                  :SET_STATE {:tu 0}}

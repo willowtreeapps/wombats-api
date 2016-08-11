@@ -127,7 +127,7 @@
           (POST "/" [] (games/add-frame game-id))
 
           (context "/:frame-id" [frame-id]
-            (GET "/" [] (games/get-frames game-id frame-id))))
+                                 (GET "/" [] (games/get-frames game-id frame-id))))
 
         (context "/player" []
           (GET "/" [] (games/get-players game-id))

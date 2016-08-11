@@ -32,7 +32,7 @@
   [[x y] [m n]]
   {:pre [(integer? x) (integer? y) (pos? m) (pos? n)]
    :post [(let [[x y] %] (and (<= 0 x m) (<= 0 y n)))]}
-   [(mod x m) (mod y n)])
+  [(mod x m) (mod y n)])
 
 (defn- incx [x] (fn [v] (+ x v)))
 
@@ -83,10 +83,12 @@
                               (conj %1 metadata)
                               %1)) [] md)
         is-shot? (some #(= (:type %1) :shot) metadata)
-        is-destroyed? (some #(= (:type %1) :destroyed) metadata)]
+        is-destroyed? (some #(= (:type %1) :destroyed) metadata)
+        is-smokescreen? (some #(= (:type %1) :smokescreen) metadata)]
     (cond
      is-destroyed? "!"
      is-shot? "·"
+     is-smokescreen? "*"
      :else (or display "B"))))
 
 (defn pprint-arena

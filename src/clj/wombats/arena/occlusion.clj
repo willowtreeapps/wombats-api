@@ -1,5 +1,12 @@
 (ns wombats.arena.occlusion
-  (:require [wombats.constants.arena :refer [arena-key]]))
+  (:require [wombats.constants.arena :refer [arena-key]]
+            [wombats.arena.utils :as au]))
+
+(defn- opaque-md?
+  [cell]
+  (some (fn [kv]
+          (let [v (get kv 1)]
+            (= :smokescreen (get v :type)))) (:md cell)))
 
 (def ^:private slopes [[1 0] [-1 0] [0 1] [0 -1]])
 
@@ -24,13 +31,16 @@
           (mapcat #(corners [view-dist %]) (range 1 view-dist))))
 
 (defn- blocked-pos?
-  [arena [x y]]
-  (not (get-in arena [x y :transparent])))
+  [arena coords]
+  (let [cell (au/get-item coords arena)]
+    (or
+     (opaque-md? cell)
+     (not (:transparent cell)))))
 
 (defn- fog-of-war
-  [arena pos]
-  (if (get-in arena pos)
-    (assoc-in arena pos (:fog arena-key))
+  [arena coords]
+  (if (au/get-item coords arena)
+    (au/update-cell arena coords (:fog arena-key))
     arena))
 
 (defn- finalize-pos
