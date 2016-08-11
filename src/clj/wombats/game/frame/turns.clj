@@ -5,7 +5,8 @@
             [wombats.game.utils :as gu]
             [wombats.game.bot.decisions.move :as move]
             [wombats.game.bot.decisions.save-state :as save]
-            [wombats.game.bot.decisions.shoot :as shoot]))
+            [wombats.game.bot.decisions.shoot :as shoot]
+            [wombats.game.bot.decisions.smokescreen :as smoke]))
 
 (defn- get-decision-maker-data
   [uuid arena]
@@ -34,6 +35,9 @@
 
                                  "SHOOT"
                                  (shoot/shoot metadata game-state config decision-maker-data)
+
+                                 "SMOKESCREEN"
+                                 (smoke/smokescreen game-state config decision-maker-data)
 
                                  "SET_STATE"
                                  (save/save-state metadata game-state decision-maker-data)
