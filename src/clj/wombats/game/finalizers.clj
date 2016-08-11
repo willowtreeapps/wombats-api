@@ -13,7 +13,6 @@
 (defn finalize-round
   "Batches a round of frames together, persists them, and returns a clean round"
   [{:keys [round-count] :as game-state}]
-  ;; TODO Add persistence back in
   (save-round game-state)
   (merge game-state {:round-count (inc round-count)
                      :frames []}))

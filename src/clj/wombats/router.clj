@@ -122,12 +122,16 @@
         (POST "/initialize" [] (games/initialize-game game-id))
         (POST "/start" [] (games/start-game game-id))
 
+        (context "/round" []
+          (context "/:round-id" [round-id]
+            (GET "/" [] (games/get-round game-id round-id))))
+
         (context "/frame" []
           (GET "/" [] (games/get-frames game-id))
           (POST "/" [] (games/add-frame game-id))
 
           (context "/:frame-id" [frame-id]
-                                 (GET "/" [] (games/get-frames game-id frame-id))))
+            (GET "/" [] (games/get-frames game-id frame-id))))
 
         (context "/player" []
           (GET "/" [] (games/get-players game-id))
