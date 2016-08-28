@@ -3,7 +3,24 @@
             [wombats-api.arena.utils :as au]
             [wombats-api.constants.arena :as ac]
             [wombats-api.game.messages :refer [log-collision-event
-                                           log-occupy-space-event]]))
+                                               log-occupy-space-event]]))
+
+(defn- swap-cells
+  "swap-cells is responsible for handling movement. One thing to note, metadata is always attached
+  to a cell on the board. Metadata can not be transfered, it will always remain attached to the cell
+  it belogs to. swap-cells is responsible to updating a cells contents while ensuring that metadata
+  remains in the cell it blongs to."
+  [{:keys [cell-one-coords cell-two-coords] :as swap-details}
+   {:keys [dirty-arena] :as game-state}]
+  (let [cell-one (:cell-one swap-details (au/get-item cell-one-coords dirty-arena))
+        cell-two (:cell-two swap-details (au/get-item cell-two-coords dirty-arena))
+        cell-one-metadata (:md cell-one {})
+        cell-two-metadata (:md cell-two {})
+        cell-one-update (assoc cell-two :md cell-one-metadata)
+        cell-two-update (assoc cell-one :md cell-two-metadata)]
+    (assoc game-state :dirty-arena (-> dirty-arena
+                                       (au/update-cell cell-one-coords cell-one-update)
+                                       (au/update-cell cell-two-coords cell-two-update)))))
 
 (defn- apply-collision-damage
   "Apply collision damage is responsible for updating the game-state with applied collision damage.
@@ -17,6 +34,11 @@
   (let [decision-maker-cell (gu/apply-damage decision-maker collision-damage)
         updated-collision-cell (gu/apply-damage collision-item collision-damage)
         updated-dirty-arena (if (gu/is-open? updated-collision-cell)
+                              ;; TODO This fails when both items are destroyed...
+                              #_(swap-cells {:cell-one-coords decision-maker-coords
+                                           :cell-one decision-maker-cell
+                                           :cell-two-coords collision-coords
+                                           :cell-two updated-collision-cell} game-state)
                               (-> dirty-arena
                                   (au/update-cell collision-coords decision-maker-cell)
                                   (au/update-cell decision-maker-coords updated-collision-cell))
@@ -55,9 +77,10 @@
         desired-space-contents (au/get-item desired-coords dirty-arena)
         take-space? (ac/can-occupy? (:type desired-space-contents) ac/move-settings)]
     (if take-space?
-      (->> game-state
-           (clear-space decision-maker-coords)
-           (occupy-space desired-coords desired-space-contents decision-maker))
+      (swap-cells {:cell-one-coords decision-maker-coords
+                   :cell-one decision-maker
+                   :cell-two-coords desired-coords
+                   :cell-two desired-space-contents} game-state)
       (->> game-state
            (apply-collision-damage decision-maker-data
                                    desired-space-contents
