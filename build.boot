@@ -2,7 +2,9 @@
           :dependencies '[[http-kit "2.1.19"]
                           [base64-clj "0.1.1"]
                           [cheshire "5.1.1"]
-                          [com.novemberain/monger "3.0.2"]])
+                          [com.novemberain/monger "3.0.2"]
+                          [mount "0.1.10"]
+                          [cprop "0.1.8"]])
 
 (require '[wombats-api.config.game :as game]
          '[wombats-api.game.frame.processor :refer [process-frame]]
