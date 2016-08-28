@@ -4,17 +4,6 @@
             [base64-clj.core :as b64]
             [cheshire.core :refer [parse-string]]))
 
-(def ^:private mocked-bot-code
-"(defn run
-  [{:keys  [arena state bot_id hp spawn-bot?] :as step-details}]
-  (let [command-options [
-  [{:cmd \"SHOOT\"
-    :metadata  {:direction (rand-nth  [0 1 2 3 4 5 6 7]) :hp 20}}]
-  [{:cmd  \"MOVE\"
-  :metadata  {:direction (rand-nth  [0 1 2 3 4 5 6 7])}}]
-  ]]
-  {:commands (rand-nth command-options)}))")
-
 (defn get-repo
   [repo-name username token]
   @(http/get (str "https://api.github.com/repos/" username "/" repo-name)
@@ -41,8 +30,7 @@
 (defn get-bot
   "Returns the code a bot executes"
   [player-id repo]
-  mocked-bot-code
-  #_(let [{:keys [bots access-token] :as player} (db/get-player-with-token player-id)
+  (let [{:keys [bots access-token] :as player} (db/get-player player-id)
         {:keys [contents-url] :as bot} (reduce (fn [memo bot]
                                                  (if (= (:repo bot) repo)
                                                    bot
