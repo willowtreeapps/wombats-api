@@ -16,6 +16,7 @@
 (defn add-game
   []
   (let [game {:initial-arena (generate/new-arena small-arena)
+              :configuration config
               :players []
               :state "pending"}]
     (db/add-game game)))
@@ -39,8 +40,7 @@
 (defn start-game
   [game-id]
   (let [game (db/get-game game-id)
-        ;; updated-game (assoc game :state "started")
-        updated-game (game-loop/start-game game config)
+        updated-game (game-loop/start-game game)
         update (db/update-game game-id updated-game)]
     (when (mr/acknowledged? update)
       (dissoc updated-game :messages))))
@@ -70,13 +70,3 @@
   ([game-id player-id]
    (first (filter #(= player-id (:_id %))
                   (:players (get-games game-id))))))
-
-;; (defn get-round
-;;   "Returns a game round"
-;;   [game-id round-number]
-;;   (response (db/get-game-round game-id round-number)))
-
-;; (defn add-frame
-;;   "adds a new frame to a given game"
-;;   [game-id]
-;;     (response {}))

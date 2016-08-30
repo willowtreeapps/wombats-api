@@ -103,6 +103,15 @@
            (q/limit 1)
            (q/fields player-fields))))
 
+(defn get-player-with-auth-token
+  "Returns a player object and exposes the auth token. WARNING: Should not
+  be used even for admins. This is only used by the game engine to retrieve
+  bots that are hosted on private repos."
+  [player-id]
+  (first (q/with-collection db player-coll
+           (q/find {:_id (ObjectId. player-id)})
+           (q/limit 1))))
+
 (defn add-or-update-player
   "Create or Update player"
   [player]
