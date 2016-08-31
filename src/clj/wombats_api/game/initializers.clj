@@ -23,9 +23,9 @@
   the one that is contained inside of the arena and will contain private data
   including hp, decision logic, and saved state."
   [players]
-  (map (fn [{:keys [_id bot-repo] :as player}]
+  (map (fn [player]
          (merge player {:score 0
-                        :bot (get-bot _id bot-repo)
+                        :bot (get-bot player)
                         :saved-state {}
                         :uuid (uuid)
                         :type "player"})) players))
@@ -49,10 +49,12 @@
 
 (defn initialize-game
   "Preps the game"
-  [{:keys [initial-arena players] :as game-state} config]
+  [{:keys [initial-arena
+           players
+           configuration] :as game-state}]
   (let [initialized-players (initialize-players players)]
     (-> game-state
-        (merge {:clean-arena (initialize-arena initial-arena initialized-players config)
+        (merge {:clean-arena (initialize-arena initial-arena initialized-players configuration)
                 :frames []
                 :round-count 0
                 :initiative-order nil

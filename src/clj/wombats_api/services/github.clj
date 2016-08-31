@@ -29,10 +29,7 @@
 
 (defn get-bot
   "Returns the code a bot executes"
-  [player-id repo]
-  (let [{:keys [bots access-token] :as player} (db/get-player player-id)
-        {:keys [contents-url] :as bot} (reduce (fn [memo bot]
-                                                 (if (= (:repo bot) repo)
-                                                   bot
-                                                   memo)) nil bots)]
+  [{:keys [_id bot-repo] :as player}]
+  (let [{:keys [bots access-token]} (db/get-player-with-auth-token _id)
+        {:keys [contents-url] :as bot} (first (filter #(= bot-repo (:repo %)) bots))]
     (get-bot-code access-token contents-url)))

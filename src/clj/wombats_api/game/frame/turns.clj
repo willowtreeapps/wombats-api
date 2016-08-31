@@ -6,7 +6,11 @@
             [wombats-api.game.bot.decisions.move :as move]
             [wombats-api.game.bot.decisions.save-state :as save]
             [wombats-api.game.bot.decisions.shoot :as shoot]
-            [wombats-api.game.bot.decisions.smokescreen :as smoke]))
+            [wombats-api.game.bot.decisions.smokescreen :as smoke]
+            [clojail.core :refer [sandbox]]
+            [clojail.testers :refer [secure-tester]]))
+
+(def ^:private sb (sandbox secure-tester :timeout 5000))
 
 (defn- get-decision-maker-data
   [uuid arena]
@@ -66,6 +70,12 @@
                            :metadata  {:direction (rand-nth  [0 1 2 3 4 5 6 7])}}]]]
     {:commands (rand-nth command-options)}))
 
+(defn- calculate-player-decision
+  "Calculates a players decision"
+  [game-parameters {:keys [bot]}]
+  ;; TODO figure out how to run the clojure code in a jailed env
+  ((load-string bot) game-parameters))
+
 (defn- resolve-decisions
   "Returns a vecor of player decisions based off of the logic provided by
    their bots and an identical clean version of the arena"
@@ -95,7 +105,7 @@
                                  :initiative-order idx
                                  :initiative-count (count initiative-order)}]
             {:decision (if is-player?
-                         ((load-string (:bot player)) game-parameters)
+                         (calculate-player-decision game-parameters player)
                          (calculate-ai-decision game-parameters))
              :uuid uuid}))))
     initiative-order)))

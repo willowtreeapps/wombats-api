@@ -1,7 +1,7 @@
 (ns wombats-api.schemas.game
   (:require [schema.core :as s]))
 
-(s/defschema CellMetadata {})
+(s/defschema CellMetadata s/Any)
 
 ;; TODO Look into schema to see if it supports or statements for schemas
 ;; ex: PoisonCell || PlayerCell || AICell || BaseCell
@@ -38,7 +38,8 @@
 ;; Ensure that the schemas are similar for normal game operation & game simulation.
 (s/defschema InGamePlayer {:_id s/Str
                            :login s/Str
-                           :type s/Str
+                           (s/optional-key :bot-repo) s/Str
+                           (s/optional-key :type) s/Str
                            (s/optional-key :uuid) s/Str})
 
 (s/defschema JoinedPlayer {:_id s/Str
@@ -54,7 +55,31 @@
 
 (s/defschema SimulationFrame (select-keys Frame [:map :messages :players]))
 
+(s/defschema CommandConfiguration {:MOVE {:tu s/Int}
+                         :SHOOT {:tu s/Int}
+                         :SET_STATE {:tu s/Int}
+                         :SMOOKESCREEN {:tu s/Int}})
+
+(s/defschema PlayerConfiguration {:initial-hp s/Int
+                                  :partial-arena-radius s/Int})
+
+(s/defschema AIConfiguration {:initial-hp s/Int
+                              :partial-arena-radius s/Int})
+
+(s/defschema GameConfiguration {:game-type s/Str
+                                :frames-per-round s/Int
+                                :rounds-per-game s/Int
+                                :collision-damage-amount s/Int
+                                :shot-damage-amount s/Int
+                                :smokescreen-duration s/Int
+                                :max-players s/Int
+                                :initial-time-unit-count s/Int
+                                :command-map CommandConfiguration
+                                :player PlayerConfiguration
+                                :ai AIConfiguration})
+
 (s/defschema Game {:_id org.bson.types.ObjectId
+                   :configuration GameConfiguration
                    :initial-arena Arena
                    :players [InGamePlayer]
                    :state s/Str})

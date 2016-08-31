@@ -28,7 +28,8 @@
                  [ch.qos.logback/logback-classic "1.1.7"]
                  [luminus-http-kit "0.1.4"]
                  [buddy "1.0.0"]
-                 [base64-clj "0.1.1"]]
+                 [base64-clj "0.1.1"]
+                 [clojail "1.0.6"]]
 
   :min-lein-version "2.0.0"
 
