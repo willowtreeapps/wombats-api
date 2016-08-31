@@ -1,4 +1,4 @@
-(defproject wombats-api "0.0.1"
+(defproject wombats-api "0.0.1-SNAPSHOT"
 
   :description "Wombats"
   :url ""
@@ -41,9 +41,7 @@
 
   :plugins [[lein-cprop "1.0.1"]
             [lein-kibit "0.1.2"]
-            [lein-cloverage "1.0.6"]
-            ;; TODO This is throwing an error around source-paths for tests
-            [jonase/eastwood "0.2.3"]]
+            [lein-cloverage "1.0.6"]]
 
   :profiles
   {:uberjar {:omit-source true
