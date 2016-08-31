@@ -53,16 +53,21 @@
 
 (defn add-player
   [game-id {:keys [_id login] :as identity} repo]
-  (let [game (db/get-game game-id)
-        player-not-registered? (empty? (filter #(= (:_id %) _id) (:players game)))
+  (let [{:keys [configuration players] :as game} (db/get-game game-id)
+        {:keys [max-players]} configuration
+        game-open? (< (count players) max-players)
+        player-registered? (not (empty? (filter #(= (:_id %) _id) players)))
         player {:_id (str _id)
                 :login login
-                :bot-repo repo}
-        update (if player-not-registered?
-                 (db/add-player-to-game game-id player))]
-    (if player-not-registered?
-      (db/get-game game-id)
-      (bad-request! "You are already registered in this game."))))
+                :bot-repo repo}]
+    ;; Add player if criteria is met
+    (when (and (not player-registered?) game-open?)
+      (db/add-player-to-game game-id player))
+    ;; Response
+    (cond
+      (not game-open?) (bad-request! "The game you are trying to join is now full.")
+      player-registered? (bad-request! "You are already registered in this game.")
+      :else (db/get-game game-id))))
 
 (defn get-players
   ([game-id]
