@@ -10,6 +10,10 @@
   ([player-id]
    (ok (db/get-player player-id))))
 
+(defn get-current-player
+  [{:keys [_id] :as identity}]
+  (ok (db/get-player _id)))
+
 (defn remove-player
   [player-id]
   (db/remove-player player-id)

@@ -115,6 +115,11 @@
         :summary "Return list of players."
         (player/get-players))
 
+      (GET "/profile" req
+        :return game-schema/Player
+        :summary "Returns the currently logged in user object"
+        (player/get-current-player (:identity req)))
+
       (context "/:player-id" []
         :path-params [player-id :- String]
 
