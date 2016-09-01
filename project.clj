@@ -17,6 +17,7 @@
                  [compojure "1.5.1"]
                  [ring-webjars "0.1.1"]
                  [ring/ring-defaults "0.2.1"]
+                 [ring-cors "0.1.8"]
                  [luminus/ring-ttl-session "0.3.1"]
                  [mount "0.1.10"]
                  [cprop "0.1.8"]

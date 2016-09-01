@@ -5,6 +5,7 @@
             [wombats-api.routes.rules :as access-rules]
             [ring-ttl-session.core :refer [ttl-memory-store]]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
+            [ring.middleware.cors :refer [wrap-cors]]
             [buddy.auth.middleware :refer [wrap-authentication
                                            wrap-authorization]]
             [buddy.auth.backends :as backends]))
@@ -25,6 +26,8 @@
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
       wrap-auth
+      (wrap-cors :access-control-allow-origin [#".*"]
+                 :access-control-allow-methods [:get :put :post :delete])
       (wrap-defaults
         (-> site-defaults
             (assoc-in [:security :anti-forgery] false)
