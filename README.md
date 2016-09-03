@@ -4,15 +4,33 @@
 
 ![wombat_git](https://cloud.githubusercontent.com/assets/4649439/17083937/59e5a5f0-517d-11e6-92a2-976aee52d95c.png)
 
+[![Stories in Ready](https://badge.waffle.io/willowtreeapps/wombats-api.png?label=ready&title=Ready)](http://waffle.io/willowtreeapps/wombats-api)
+
 ### What is Wombats?
 
 Wombats is multiplayer game where players write code to control a wombat in an arena filled with obstacles, enemies, and other wombats.
 Wombats was inspired by [scalatron](https://scalatron.github.io/) and is written in [clojure](https://clojure.org/).
 
+### Development Requirements
+
+1. [leiningen](http://leiningen.org/)
+1. [boot](https://github.com/boot-clj/boot) *Simulator Only*
+1. [mongodb](https://docs.mongodb.com/)
+
+#### Development ENV Setup
+
+1. [Register](https://github.com/settings/applications/new) a new GitHub OAuth Application. This is to support the authenication endpoints.
+1. Add the following environment variables.
+   - *WOMBATS_GITHUB_CLIENT_ID* (GitHub Client ID)
+   - *WOMBATS_GITHUB_CLIENT_SECRET* (GitHub Client Secret)
+   - *WOMBATS_OAUTH_SIGNING_SECRET* (Random secret string)
+1. Run `mongod` to start MongoDB
+1. Run `lein run` in the project root directory
+
 ### How it works
 
-1. Visit wombats.willowtreemobile.com and sign up. (Sign up will ask for GitHub read only permission. This is used for user authenication and wombat registration / tracking)
-1. Register a wombat under your user settings. (Don't have a wombat? Check out "Writing your first Wombat")
+1. Visit wombats.willowtreemobile.com and sign up. (Sign up will ask for GitHub read only permission. This is used for user authenication and wombat registration / tracking updates) *Website under development* Check out the [client repo](https://github.com/willowtreeapps/wombats-web-client) to track progress and help out!
+1. Register a wombat with your profile (See writing your first wombat)
 1. Join a game to play!
 
 ### Writing your first Wombat
@@ -21,7 +39,7 @@ Disclaimer... Very little research on wombats was conducted prior to the develop
 
 Wombats are not that smart and they need your help to pretty much do anything. Really... anything. In a world where wombats must fight to survive while navigating the treacherous terrain around them, it is paramount that you do your part and support a wombat. So how can you help?
 
-While it is common knowledge that wombats are excellent at following directions and prefer their directions in bytecode, it is a lesser known fact that they crave bytecode compiled from functional Lisp languages such as Clojure. But how do we get commands to our wombats from the comfort of our familiar world?! Well lucky for you, wombats regularly scour GitHub in search of code that will aid them in their mission to survive in a dangerous world.
+While it is common knowledge that wombats are excellent at following directions and prefer their directions in bytecode, it is a lesser known fact that they crave bytecode compiled from functional Lisp languages such as Clojure. But how do we get commands to our wombats from the comfort of our familiar world?! Well lucky for you, wombats regularly scour GitHub in search of code that will aid them in their mission to survive in the dangerous world they find themselves in.
 
 ##### Here's how you can help a wombat find your code.
 
@@ -37,29 +55,3 @@ Sometimes it can be difficult communicating with your wombat, seeing as they are
 1. Clone this repository
 1. Install [Boot](http://boot-clj.com/) (a Clojure built tool) `brew install boot-clj`
 1. run `boot sim -h` in the root directory of the *wombats-api* repository to view the help menu.
-
-### Development Requirements
-
-1. [leiningen](http://leiningen.org/)
-1. [mongodb](https://docs.mongodb.com/)
-
-#### Development ENV Setup
-
-1. [Register](https://github.com/settings/applications/new) a new GitHub OAuth Application.
-1. Add the following environment variables.
-   - *WOMBATS_GITHUB_CLIENT_ID* (GitHub Client ID)
-   - *WOMBATS_GITHUB_CLIENT_SECRET* (GitHub Client Secret)
-   - *WOMBATS_OAUTH_SIGNING_SECRET* (Random secret string)
-   - *WOMBATS_WEB_CLIENT_URL* (Root URL that the user will be redirected to once Auth is complete)
-
-1. (REQUIRED) Run `lein run` in root directory (builds project and runs server)
-1. (REQUIRED - Unless using remote DB) If running DB locally, Run `mongod` to start MongoDB
-
-#### Production ENV Setup
-
-In addition to the development setup, add the following environment variables so connect to a remote datebase.
-
-1. Add the following to connect to a remote DB.
-   - *WOMBATS_MONGOD_USER_NAME*
-   - *WOMBATS_MONGOD_USER_PW*
-   - *WOMBATS_MONGOD_HOST_LIST*
