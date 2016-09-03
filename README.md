@@ -2,9 +2,9 @@
 
 ![](https://circleci.com/gh/willowtreeapps/wombats-api.svg?style=shield&circle-token=:circle-token)
 
-![wombat_git](https://cloud.githubusercontent.com/assets/4649439/17083937/59e5a5f0-517d-11e6-92a2-976aee52d95c.png)
-
 [![Stories in Ready](https://badge.waffle.io/willowtreeapps/wombats-api.png?label=ready&title=Ready)](http://waffle.io/willowtreeapps/wombats-api)
+
+![wombat_git](https://cloud.githubusercontent.com/assets/4649439/17083937/59e5a5f0-517d-11e6-92a2-976aee52d95c.png)
 
 ### What is Wombats?
 
