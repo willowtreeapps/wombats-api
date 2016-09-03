@@ -10,15 +10,25 @@ Thanks for taking the time to help make Wombats a more enjoyable experience. Whi
 
 ## Making Changes
 
-- Fork the repo and create a topic branch from where you want to base your work. This will most likely be either Master or Develop.
+- Fork the redo and create a topic branch from where you want to base your work. This will most likely be either Master or Develop.
 - Make commits in small logical chunks.
 - Check for unnecessary whitespace with git diff --check before committing.
-- Make sure your commit messages contain the issue number in the title with a short description of the changes.
+- Make sure your commit subject line contains the issue number, commit type, and short subject (Less than 50 characters).
+- Provide enough detail in your commit message to help anyone reviewing get up to speed quickly.
+
+- Issue number ex: #115
+- Types
+  1. Feature
+  1. Bugfix
+  1. Enhancement
+- Subject
+
+ex:
 
 ```
-#115 Add example pull request commit
+#115 Feature - Short Description
 
-... Detailed description of changes
+Add ray casting algorithm to the wombat helper files for use in wombat scripting.
 ```
 
 ## Submitting Changes
