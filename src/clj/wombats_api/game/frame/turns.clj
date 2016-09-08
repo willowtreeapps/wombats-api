@@ -57,9 +57,12 @@
   "Applies player or ai decision to the current state of the game"
   [{:keys [initial-time-unit-count] :as config}]
   (fn [game-state {:keys [uuid]
-                   {:keys [commands]} :decision}]
+                   {:keys [commands]} :decision
+                   mini-map :mini-map}]
     (:game-state (reduce (process-command uuid config)
-                         {:game-state game-state
+                         {:game-state (if mini-map
+                                        (merge game-state {:mini-map mini-map})
+                                        game-state)
                           :remaining-time initial-time-unit-count}
                          commands))))
 
@@ -76,12 +79,22 @@
   ;; TODO figure out how to run the clojure code in a jailed env
   ((load-string bot) game-parameters))
 
+(defn- get-scoped-view
+  [arena is-player? coords config]
+  (let [radius (if is-player?
+                 (get-in config [:player :partial-arena-radius])
+                 (get-in config [:ai :partial-arena-radius]))]
+    (-> arena
+        (get-arena-area coords radius)
+        (occluded-arena coords))))
+
 (defn- resolve-decisions
   "Returns a vecor of player decisions based off of the logic provided by
    their bots and an identical clean version of the arena"
   [{:keys [clean-arena players] :as game-state}
    config
-   initiative-order]
+   initiative-order
+   simulator?]
   (remove
    nil?
    (map-indexed
@@ -92,26 +105,25 @@
         (when decision-maker
           (let [player (when is-player?
                          (gu/get-player (:_id decision-maker) players))
-                radius (if is-player?
-                         (get-in config [:player :partial-arena-radius])
-                         (get-in config [:ai :partial-arena-radius]))
-                arena (-> clean-arena
-                          (get-arena-area decision-maker-coords radius)
-                          (occluded-arena decision-maker-coords))
+                arena (get-scoped-view clean-arena
+                                       is-player?
+                                       decision-maker-coords
+                                       config)
                 game-parameters {:arena arena
                                  :state (get (or player {}) :state {})
                                  :uuid uuid
                                  :hp (:hp decision-maker)
                                  :initiative-order idx
                                  :initiative-count (count initiative-order)}]
-            {:decision (if is-player?
-                         (calculate-player-decision game-parameters player)
-                         (calculate-ai-decision game-parameters))
-             :uuid uuid}))))
+            (merge {:decision (if is-player?
+                                (calculate-player-decision game-parameters player)
+                                (calculate-ai-decision game-parameters))
+                    :uuid uuid}
+                   (if (and simulator? is-player?) {:mini-map arena} {}))))))
     initiative-order)))
 
 (defn resolve-turns
   "Updates the arena by applying each players' movement logic"
-  [{:keys [clean-arena initiative-order] :as game-state} config]
-  (let [decisions (resolve-decisions game-state config initiative-order)]
+  [{:keys [clean-arena initiative-order] :as game-state} {:keys [simulator] :as config}]
+  (let [decisions (resolve-decisions game-state config initiative-order simulator)]
     (reduce (apply-decisions config) game-state decisions)))

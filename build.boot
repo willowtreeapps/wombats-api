@@ -133,7 +133,7 @@
     (println "Running Simulation...")
 
     (when code
-      (loop [{:keys [clean-arena messages players] :as game-state} initial-game-state
+      (loop [{:keys [clean-arena messages players mini-map] :as game-state} initial-game-state
              frame-count initial-frame-count
              frame-display "Starting Arena"]
 
@@ -143,10 +143,16 @@
           ;; move cursor to the top left corner of the screen
           (print (str (char 27) "[;H")))
 
-        (println "\nFRAME: " frame-display)
+        (println "Player Map Before Resolution")
+        (au/pprint-arena mini-map)
+
+        (println "\n\nFRAME: " frame-display)
         (au/pprint-arena clean-arena)
+
         (println (str "\n\nMessages: " (or messages {})
                       "\nHP: " (:hp (first players))))
+
+
 
         (when live
           (Thread/sleep sleep-time))
@@ -155,6 +161,6 @@
           (println (str "\nDone!\n"
                         ratelimit-message))
           (recur
-           ((comp finalize-frame #(process-frame % game/config) initialize-frame) game-state)
+           ((comp finalize-frame #(process-frame % (merge game/config {:simulator true})) initialize-frame) game-state)
            (dec frame-count)
            (- initial-frame-count (dec frame-count))))))))
