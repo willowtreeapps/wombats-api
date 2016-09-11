@@ -83,10 +83,11 @@
   [arena is-player? coords config]
   (let [radius (if is-player?
                  (get-in config [:player :partial-arena-radius])
-                 (get-in config [:ai :partial-arena-radius]))]
+                 (get-in config [:ai :partial-arena-radius]))
+        center [radius radius]]
     (-> arena
         (get-arena-area coords radius)
-        (occluded-arena coords))))
+        (occluded-arena center))))
 
 (defn- resolve-decisions
   "Returns a vecor of player decisions based off of the logic provided by

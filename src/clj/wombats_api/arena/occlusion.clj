@@ -1,101 +1,7 @@
 (ns wombats-api.arena.occlusion
-  (:require [wombats-api.game.bot.helpers :refer [draw-line sort-arena]]
+  (:require [wombats-api.game.bot.helpers :refer [draw-line]]
             [wombats-api.constants.arena :refer [arena-key]]
             [wombats-api.arena.utils :as au]))
-
-
-
-(def ^:private slopes [[1 0] [-1 0] [0 1] [0 -1]])
-
-#_(defn- normalize-slope
-  [[x y]]
-  (if (zero? y)
-    [(/ x (Math/abs x)) y]
-    (let [length (Math/sqrt (+ (* x x) (* y y)))]
-      [(/ x length) (/ y length)])))
-
-#_(defn- corners
-  [[x y]]
-  (let [[nx ny] (normalize-slope [x y])
-        negx (- nx)
-        negy (- ny)]
-    [[nx ny] [negx ny] [nx negy] [negx negy]]))
-
-#_(defn- angles
-  [view-dist]
-  (concat slopes
-          (mapcat #(corners [% view-dist]) (range 1 (inc view-dist)))
-          (mapcat #(corners [view-dist %]) (range 1 view-dist))))
-
-#_(defn- blocked-pos?
-  [arena coords]
-  (let [cell (au/get-item coords arena)]
-    (or
-     (opaque-md? cell)
-     (not (:transparent cell)))))
-
-#_(defn- fog-of-war
-  [arena coords]
-  (if (au/get-item coords arena)
-    (au/update-cell arena coords (:fog arena-key))
-    arena))
-
-#_(defn- finalize-pos
-  [arena pos]
-  [pos (blocked-pos? arena pos)])
-
-#_(defn- new-pos
-  [ray-length rxy xy]
-  (int (Math/round (+ rxy (* xy (double ray-length))))))
-
-#_(defn- parse-pos
-  [arena view-dist ray-length [rx ry] [x y :as ang]]
-  (if (zero? x)
-    (finalize-pos arena [(int rx)
-                         (int (+ ry (* ray-length x)))])
-    (finalize-pos arena [(new-pos ray-length rx x)
-                         (new-pos ray-length ry y)])))
-
-#_(defn- blocked-pos
-  [arena view-dist player-pos]
-  ;; TODO There is a bug where player-pos is sometimes not passed to
-  ;; blocked-pos. Find that edge case and remove the if statement.
-  (if (not player-pos)
-    #{}
-    (let [angs (angles view-dist)]
-      (:blocked-pos
-       (reduce
-        (fn [bmap ray-length]
-          (reduce
-           (fn [blocked-map ang]
-             (let [ang-blocked? (contains? (:blocked-angs blocked-map) ang)
-                   [pos pos-blocked?] (parse-pos arena view-dist ray-length
-                                                 player-pos ang)
-                   blocker? (contains? (:blockers blocked-map) pos)]
-               (-> blocked-map
-                   (update-in [:blockers]
-                              #(if (and pos-blocked?
-                                        (not ang-blocked?))
-                                 (conj % pos) %))
-                   (update-in [:blocked-angs]
-                              #(if pos-blocked?
-                                 (conj % ang) %))
-                   (update-in [:blocked-pos]
-                              #(if (and ang-blocked?
-                                        (not blocker?))
-                                 (conj % pos) %)))))
-           bmap angs))
-        {:blocked-angs #{}
-         :blocked-pos #{}
-         :blockers #{}}
-        (range 1 (inc view-dist)))))))
-
-#_(defn occluded-arena
-  "Only pass the limited arena that the user can see,
-   this fn does not alter the size of the arena passed."
-  [arena player-pos]
-  (let [blocked-pos (blocked-pos arena (count arena) player-pos)]
-    (reduce fog-of-war arena blocked-pos)))
 
 (defn- is-opaque-md?
   [cell]
@@ -157,8 +63,7 @@
 
 (defn occluded-arena
   [arena start-pos]
-  (let [sorted-arena (sort-arena arena)
-        non-transparent (filter-non-transparent arena)
+  (let [non-transparent (filter-non-transparent arena)
         perimeter (calculate-perimeter arena)
         occluded-coords (calculate-occluded-coords perimeter
                                                    non-transparent
