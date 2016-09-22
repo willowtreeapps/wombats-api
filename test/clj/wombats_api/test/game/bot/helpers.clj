@@ -119,10 +119,6 @@
               [f  o  b2]]))
       "Finds no matches when nothing matches the predicate"))
 
-(deftest draw-line-spec
-  (is (= [[0 0] [1 1] [2 2] [3 3]] (draw-line [0 0] [3 3])) "from (0 0) to (3 3)")
-  #_(is (= [[2 2] [2 3] [2 4] [2 5]] (draw-line [2 2] [2 5])) "from (2 2) to (2 5)"))
-
 (deftest last-cell-of-row-spec
   (is (= true (#'bot-helpers/last-cell-of-row? 2 0 [[o o o]]))
       "Returns true when the given cell is the last cell of a given row")
@@ -130,3 +126,16 @@
       "Returns false when the given cell is the not the last cell of a given row"))
   (is (= false (#'bot-helpers/last-cell-of-row? 3 0 [[o o o]]))
       "Returns false when the given cell does not exist")
+
+(deftest draw-line-spec
+  (is (= (draw-line [0 0] [5 5])
+         [[0 0] [1 1] [2 2] [3 3] [4 4] [5 5]])
+      "Draws a line from [0 0] to [5 5]")
+  (is (= (draw-line [5 5] [0 0])
+         [[5 5] [4 4] [3 3] [2 2] [1 1] [0 0]])
+      "Draws a line from [5 5] to [0 0]")
+  (let [line (draw-line [100 45] [0 2])
+        first-plot (first line)
+        last-plot (last line)]
+    (is (and (= first-plot [100 45])
+             (= last-plot [0 2])))))
