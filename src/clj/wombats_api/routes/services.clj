@@ -18,11 +18,16 @@
              :spec "/swagger.json"
              :data {:info {:version "0.0.1-beta"
                            :title "Wombats API"
-                           :description "API for interacting with the wombats game engine / player management system / and arena generation services."}}}}
+                           :description "API for interacting with the wombats game engine / player management system / and arena generation services."}
+                    :tags [{:name "games" :description "Games API"}
+                           {:name "players" :description "Players API"}
+                           {:name "authentication" :description "Authentication API"}
+                           {:name "simulator" :description "Simulator API"}]
+                    :securityDefinitions {:api_key {:type "apiKey"
+                                                    :name "Authorization"
+                                                    :in "header"}}}}}
 
   (context "/api/v1" []
-    :header-params [{Authorization :- String ""}]
-
     (context "/games" []
       :tags ["games"]
 
@@ -151,7 +156,7 @@
               (player/remove-player-bot (:identity req) repo))))))
 
     (context "/signin/github" []
-      :tags ["authenication"]
+      :tags ["authentication"]
 
       (GET "/" []
         :summary "Redirects to Github's OAuth2 Service."

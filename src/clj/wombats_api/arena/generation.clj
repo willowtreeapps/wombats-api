@@ -2,9 +2,9 @@
   (:require [wombats-api.constants.arena :refer [arena-key]]
             [clojure.tools.logging :as log]
             [wombats-api.arena.utils :refer [get-arena-dimensions
-                                         update-cell
-                                         uuid
-                                         wrap-coords]]))
+                                             update-cell
+                                             uuid
+                                             wrap-coords]]))
 
 
 (defn- get-number-of-items

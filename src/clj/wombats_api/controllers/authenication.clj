@@ -50,7 +50,10 @@
 
 (defn process-user
   [code state]
+
+  ;; Check to make sure the signing secrets match
   (if (= state (:wombats-oauth-signing-secret env))
+
     @(http/post
       github-access-token-url
       {:query-params {:client_id (:wombats-github-client-id env)
