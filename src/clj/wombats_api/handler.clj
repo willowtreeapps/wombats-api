@@ -18,5 +18,4 @@
     (route/not-found
       "page not found")))
 
-
 (defn app [] (middleware/wrap-base (wrap-access-rules #'app-routes rules)))
