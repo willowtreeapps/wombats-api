@@ -34,12 +34,12 @@
       (GET "/" []
         :return [game-schema/Game]
         :summary "Returns a collection of games."
-        (ok (game/get-games)))
+        (game/get-games))
 
       (POST "/" []
         :return game-schema/Game
         :summary "Adds a new game."
-        (ok (game/add-game)))
+        (game/add-game))
 
       (context "/:game-id" []
         :path-params [game-id :- String]
@@ -47,29 +47,28 @@
         (GET "/" []
           :return game-schema/Game
           :summary "Returns a single game."
-          (ok (game/get-games game-id)))
+          (game/get-games game-id))
 
         (DELETE "/" []
           :return String
           :summary "Removes a game."
-          (ok (game/remove-game game-id)))
+          (game/remove-game game-id))
 
         (POST "/initialize" []
           :return game-schema/Game
           :summary "Initializes a game."
-          (ok (game/initialize-game game-id)))
+          (game/initialize-game game-id))
 
         (POST "/start" []
           :return game-schema/Game
           :summary "Starts a game."
-
-          (ok (game/start-game game-id)))
+          (game/start-game game-id))
 
         (POST "/join" req
           :body-params [repo :- String]
           :return game-schema/Game
           :summary "Adds the current user to the game."
-          (ok (game/add-player game-id (:identity req) repo)))
+          (game/add-player game-id (:identity req) repo))
 
         (context "/frames" []
 
