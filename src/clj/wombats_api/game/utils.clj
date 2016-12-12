@@ -6,9 +6,7 @@
 (defn position
   [pred coll]
   (first (keep-indexed (fn [idx x]
-                         (when (pred x)
-                           idx))
-                       coll)))
+                         (when (pred x) idx)) coll)))
 
 (defn is-player?
   "Checks to see if an item is a player"

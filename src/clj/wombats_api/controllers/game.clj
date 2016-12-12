@@ -9,9 +9,9 @@
 
 (defn get-games
   ([]
-   (db/get-all-games))
+   (ok (db/get-all-games)))
   ([game-id]
-   (db/get-game game-id)))
+   (ok (db/get-game game-id))))
 
 (defn add-game
   []
@@ -19,13 +19,13 @@
               :configuration config
               :players []
               :state "pending"}]
-    (db/add-game game)))
+    (ok (db/add-game game))))
 
 (defn remove-game
   [game-id]
   (let [update (db/remove-game game-id)]
     (when (mr/acknowledged? update)
-      (str "Game " game-id " removed."))))
+      (ok (str "Game " game-id " removed.")))))
 
 (defn initialize-game
   ;; TODO implement FSM to handle game state transitions
@@ -35,7 +35,7 @@
         updated-game (assoc game :initial-arena initialized-arena :state "initialized")
         update (db/update-game game-id updated-game)]
     (when (mr/acknowledged? update)
-      updated-game)))
+      (ok updated-game))))
 
 (defn start-game
   [game-id]
@@ -43,7 +43,7 @@
         updated-game (game-loop/start-game game)
         update (db/update-game game-id updated-game)]
     (when (mr/acknowledged? update)
-      (dissoc updated-game :messages))))
+      (ok (dissoc updated-game :messages)))))
 
 (defn get-game-frames
   ([game-id]
@@ -67,7 +67,7 @@
     (cond
       (not game-open?) (bad-request! "The game you are trying to join is now full.")
       player-registered? (bad-request! "You are already registered in this game.")
-      :else (db/get-game game-id))))
+      :else (ok (db/get-game game-id)))))
 
 (defn get-players
   ([game-id]
