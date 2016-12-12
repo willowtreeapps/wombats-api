@@ -22,6 +22,11 @@
      :decision-maker decision-maker
      :is-player? (gu/is-player? decision-maker)}))
 
+(defn- update-mini-map
+  "Attaches a decision makers mini-map to game-state"
+  [uuid game-state mini-map]
+  (assoc-in game-state [:mini-maps (keyword uuid)] mini-map))
+
 (defn- process-command
   "Processes a single command for a given player if the player has enough time for that command."
   [uuid {:keys [command-map] :as config}]
@@ -59,12 +64,13 @@
   (fn [game-state {:keys [uuid]
                    {:keys [commands]} :decision
                    mini-map :mini-map}]
-    (:game-state (reduce (process-command uuid config)
-                         {:game-state (if mini-map
-                                        (merge game-state {:mini-map mini-map})
-                                        game-state)
-                          :remaining-time initial-time-unit-count}
-                         commands))))
+    (update-mini-map
+     uuid
+     (:game-state (reduce (process-command uuid config)
+                          {:game-state game-state
+                           :remaining-time initial-time-unit-count}
+                          commands))
+     mini-map)))
 
 (defn- calculate-ai-decision
   "TODO This should pull from another location. For the time being, ai's will move in random directions."
@@ -94,8 +100,7 @@
    their bots and an identical clean version of the arena"
   [{:keys [clean-arena players] :as game-state}
    config
-   initiative-order
-   simulator?]
+   initiative-order]
   (remove
    nil?
    (map-indexed
@@ -116,15 +121,15 @@
                                  :hp (:hp decision-maker)
                                  :initiative-order idx
                                  :initiative-count (count initiative-order)}]
-            (merge {:decision (if is-player?
-                                (calculate-player-decision game-parameters player)
-                                (calculate-ai-decision game-parameters))
-                    :uuid uuid}
-                   (if (and simulator? is-player?) {:mini-map arena} {}))))))
+            {:decision (if is-player?
+                         (calculate-player-decision game-parameters player)
+                         (calculate-ai-decision game-parameters))
+             :uuid uuid
+             :mini-map arena}))))
     initiative-order)))
 
 (defn resolve-turns
   "Updates the arena by applying each players' movement logic"
-  [{:keys [clean-arena initiative-order] :as game-state} {:keys [simulator] :as config}]
-  (let [decisions (resolve-decisions game-state config initiative-order simulator)]
+  [{:keys [clean-arena initiative-order] :as game-state} config]
+  (let [decisions (resolve-decisions game-state config initiative-order)]
     (reduce (apply-decisions config) game-state decisions)))

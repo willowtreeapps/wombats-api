@@ -45,7 +45,8 @@
   "Preps game-state for a new frame"
   [{:keys [clean-arena] :as game-state}]
   (merge game-state {:dirty-arena (update-volatile-cells clean-arena)
-                     :messages {}}))
+                     :messages {}
+                     :mini-maps {}}))
 
 (defn initialize-game
   "Preps the game"
@@ -59,4 +60,5 @@
                 :round-count 0
                 :initiative-order nil
                 :players initialized-players
-                :messages {}}))))
+                :messages {}
+                :mini-maps {}}))))

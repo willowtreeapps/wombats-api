@@ -51,14 +51,15 @@
                     :round-number s/Int
                     :players [InGamePlayer]
                     :map Arena
-                    :messages MessageChannel})
+                    :messages MessageChannel
+                    :mini-maps [Arena]})
 
 (s/defschema SimulationFrame (select-keys Frame [:map :messages :players]))
 
 (s/defschema CommandConfiguration {:MOVE {:tu s/Int}
-                         :SHOOT {:tu s/Int}
-                         :SET_STATE {:tu s/Int}
-                         :SMOOKESCREEN {:tu s/Int}})
+                                   :SHOOT {:tu s/Int}
+                                   :SET_STATE {:tu s/Int}
+                                   :SMOOKESCREEN {:tu s/Int}})
 
 (s/defschema PlayerConfiguration {:initial-hp s/Int
                                   :partial-arena-radius s/Int})
@@ -83,3 +84,12 @@
                    :initial-arena Arena
                    :players [InGamePlayer]
                    :state s/Str})
+
+(s/defschema GameState
+  {:clean-arena Arena
+   :dirty-arena Arena
+   :players [Player]
+   :messages MessageChannel
+   :mini-maps [Arena]
+   :initiative-order [s/Str]
+   :frames [Frame]})
