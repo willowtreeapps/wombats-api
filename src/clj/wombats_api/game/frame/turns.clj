@@ -24,7 +24,7 @@
 
 (defn- update-mini-map
   "Attaches a decision makers mini-map to game-state"
-  [uuid game-state mini-map]
+  [game-state uuid mini-map]
   (assoc-in game-state [:mini-maps (keyword uuid)] mini-map))
 
 (defn- process-command
@@ -64,13 +64,11 @@
   (fn [game-state {:keys [uuid]
                    {:keys [commands]} :decision
                    mini-map :mini-map}]
-    (update-mini-map
-     uuid
-     (:game-state (reduce (process-command uuid config)
-                          {:game-state game-state
-                           :remaining-time initial-time-unit-count}
-                          commands))
-     mini-map)))
+    (let [updated-game-state (:game-state (reduce (process-command uuid config)
+                                                  {:game-state game-state
+                                                   :remaining-time initial-time-unit-count}
+                                                  commands))]
+      (update-mini-map updated-game-state uuid mini-map))))
 
 (defn- calculate-ai-decision
   "TODO This should pull from another location. For the time being, ai's will move in random directions."

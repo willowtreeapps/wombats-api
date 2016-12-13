@@ -18,6 +18,12 @@
          '[org.httpkit.client :as http]
          '[cheshire.core :refer [parse-string]])
 
+(defn- print-mini-map
+  [[name map]]
+  (println (str "Name: " name))
+  (au/pprint-arena map)
+  (println))
+
 (defn- get-bot-code-simulator
   "Used to run in the bot simulator"
   [username repo token]
@@ -133,7 +139,7 @@
     (println "Running Simulation...")
 
     (when code
-      (loop [{:keys [clean-arena messages players mini-maps] :as game-state} initial-game-state
+      (loop [{:keys [clean-arena messages players frames] :as game-state} initial-game-state
              frame-count initial-frame-count
              frame-display "Starting Arena"]
 
@@ -144,7 +150,9 @@
           (print (str (char 27) "[;H")))
 
         (println "Mini Maps Before Resolution")
-        ;; TODO Print mini-maps
+
+        (let [previous-frame (first frames)]
+          (doall (map print-mini-map (into [] (:mini-maps previous-frame)))))
 
         (println "\n\nFRAME: " frame-display)
         (au/pprint-arena clean-arena)
