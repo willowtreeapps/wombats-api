@@ -44,27 +44,26 @@
             [lein-kibit "0.1.2"]
             [lein-cloverage "1.0.6"]]
 
-  :profiles
-  {:uberjar {:omit-source true
-             :aot :all
-             :uberjar-name "wombats-api.jar"
-             :source-paths ["env/prod/clj"]
-             :resource-paths ["env/prod/resources"]}
+  :profiles {:uberjar {:omit-source true
+                       :aot :all
+                       :uberjar-name "wombats-api.jar"
+                       :source-paths ["env/prod/clj"]
+                       :resource-paths ["env/prod/resources"]}
 
-   :dev           [:project/dev :profiles/dev]
-   :test          [:project/test :profiles/test]
+             :dev           [:project/dev :profiles/dev]
+             :test          [:project/test :profiles/test]
 
-   :project/dev  {:dependencies [[prone "1.1.1"]
-                                 [ring/ring-mock "0.3.0"]
-                                 [ring/ring-devel "1.5.0"]
-                                 [pjstadig/humane-test-output "0.8.1"]]
-                  :plugins      [[com.jakemccrary/lein-test-refresh "0.14.0"]]
+             :project/dev  {:dependencies [[prone "1.1.1"]
+                                           [ring/ring-mock "0.3.0"]
+                                           [ring/ring-devel "1.5.0"]
+                                           [pjstadig/humane-test-output "0.8.1"]]
+                            :plugins      [[com.jakemccrary/lein-test-refresh "0.14.0"]]
 
-                  :source-paths ["env/dev/clj" "test/clj"]
-                  :resource-paths ["env/dev/resources"]
-                  :repl-options {:init-ns user}
-                  :injections [(require 'pjstadig.humane-test-output)
-                               (pjstadig.humane-test-output/activate!)]}
-   :project/test {:resource-paths ["env/dev/resources" "env/test/resources"]}
-   :profiles/dev {}
-   :profiles/test {}})
+                            :source-paths ["env/dev/clj" "test/clj"]
+                            :resource-paths ["env/dev/resources"]
+                            :repl-options {:init-ns user}
+                            :injections [(require 'pjstadig.humane-test-output)
+                                         (pjstadig.humane-test-output/activate!)]}
+             :project/test {:resource-paths ["env/dev/resources" "env/test/resources"]}
+             :profiles/dev {}
+             :profiles/test {}})
