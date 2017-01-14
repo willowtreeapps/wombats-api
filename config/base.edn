@@ -1,0 +1,7 @@
+{:datomic {:uri #immuconf/override "Specify the database uri in the envioronment config"}
+ :pedestal {:port #immuconf/override "Specify pedestal's http port in the environment config"
+            :type :jetty
+            :join? false
+            :container-options {:h2c? true
+                                :h2? false
+                                :ssl? true}}}
