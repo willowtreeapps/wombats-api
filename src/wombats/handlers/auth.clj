@@ -8,9 +8,6 @@
 (def ^:private github-base "https://github.com/login/oauth/")
 (def ^:private github-authorize-url (str github-base "authorize"))
 (def ^:private github-access-token-url (str github-base "access_token"))
-(def ^:private user-profile-url "https://api.github.com/user")
-(def ^:private user-repos-url "https://api.github.com/user/repos")
-
 (def ^:private github-scopes "user:email")
 
 (defn- get-access-token
@@ -24,13 +21,13 @@
 
 (defn- redirect-home
   "Final redirect home with or without access token appended"
-  ([context]
+  ([context redirect]
    (assoc context :response (assoc (:response context)
-                                   :headers {"Location" "/"}
+                                   :headers {"Location" redirect}
                                    :status 302)))
-  ([context access-token]
+  ([context redirect access-token]
    (assoc context :response (assoc (:response context)
-                                   :headers {"Location" (str "/?access-token=" access-token)}
+                                   :headers {"Location" (str redirect "?access-token=" access-token)}
                                    :status 302))))
 
 ;; TODO signing secret should not be consistant across requests. Gen uuid to send.
@@ -52,7 +49,10 @@
 (defbefore github-callback
   [{:keys [request response] :as context}]
   (let [ch (chan 1)
-        {:keys [client-id client-secret signing-secret]} (get-github-settings context)
+        {:keys [client-id
+                client-secret
+                signing-secret
+                web-client-redirect]} (get-github-settings context)
         {:keys [code state]} (:query-params request)]
     (go
       (if (= state signing-secret)
@@ -61,7 +61,7 @@
                                                               :code code}
                                                :headers {"Accept" "application/json"}})]
           (if access-token
-            (>! ch (redirect-home context access-token))
-            (>! ch (redirect-home context))))
-        (>! ch (redirect-home context))))
+            (>! ch (redirect-home context web-client-redirect access-token))
+            (>! ch (redirect-home context web-client-redirect))))
+        (>! ch (redirect-home context web-client-redirect))))
     ch))

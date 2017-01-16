@@ -1,3 +1,4 @@
 {:datomic {:uri "datomic:free://localhost:4334/wombats-dev"}
  :pedestal {:port 8888
-            :container-options {:ssl? false}}}
+            :container-options {:ssl? false}}
+ :github {:web-client-redirect "http://localhost:8888"}}
