@@ -23,8 +23,6 @@
                             ;; HTTP Server
                             [io.pedestal/pedestal.service "0.5.1"]
                             [io.pedestal/pedestal.jetty   "0.5.1"]
-                            ;; [io.pedestal/pedestal.immutant "0.5.1"]
-
 
                             ;; HTTP Client
                             [http-kit "2.3.0-alpha1"]
