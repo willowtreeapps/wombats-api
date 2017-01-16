@@ -27,7 +27,13 @@
        ["/v1"
         ["/users"
          {:get user/get-users
-          :post user/post-user}]
+          :post user/post-user}
+         ["/email/:email"
+          {:get user/get-user-by-email}]
+         ["/token/:access-token"
+          {:get user/get-user-by-access-token}]
+         ["/id/:id"
+          {:get user/get-user-by-id}]]
 
         ["/games"
          {:get game/get-games
