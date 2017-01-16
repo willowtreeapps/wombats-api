@@ -19,11 +19,12 @@
 (defn- get-config-files
   "Determins the files that should be used for configuration.
 
-   Defaults -> [config/base.edn, config/{env}.edn]"
+   Defaults -> [config/base.edn, /config/.private.edn,  config/{env}.edn]"
   [env]
   (let [base-config "base.edn"
+        private-config ".private.edn"
         env-config (str (name env) ".edn")]
-    [base-config env-config]))
+    [base-config private-config env-config]))
 
 (defn- build-settings-map
   "Takes a vector of file paths, checks their existance, and runs the remaining

@@ -1,29 +1,32 @@
 [;; User entities
- {:db/id #db/id [:db.part/db]
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :user/username
   :db/valueType   :db.type/string
   :db/cardinality :db.cardinality/one
-  :db/doc "A user's username"
-  :db.install/_attribute :db.part/db}
+  :db/doc         "A user's username"}
 
- {:db/id #db/id [:db.part/db]
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/github-name
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Users GitHub username."}
+
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :user/wombats
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/many
-  :db/doc "All the wombats that belong to a user"
-  :db.install/_attribute :db.part/db}
+  :db/doc         "All the wombats that belong to a user"}
 
  ;; Wombat entities
- {:db/id #db/id [:db.part/db]
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :wombat/name
   :db/valueType   :db.type/string
   :db/cardinality :db.cardinality/one
-  :db/doc "A Wombats name"
-  :db.install/_attribute :db.part/db}
+  :db/doc         "A Wombats name"}
 
- {:db/id #db/id [:db.part/db]
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :wombat/url
   :db/valueType   :db.type/string
   :db/cardinality :db.cardinality/one
-  :db/doc "The location of the wombat executable"
-  :db.install/_attribute :db.part/db}]
+  :db/doc         "The location of the wombat executable"}]
