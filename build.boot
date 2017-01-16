@@ -7,6 +7,9 @@
                             [org.clojure/clojure   "1.9.0-alpha14"]
                             [org.clojure/data.json "0.2.6"]
 
+                            ;; JSON Parsing
+                            [cheshire "5.7.0"]
+
                             ;; Environment configuration
                             [environ         "1.1.0"]
                             [levand/immuconf "0.1.0"]
@@ -24,6 +27,9 @@
                             [io.pedestal/pedestal.service "0.5.1"]
                             [io.pedestal/pedestal.jetty   "0.5.1"]
                             ;; [io.pedestal/pedestal.immutant "0.5.1"]
+
+                            ;; HTTP Client
+                            [http-kit "2.3.0-alpha1"]
 
                             ;; Logging
                             [org.slf4j/jul-to-slf4j     "1.7.21"]
