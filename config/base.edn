@@ -4,4 +4,8 @@
             :join? false
             :container-options {:h2c? true
                                 :h2? false
-                                :ssl? true}}}
+                                :ssl? true}}
+ :github {:client-id #immuconf/override "Add your applications github client id to config/.private.edn"
+          :client-secret #immuconf/override "Add your applications github client secret to config/.private.edn"
+          :signing-secret #immuconf/default "shhhhh....."
+          :web-client-redirect #immuconf/override "Specify the location of the web client"}}
