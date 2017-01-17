@@ -78,6 +78,14 @@
                 (d/db conn)
                 user-id))))
 
+(defn get-wombat-by-name
+  "Returns a wombat by querying its name"
+  [conn]
+  (fn [name]
+    (d/pull (d/db conn) '[:wombat/name
+                          :wombat/url
+                          :wombat/id] [:wombat/name name])))
+
 (defn add-user-wombat
   "Creates a new wombat for a particular user"
   [conn]

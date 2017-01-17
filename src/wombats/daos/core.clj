@@ -14,6 +14,7 @@
    :create-or-update-user (user/create-or-update-user conn)
    ;; Wombat Management DAOS
    :get-user-wombats (user/get-user-wombats conn)
+   :get-wombat-by-name (user/get-wombat-by-name conn)
    :add-user-wombat (user/add-user-wombat conn)})
 
 (defn get-fn

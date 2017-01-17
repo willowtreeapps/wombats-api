@@ -1,11 +1,12 @@
 (ns wombats.routes
   (:require [io.pedestal.http :refer [html-body]]
             [io.pedestal.http.body-params :refer [body-params]]
+            [io.pedestal.http.ring-middlewares :as ring-middlewares]
             [wombats.interceptors.content-negotiation :refer [coerce-body content-neg-intc]]
             [wombats.interceptors.dao :refer [add-dao-functions]]
             [wombats.interceptors.github :refer [add-github-settings]]
             [wombats.interceptors.error-handler :refer [service-error-handler]]
-            [wombats.interceptors.swagger :as docs]
+            [wombats.handlers.swagger :as swagger]
             [wombats.handlers.static-pages :as static]
             [wombats.handlers.echo :as echo]
             [wombats.handlers.game :as game]
@@ -29,7 +30,7 @@
                        content-neg-intc
                        (body-params)
                        (add-dao-functions (dao/init-dao-map datomic))]
-       ["/docs" {:get docs/get-docs-json}]
+       ["/docs" {:get swagger/get-specs}]
        ["/v1"
         ["/users"
          {:get user/get-users}

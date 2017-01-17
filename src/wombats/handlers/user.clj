@@ -3,8 +3,12 @@
             [clojure.core.async :refer [chan go >!]]
             [wombats.daos.core :as dao]))
 
-(def ^:private users [])
-
+(def ^{:swagger-spec true} get-users-spec
+  {"/api/v1/users"
+   {:get {:description "Returns all users"
+          :tags ["user"]
+          :operationId "get-users"
+          :responses {:200 {:description "get-users response"}}}}})
 (defbefore get-users
   "Returns a seq of users"
   [{:keys [response] :as context}]
@@ -16,6 +20,12 @@
                                              :body (get-users)))))
     ch))
 
+(def ^{:swagger-spec true} get-user-by-id-spec
+  {"/api/v1/users/id/{user-id}"
+   {:get {:description "Returns a user matching a given id"
+          :tags ["user"]
+          :operationId "get-user-by-id"
+          :responses {:200 {:description "get-user-by-id response"}}}}})
 (defbefore get-user-by-id
   "Returns a user by searching for its id"
   [{:keys [response request] :as context}]
@@ -69,10 +79,13 @@
   [{:keys [response request] :as context}]
   (let [ch (chan 1)
         add-user-wombat (dao/get-fn :add-user-wombat context)
+        get-wombat-by-name (dao/get-fn :get-wombat-by-name context)
         wombat (:edn-params request)
         user-id (get-in request [:path-params :user-id])]
     (go
-      (>! ch (assoc context :response (assoc response
-                                             :status 200
-                                             :body @(add-user-wombat user-id wombat)))))
+      (let [tx @(add-user-wombat user-id wombat)
+            wombat-record (get-wombat-by-name (:name wombat))]
+        (>! ch (assoc context :response (assoc response
+                                               :status 200
+                                               :body wombat-record)))))
     ch))
