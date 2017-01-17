@@ -21,11 +21,11 @@
   [{:keys [response request] :as context}]
   (let [ch (chan 1)
         get-user-by-id (dao/get-fn :get-user-by-id context)
-        id (get-in request [:path-params :id])]
+        user-id (get-in request [:path-params :user-id])]
     (go
       (>! ch (assoc context :response (assoc response
                                              :status 200
-                                             :body (get-user-by-id id)))))
+                                             :body (get-user-by-id user-id)))))
     ch))
 
 (defbefore get-user-by-email
@@ -61,4 +61,29 @@
       (>! ch (assoc context :response (assoc response
                                              :status 200
                                              :body @(add-user {:username "emily"})))))
+    ch))
+
+(defbefore get-user-wombats
+  "Returns a seq of user wombats"
+  [{:keys [response request] :as context}]
+  (let [ch (chan 1)
+        get-user-wombats (dao/get-fn :get-user-wombats context)
+        user-id (get-in request [:path-params :user-id])]
+    (go
+      (>! ch (assoc context :response (assoc response
+                                             :status 200
+                                             :body (get-user-wombats user-id)))))
+    ch))
+
+(defbefore add-user-wombat
+  "Creates a new wombat and assigns it to the user"
+  [{:keys [response request] :as context}]
+  (let [ch (chan 1)
+        add-user-wombat (dao/get-fn :add-user-wombat context)
+        wombat (:edn-params request)
+        user-id (get-in request [:path-params :user-id])]
+    (go
+      (>! ch (assoc context :response (assoc response
+                                             :status 200
+                                             :body (add-user-wombat user-id wombat)))))
     ch))

@@ -10,19 +10,18 @@
   [conn]
   (fn []
     (apply concat
-           (d/q '[:find (pull ?user [:user/email
+           (d/q '[:find (pull ?user [:user/id
                                      :user/github-username
                                      :user/avatar-url])
                   :in $
-                  :where
-                  [?user :user/id]]
+                  :where [?user :user/id]]
                 (d/db conn)))))
 
 (defn get-user-by-id
   "Gets a user by a given id"
   [conn]
-  (fn [id]
-    (d/pull (d/db conn) '[*] [:user/id id])))
+  (fn [user-id]
+    (d/pull (d/db conn) '[*] [:user/id user-id])))
 
 (defn get-user-by-email
   "Gets a user by a given email"
@@ -53,3 +52,21 @@
         (d/transact-async conn [(merge update {:db/id current-user-id
                                                :user/id (str (java.util.UUID/randomUUID))})])
         (d/transact-async conn [update])))))
+
+;; TODO Adjust after wombat add
+(defn get-user-wombats
+  [conn]
+  (fn [user-id]
+    (apply concat
+           (d/q '[:find (pull ?wombat [:wombat/name
+                                       :wombat/url])
+                  :in $ ?user-id
+                  :where [?user :user/id ?user-id]]
+                (d/db conn)
+                user-id))))
+
+(defn add-user-wombat
+  [conn]
+  (fn [user-id wombat]
+    ;; TODO Add wombat
+    {:wombat true}))
