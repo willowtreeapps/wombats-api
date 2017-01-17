@@ -14,4 +14,4 @@ pom.xml.asc
 /.nrepl-history
 /logs/
 /config/.private.edn
-/resources/swagger
+/resources/public/swagger
