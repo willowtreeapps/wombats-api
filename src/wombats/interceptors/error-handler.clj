@@ -25,6 +25,4 @@
      (assoc context :io.pedestal.interceptor.chain/error exception))
 
    :else
-   (do
-     (clojure.pprint/pprint exception)
-     (assoc context :io.pedestal.interceptor.chain/error exception))))
+   (assoc context :io.pedestal.interceptor.chain/error exception)))
