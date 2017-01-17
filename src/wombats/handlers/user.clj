@@ -52,17 +52,6 @@
                                              :body (get-user-by-token access-token)))))
     ch))
 
-(defbefore post-user
-  "Adds a new user to the db"
-  [{:keys [response] :as context}]
-  (let [ch (chan 1)
-        add-user (dao/get-fn :add-user context)]
-    (go
-      (>! ch (assoc context :response (assoc response
-                                             :status 200
-                                             :body @(add-user {:username "emily"})))))
-    ch))
-
 (defbefore get-user-wombats
   "Returns a seq of user wombats"
   [{:keys [response request] :as context}]
@@ -80,11 +69,10 @@
   [{:keys [response request] :as context}]
   (let [ch (chan 1)
         add-user-wombat (dao/get-fn :add-user-wombat context)
-        get-user-db-id (dao/get-fn :get-user-db-id context)
         wombat (:edn-params request)
         user-id (get-in request [:path-params :user-id])]
     (go
       (>! ch (assoc context :response (assoc response
                                              :status 200
-                                             :body (add-user-wombat user-id wombat)))))
+                                             :body @(add-user-wombat user-id wombat)))))
     ch))

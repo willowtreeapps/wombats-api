@@ -32,8 +32,7 @@
        ["/docs" {:get docs/get-docs-json}]
        ["/v1"
         ["/users"
-         {:get user/get-users
-          :post user/post-user}
+         {:get user/get-users}
          ["/email/:email"
           {:get user/get-user-by-email}]
          ["/token/:access-token"
