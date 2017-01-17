@@ -13,6 +13,8 @@
                 join? container-options]} (get-in config [:settings :pedestal])
         {:keys [api-routes ws-routes]} (get-in service [:service])]
     {:env env
+     ::http/resource-path "/public"
+     ::http/file-path "/public"
      ::http/routes api-routes
      ::http/port port
      ::http/type type
