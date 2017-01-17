@@ -45,3 +45,12 @@
   (set-env! :source-paths #(conj % "dev/src"))
 
   (require 'user))
+
+(deftask refresh-db []
+  (require '[datomic.api])
+
+  (let [datomic-uri "datomic:free://localhost:4334/wombats-dev"
+        _ (datomic.api/delete-database datomic-uri)
+        _ (datomic.api/create-database datomic-uri)
+        conn (datomic.api/connect datomic-uri)]
+    (datomic.api/transact conn (load-file "resources/datomic/schema.edn"))))
