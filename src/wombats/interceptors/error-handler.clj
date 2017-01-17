@@ -21,7 +21,7 @@
 
    [{:exception-type ExceptionInfo}]
    (condp = (get-exception-type exception)
-     :invalid-schema (assoc context :response {:status 401 :body "Invalid schema"})
+     :invalid-schema (assoc context :response {:status 401 :body "Invalid payload"})
      (assoc context :io.pedestal.interceptor.chain/error exception))
 
    :else

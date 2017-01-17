@@ -80,6 +80,7 @@
   [{:keys [response request] :as context}]
   (let [ch (chan 1)
         add-user-wombat (dao/get-fn :add-user-wombat context)
+        get-user-db-id (dao/get-fn :get-user-db-id context)
         wombat (:edn-params request)
         user-id (get-in request [:path-params :user-id])]
     (go
