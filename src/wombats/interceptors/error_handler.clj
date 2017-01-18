@@ -1,7 +1,6 @@
 (ns wombats.interceptors.error-handler
   (:require [io.pedestal.interceptor.error :refer [error-dispatch]]))
 
-
 (defn- get-exception-data
   [exception]
   (-> exception
