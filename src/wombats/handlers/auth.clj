@@ -4,7 +4,7 @@
             [org.httpkit.client :as http]
             [cheshire.core :refer [parse-string]]
             [wombats.interceptors.github :refer [get-github-settings]]
-            [wombats.daos.core :as dao]))
+            [wombats.daos.helpers :as dao]))
 
 (def ^:private github-base "https://github.com/login/oauth/")
 (def ^:private github-authorize-url (str github-base "authorize"))

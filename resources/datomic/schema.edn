@@ -69,4 +69,79 @@
   :db/ident       :wombat/url
   :db/valueType   :db.type/string
   :db/cardinality :db.cardinality/one
-  :db/doc         "The location of the wombat executable"}]
+  :db/doc         "The location of the wombat executable"}
+
+ ;; Arena entities
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An arena configurations public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/name
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An arena configurations name"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/width
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An arena configurations width"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/height
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An arena configurations height"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/shot-damage
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "How much damage does a shot cause in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/smoke-duraition
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "How long does smoke persist in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/food
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of the food elements in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/poison
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of poison elements in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/stone-walls
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of stone wall elements in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/wood-walls
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wood wall elements in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/zakano
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of Zakano elements in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/perimeter
+  :db/valueType   :db.type/boolean
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Should the arena contain a solid perimeter?"}]
