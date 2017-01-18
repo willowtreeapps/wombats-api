@@ -41,7 +41,19 @@
 ;; Load testing tasks
 (require '[adzerk.boot-test :refer :all])
 
+(require '[datomic.api :as d])
+
 (deftask dev []
   (set-env! :source-paths #(conj % "dev/src"))
 
   (require 'user))
+
+(deftask refresh-db
+  "resets the database"
+  []
+
+  (let [datomic-uri "datomic:free://localhost:4334/wombats-dev"
+        _ (d/delete-database datomic-uri)
+        _ (d/create-database datomic-uri)
+        conn (d/connect datomic-uri)]
+    (d/transact conn (load-file "resources/datomic/schema.edn"))))

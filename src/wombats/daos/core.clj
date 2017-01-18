@@ -6,11 +6,16 @@
   This makes no assumption of authentication / authorization which should be handled prior to gaining
   access to these functions."
   [{:keys [conn] :as datomic}]
-  {:get-users (user/get-users conn)
+  {;; User DAOS
+   :get-users (user/get-users conn)
    :get-user-by-id (user/get-user-by-id conn)
    :get-user-by-email (user/get-user-by-email conn)
    :get-user-by-access-token (user/get-user-by-access-token conn)
-   :create-or-update-user (user/create-or-update-user conn)})
+   :create-or-update-user (user/create-or-update-user conn)
+   ;; Wombat Management DAOS
+   :get-user-wombats (user/get-user-wombats conn)
+   :get-wombat-by-name (user/get-wombat-by-name conn)
+   :add-user-wombat (user/add-user-wombat conn)})
 
 (defn get-fn
   "Helper function used to pull the correct dao out of context"

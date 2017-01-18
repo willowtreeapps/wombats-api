@@ -3,8 +3,12 @@
             [clojure.core.async :refer [chan go >!]]
             [wombats.daos.core :as dao]))
 
-(def ^:private users [])
-
+(def ^{:swagger-spec true} get-users-spec
+  {"/api/v1/users"
+   {:get {:description "Returns all users"
+          :tags ["user"]
+          :operationId "get-users"
+          :responses {:200 {:description "get-users response"}}}}})
 (defbefore get-users
   "Returns a seq of users"
   [{:keys [response] :as context}]
@@ -16,16 +20,22 @@
                                              :body (get-users)))))
     ch))
 
+(def ^{:swagger-spec true} get-user-by-id-spec
+  {"/api/v1/users/id/{user-id}"
+   {:get {:description "Returns a user matching a given id"
+          :tags ["user"]
+          :operationId "get-user-by-id"
+          :responses {:200 {:description "get-user-by-id response"}}}}})
 (defbefore get-user-by-id
   "Returns a user by searching for its id"
   [{:keys [response request] :as context}]
   (let [ch (chan 1)
         get-user-by-id (dao/get-fn :get-user-by-id context)
-        id (get-in request [:path-params :id])]
+        user-id (get-in request [:path-params :user-id])]
     (go
       (>! ch (assoc context :response (assoc response
                                              :status 200
-                                             :body (get-user-by-id id)))))
+                                             :body (get-user-by-id user-id)))))
     ch))
 
 (defbefore get-user-by-email
@@ -52,13 +62,30 @@
                                              :body (get-user-by-token access-token)))))
     ch))
 
-(defbefore post-user
-  "Adds a new user to the db"
-  [{:keys [response] :as context}]
+(defbefore get-user-wombats
+  "Returns a seq of user wombats"
+  [{:keys [response request] :as context}]
   (let [ch (chan 1)
-        add-user (dao/get-fn :add-user context)]
+        get-user-wombats (dao/get-fn :get-user-wombats context)
+        user-id (get-in request [:path-params :user-id])]
     (go
       (>! ch (assoc context :response (assoc response
                                              :status 200
-                                             :body @(add-user {:username "emily"})))))
+                                             :body (get-user-wombats user-id)))))
+    ch))
+
+(defbefore add-user-wombat
+  "Creates a new wombat and assigns it to the user"
+  [{:keys [response request] :as context}]
+  (let [ch (chan 1)
+        add-user-wombat (dao/get-fn :add-user-wombat context)
+        get-wombat-by-name (dao/get-fn :get-wombat-by-name context)
+        wombat (:edn-params request)
+        user-id (get-in request [:path-params :user-id])]
+    (go
+      (let [tx @(add-user-wombat user-id wombat)
+            wombat-record (get-wombat-by-name (:name wombat))]
+        (>! ch (assoc context :response (assoc response
+                                               :status 200
+                                               :body wombat-record)))))
     ch))

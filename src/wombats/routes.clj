@@ -1,8 +1,12 @@
 (ns wombats.routes
   (:require [io.pedestal.http :refer [html-body]]
+            [io.pedestal.http.body-params :refer [body-params]]
+            [io.pedestal.http.ring-middlewares :as ring-middlewares]
             [wombats.interceptors.content-negotiation :refer [coerce-body content-neg-intc]]
             [wombats.interceptors.dao :refer [add-dao-functions]]
             [wombats.interceptors.github :refer [add-github-settings]]
+            [wombats.interceptors.error-handler :refer [service-error-handler]]
+            [wombats.handlers.swagger :as swagger]
             [wombats.handlers.static-pages :as static]
             [wombats.handlers.echo :as echo]
             [wombats.handlers.game :as game]
@@ -21,19 +25,24 @@
        {:get static/home-page}]
       ["/echo" {:get echo/echo}]
       ["/api"
-       ^:interceptors [coerce-body
+       ^:interceptors [service-error-handler
+                       coerce-body
                        content-neg-intc
+                       (body-params)
                        (add-dao-functions (dao/init-dao-map datomic))]
+       ["/docs" {:get swagger/get-specs}]
        ["/v1"
         ["/users"
-         {:get user/get-users
-          :post user/post-user}
+         {:get user/get-users}
          ["/email/:email"
           {:get user/get-user-by-email}]
          ["/token/:access-token"
           {:get user/get-user-by-access-token}]
-         ["/id/:id"
-          {:get user/get-user-by-id}]]
+         ["/id/:user-id"
+          {:get user/get-user-by-id}
+          ["/wombats"
+           {:get user/get-user-wombats
+            :post user/add-user-wombat}]]]
 
         ["/games"
          {:get game/get-games
