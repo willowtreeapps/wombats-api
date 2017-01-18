@@ -6,7 +6,7 @@
 (def ^{:private true
        :doc "List of handlers to be sources for api documentation"}
   handlers
-  #{"user" "game"})
+  #{"user" "game" "arena"})
 
 (def ^:private swagger-specs {:info {:title "Wombats API"
                                      :description "API documentation for Wombats"
@@ -22,6 +22,8 @@
                               :produces ["application/edn"]
                               :tags [{:name "user"
                                       :description "User API"}
+                                     {:name "arena"
+                                      :description "Arena Configuration API"}
                                      {:name "game"
                                       :description "Game API"}]})
 
@@ -42,7 +44,7 @@
 (defn- reduce-path-documentation
   "Reduces over spec vars producing a single path document"
   [handler-vars]
-  (reduce #(merge %1 (var-get %2)) {} handler-vars))
+  (reduce #(merge-with merge %1 (var-get %2)) {} handler-vars))
 
 (defn- resolve-swagger-paths
   "Returns a map that is compatible with the OpenAPI path specification

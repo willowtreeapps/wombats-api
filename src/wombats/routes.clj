@@ -12,6 +12,7 @@
             [wombats.handlers.game :as game]
             [wombats.handlers.user :as user]
             [wombats.handlers.auth :as auth]
+            [wombats.handlers.arena :as arena]
             [wombats.sockets.chat :as chat-ws]
             [wombats.sockets.game :as game-ws]
             [wombats.daos.core :as dao]))
@@ -32,17 +33,23 @@
                        (add-dao-functions (dao/init-dao-map datomic))]
        ["/docs" {:get swagger/get-specs}]
        ["/v1"
+        ["/self"
+         {:get user/get-user-self}]
+
         ["/users"
          {:get user/get-users}
-         ["/email/:email"
-          {:get user/get-user-by-email}]
-         ["/token/:access-token"
-          {:get user/get-user-by-access-token}]
-         ["/id/:user-id"
+         ["/:user-id"
           {:get user/get-user-by-id}
           ["/wombats"
            {:get user/get-user-wombats
             :post user/add-user-wombat}]]]
+
+        ["/arenas"
+         {:get arena/get-arenas
+          :post arena/add-arena}
+         ["/:arena-id"
+          {:get arena/get-arena-by-id
+           :delete arena/delete-arena}]]
 
         ["/games"
          {:get game/get-games
