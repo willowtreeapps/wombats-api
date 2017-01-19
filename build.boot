@@ -41,6 +41,7 @@
 ;; Load testing tasks
 (require '[adzerk.boot-test :refer :all])
 
+;; Load datomic Move this task into its own file
 (require '[datomic.api :as d])
 
 (deftask dev []
@@ -56,4 +57,6 @@
         _ (d/delete-database datomic-uri)
         _ (d/create-database datomic-uri)
         conn (d/connect datomic-uri)]
-    (d/transact conn (load-file "resources/datomic/schema.edn"))))
+    @(d/transact conn (load-file "resources/datomic/schema.edn"))
+    @(d/transact conn (load-file "resources/datomic/roles.edn"))
+    @(d/transact conn (load-file "resources/datomic/users.edn"))))
