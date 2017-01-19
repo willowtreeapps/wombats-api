@@ -1,6 +1,5 @@
 (ns wombats.handlers.auth
   (:require [io.pedestal.interceptor.helpers :refer [defbefore]]
-            [clojure.core.async :refer [chan go >!]]
             [org.httpkit.client :as http]
             [cheshire.core :refer [parse-string]]
             [wombats.interceptors.github :refer [get-github-settings]]
@@ -53,43 +52,39 @@
 ;; TODO signing secret should not be consistant across requests. Gen uuid to send.
 (defbefore github-redirect
   [{:keys [response] :as context}]
-  (let [ch (chan 1)
-        {:keys [client-id signing-secret]} (get-github-settings context)
+  (let [{:keys [client-id signing-secret]} (get-github-settings context)
         github-redirect (str github-authorize-url
                              "?client_id=" client-id
                              "&scope=" github-scopes
                              "&state=" signing-secret)]
-    (go
-      (>! ch (assoc context :response (assoc response
-                                             :headers {"Location" github-redirect}
-                                             :status 302
-                                             :body nil))))
-    ch))
+
+    (assoc context :response (assoc response
+                                    :headers {"Location" github-redirect}
+                                    :status 302
+                                    :body nil))))
 
 (defbefore github-callback
   [{:keys [request response] :as context}]
-  (let [ch (chan 1)
-        {:keys [client-id
+  (let [{:keys [client-id
                 client-secret
                 signing-secret
                 web-client-redirect]} (get-github-settings context)
         {:keys [code state]} (:query-params request)
         failed-callback (redirect-home context web-client-redirect)]
-    (go
-      (if (= state signing-secret)
-        (let [access-token @(get-access-token {:client_id client-id
-                                               :client_secret client-secret
-                                               :code code})
-              user (when access-token
-                     (parse-user-response @(get-github-user access-token)))
-              create-or-update-user (dao/get-fn :create-or-update-user context)
-              get-user-by-email (dao/get-fn :get-user-by-email context)]
-          (if (and access-token user)
-            (let [user-update (select-keys user [:email :login :id :avatar_url])
-                  current-user (get-user-by-email (:email user-update))
-                  updated-user @(create-or-update-user user-update access-token
-                                                       (get current-user :db/id nil))]
-              (>! ch (redirect-home context web-client-redirect access-token)))
-            (>! ch failed-callback)))
-        (>! ch failed-callback)))
-    ch))
+
+    (if (= state signing-secret)
+      (let [access-token @(get-access-token {:client_id client-id
+                                             :client_secret client-secret
+                                             :code code})
+            user (when access-token
+                   (parse-user-response @(get-github-user access-token)))
+            create-or-update-user (dao/get-fn :create-or-update-user context)
+            get-user-by-email (dao/get-fn :get-user-by-email context)]
+        (if (and access-token user)
+          (let [user-update (select-keys user [:email :login :id :avatar_url])
+                current-user (get-user-by-email (:email user-update))
+                updated-user @(create-or-update-user user-update access-token
+                                                     (get current-user :db/id nil))]
+            (redirect-home context web-client-redirect access-token))
+          failed-callback))
+      failed-callback)))

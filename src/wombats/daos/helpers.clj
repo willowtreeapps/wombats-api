@@ -55,3 +55,25 @@
         (d/db conn)
         prop
         value)))
+
+(defn retract-entity-by-prop
+  ([conn prop value]
+   (retract-entity-by-prop conn prop value "Entity removed"))
+  ([conn prop value msg]
+   (let [entity-id (get-entity-id conn prop value)]
+     (future
+       (if entity-id
+         (do
+           @(d/transact-async conn [[:db.fn/retractEntity entity-id]])
+           msg)
+         msg)))))
+
+(defn db-requirement-error
+  "Throws an error that will be caught by the exception interceptor."
+  ([message]
+   (db-requirement-error message {}))
+  ([message data]
+   (throw (ex-info "Datomic Requirement Error"
+                   {:type :db-requirement-error
+                    :message message
+                    :reason data}))))

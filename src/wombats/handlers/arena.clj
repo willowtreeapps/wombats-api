@@ -1,26 +1,47 @@
 (ns wombats.handlers.arena
   (:require [io.pedestal.interceptor.helpers :refer [defbefore]]
-            [clojure.core.async :refer [chan go >!]]
             [clojure.spec :as s]
             [wombats.daos.helpers :as dao]
             [wombats.specs.utils :as sutils]))
 
+(def ^:private arena-body-sample
+  #:arena{:name "Arena Name"
+          :width 50
+          :height 50
+          :shot-damage 10
+          :smoke-duration 3
+          :food 10
+          :poison 10
+          :stone-walls 50
+          :wood-walls 50
+          :zakano 4
+          :perimeter true})
+
 ;; Swagger Parameters
 (def ^:private arena-id-path-param
-  {:name "arena id"
+  {:name "arena-id"
    :in "path"
    :description "id of the arena"
    :required true})
 
-(def ^:private arena-body-params
-  {:name "arena body"
+(def ^:private new-arena-body-params
+  {:name "new-arena-body"
    :in "body"
    :description "values for a new arena configuration"
    :required true
+   :default (str arena-body-sample)
+   :schema {}})
+
+(def ^:private update-arena-body-params
+  {:name "update-arena-body"
+   :in "body"
+   :description "values for an updated arena configuration"
+   :required true
+   :default (str arena-body-sample)
    :schema {}})
 
 ;; Handlers
-(def ^{:swagger-spec true} get-arenas-spec
+(def ^:swagger-spec get-arenas-spec
   {"/api/v1/arenas"
    {:get {:description "Returns a seq of all arenas"
           :tags ["arena"]
@@ -30,23 +51,46 @@
 (defbefore get-arenas
   "Returns a seq of arena configurations"
   [{:keys [response] :as context}]
-  (let [ch (chan 1)
-        get-arenas (dao/get-fn :get-arenas context)]
-    (go
-      (>! ch (assoc context :response (assoc response
-                                             :status 200
-                                             :body (get-arenas)))))
-    ch))
+  (let [get-arenas (dao/get-fn :get-arenas context)]
+    (assoc context :response (assoc response
+                                    :status 200
+                                    :body (get-arenas)))))
 
-(def ^{:swagger-spec true} add-arena-spec
-  {"/api/v1/arenas"
-   {:post {:description "Creates a new arena configuration and returns it"
-           :tags ["arena"]
-           :operationId "add-arena"
-           :parameters [arena-body-params]
-           :response {:200 {:description "add-arena response"}}}}})
+(def ^:swagger-spec get-arena-by-id-spec
+  {"/api/v1/arenas/{arena-id}"
+   {:get {:description "Returns an arena matching the arena-id"
+          :tags ["arena"]
+          :operationId "get-arena-by-id"
+          :parameters [arena-id-path-param]
+          :response {:200 {:description "get-arena-by-id response"}}}}})
+
+(defbefore get-arena-by-id
+  [{:keys [request response] :as context}]
+  (let [get-arena (dao/get-fn :get-arena-by-id context)
+        arena-id (get-in request [:path-params :arena-id])]
+    (assoc context :response (assoc response
+                                    :status 200
+                                    :body (get-arena arena-id)))))
+
+(def ^:swagger-spec delete-arena-spec
+  {"/api/v1/arenas/{arena-id}"
+   {:delete {:description "Retracts and arena configuration"
+             :tags ["arena"]
+             :operationId "delete-arena"
+             :parameters [arena-id-path-param]
+             :response {:200 {:description "delete-arena response"}}}}})
+
+(defbefore delete-arena
+  [{:keys [request response] :as context}]
+  (let [retract-arena (dao/get-fn :retract-arena context)
+        arena-id (get-in request [:path-params :arena-id])]
+
+    (assoc context :response (assoc response
+                                    :status 200
+                                    :body @(retract-arena arena-id)))))
 
 ;; Arena Specs
+(s/def :arena/id string?)
 (s/def :arena/name string?)
 (s/def :arena/width #(instance? Long %))
 (s/def :arena/height #(instance? Long %))
@@ -67,58 +111,56 @@
                                  :arena/food
                                  :arena/poison]))
 
+(s/def ::update-arena (s/merge ::new-arena
+                               (s/keys :req [:arena/id])))
+
+(def ^:swagger-spec add-arena-spec
+  {"/api/v1/arenas"
+   {:post {:description "Creates a new arena configuration and returns it"
+           :tags ["arena"]
+           :operationId "add-arena"
+           :parameters [new-arena-body-params]
+           :response {:200 {:description "add-arena response"}}}}})
+
 (defbefore add-arena
-  "Returns a seq of arena configurations"
+  "Creates and returns an arena configuration"
   [{:keys [request response] :as context}]
-  (let [ch (chan 1)
-        add-arena (dao/get-fn :add-arena context)
-        get-arena-by-name (dao/get-fn :get-arena-by-name context)
+  (let [add-arena (dao/get-fn :add-arena context)
+        get-arena (dao/get-fn :get-arena-by-id context)
         arena (:edn-params request)]
 
     (sutils/validate-input ::new-arena arena)
 
-    (go
-      (let [tx @(add-arena arena)
-            arena-record (get-arena-by-name (:arena/name arena))]
-        (>! ch (assoc context :response (assoc response
-                                               :status 200
-                                               :body arena-record)))))
-    ch))
+    (let [arena-id (dao/gen-id)
+          new-arena (merge arena {:arena/id arena-id})
+          tx @(add-arena new-arena)
+          arena-record (get-arena arena-id)]
+      (assoc context :response (assoc response
+                                      :status 200
+                                      :body arena-record)))))
 
-(def ^{:swagger-spec true} get-arena-by-id-spec
+(def ^:swagger-spec update-arena-spec
   {"/api/v1/arenas/{arena-id}"
-   {:get {:description "Returns an arena matching the arena-id"
+   {:put {:description "Updates an arena configuration"
           :tags ["arena"]
-          :operationId "get-arena-by-id"
-          :parameters [arena-id-path-param]
-          :response {:200 {:description "get-arena-by-id response"}}}}})
+          :operationId "delete-arena"
+          :parameters [arena-id-path-param
+                       update-arena-body-params]
+          :response {:200 {:description "update-arena response"}}}}})
 
-(defbefore get-arena-by-id
+(defbefore update-arena
+  "Updates and returns an arena configuration"
   [{:keys [request response] :as context}]
-  (let [ch (chan 1)
+  (let [update-arena (dao/get-fn :update-arena context)
         get-arena (dao/get-fn :get-arena-by-id context)
-        arena-id (get-in request [:path-params :arena-id])]
-    (go
-      (>! ch (assoc context :response (assoc response
-                                             :status 200
-                                             :body (get-arena arena-id)))))
-    ch))
+        arena-id (get-in request [:path-params :arena-id])
+        arena (merge (:edn-params request)
+                     {:arena/id arena-id})]
 
-(def ^{:swagger-spec true} delete-arena-spec
-  {"/api/v1/arenas/{arena-id}"
-   {:delete {:description "Retracts and arena configuration"
-             :tags ["arena"]
-             :operationId "delete-arena"
-             :parameters [arena-id-path-param]
-             :response {:200 {:description "delete-arena response"}}}}})
+    (sutils/validate-input ::update-arena arena)
 
-(defbefore delete-arena
-  [{:keys [request response] :as context}]
-  (let [ch (chan 1)
-        retract-arena (dao/get-fn :retract-arena context)
-        arena-id (get-in request [:path-params :arena-id])]
-    (go
-      (>! ch (assoc context :response (assoc response
-                                             :status 200
-                                             :body @(retract-arena arena-id)))))
-    ch))
+    @(update-arena arena)
+
+    (assoc context :response (assoc response
+                                    :status 200
+                                    :body (get-arena (:arena/id arena))))))

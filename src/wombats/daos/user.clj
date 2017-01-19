@@ -26,6 +26,12 @@
   (fn [user-id]
     (get-entity-by-prop conn :user/id user-id public-user-fields)))
 
+(defn get-user-by-email
+  "Returns a user by a given email"
+  [conn]
+  (fn [user-email]
+    (get-entity-by-prop conn :user/email user-email public-user-fields)))
+
 (defn get-user-by-access-token
   "Returns a user by a given access token"
   [conn]

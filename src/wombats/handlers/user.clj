@@ -24,7 +24,7 @@
    :schema {}})
 
 ;; Handlers
-(def ^{:swagger-spec true} get-users-spec
+(def ^:swagger-spec get-users-spec
   {"/api/v1/users"
    {:get {:description "Returns all users"
           :tags ["user"]
@@ -42,7 +42,7 @@
                                              :body (get-users)))))
     ch))
 
-(def ^{:swagger-spec true} get-user-by-id-spec
+(def ^:swagger-spec get-user-by-id-spec
   {"/api/v1/users/{user-id}"
    {:get {:description "Returns a user matching a given id"
           :tags ["user"]
@@ -62,7 +62,7 @@
                                              :body (get-user-by-id user-id)))))
     ch))
 
-(def ^{:swagger-spec true} get-user-self-spec
+(def ^:swagger-spec get-user-self-spec
   {"/api/v1/self"
    {:get {:description "Returns a user matching a given auth token"
           :tags ["user"]
@@ -82,7 +82,7 @@
                                              :body (get-user-by-access-token access-token)))))
     ch))
 
-(def ^{:swagger-spec true} get-user-wombats-spec
+(def ^:swagger-spec get-user-wombats-spec
   {"/api/v1/users/{user-id}/wombats"
    {:get {:description "Returns a vector of wombats that belong to a user"
           :tags ["user"]
@@ -102,7 +102,7 @@
                                              :body (get-user-wombats user-id)))))
     ch))
 
-(def ^{:swagger-spec true} add-user-wombat-spec
+(def ^:swagger-spec add-user-wombat-spec
   {"/api/v1/users/{user-id}/wombats"
    {:post {:description "Creates and returns a wombat"
            :tags ["user"]

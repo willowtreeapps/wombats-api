@@ -1,7 +1,8 @@
 (ns wombats.daos.core
   (:require [datomic.api :as d]
             [wombats.daos.user :as user]
-            [wombats.daos.arena :as arena]))
+            [wombats.daos.arena :as arena]
+            [wombats.daos.game :as game]))
 
 (defn init-dao-map
   "Creates a map of all the data accessors that can be used inside of handlers / socket connections.
@@ -11,6 +12,7 @@
   {;; User DAOS
    :get-users (user/get-users conn)
    :get-user-by-id (user/get-user-by-id conn)
+   :get-user-by-email (user/get-user-by-email conn)
    :get-user-by-access-token (user/get-user-by-access-token conn)
    :create-or-update-user (user/create-or-update-user conn)
    ;; Wombat Management DAOS
@@ -22,4 +24,10 @@
    :get-arena-by-name (arena/get-arena-by-name conn)
    :get-arena-by-id (arena/get-arena-by-id conn)
    :add-arena (arena/add-arena conn)
-   :retract-arena (arena/retract-arena conn)})
+   :update-arena (arena/update-arena conn)
+   :retract-arena (arena/retract-arena conn)
+   ;; Game Management DAOS
+   :get-games (game/get-games conn)
+   :get-game-by-id (game/get-game-by-id conn)
+   :add-game (game/add-game conn)
+   :retract-game (game/retract-game conn)})
