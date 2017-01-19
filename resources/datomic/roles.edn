@@ -1,0 +1,6 @@
+[{:db/id     #db/id [:db.part/user]
+  :role/type :user}
+ {:db/id     #db/id [:db.part/user]
+  :role/type :admin}
+ {:db/id     #db/id [:db.part/user]
+  :role/type :event-coordinator}]
