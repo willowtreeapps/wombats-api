@@ -4,6 +4,7 @@
             [io.pedestal.http.ring-middlewares :as ring-middlewares]
             [wombats.interceptors.content-negotiation :refer [coerce-body content-neg-intc]]
             [wombats.interceptors.dao :refer [add-dao-functions]]
+            [wombats.interceptors.current-user :refer [add-current-user]]
             [wombats.interceptors.github :refer [add-github-settings]]
             [wombats.interceptors.error-handler :refer [service-error-handler]]
             [wombats.handlers.swagger :as swagger]
@@ -30,7 +31,8 @@
                        coerce-body
                        content-neg-intc
                        (body-params)
-                       (add-dao-functions (dao/init-dao-map datomic))]
+                       (add-dao-functions (dao/init-dao-map datomic))
+                       add-current-user]
        ["/docs" {:get swagger/get-specs}]
        ["/v1"
         ["/self"
@@ -42,18 +44,25 @@
           {:get user/get-user-by-id}
           ["/wombats"
            {:get user/get-user-wombats
-            :post user/add-user-wombat}]]]
+            :post user/add-user-wombat}
+           ["/:wombat-id"
+            {:delete user/delete-wombat
+             :put user/update-wombat}]]]]
 
         ["/arenas"
          {:get arena/get-arenas
           :post arena/add-arena}
          ["/:arena-id"
           {:get arena/get-arena-by-id
+           :put arena/update-arena
            :delete arena/delete-arena}]]
 
         ["/games"
          {:get game/get-games
-          :post game/add-game}]
+          :post game/add-game}
+         ["/:game-id"
+          {:get game/get-game-by-id
+           :delete game/delete-game}]]
 
         ["/auth"
          ["/github"

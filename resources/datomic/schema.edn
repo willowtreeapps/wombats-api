@@ -1,10 +1,30 @@
-[;; User entities
+[;; Role entites
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :role/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A roles public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :role/type
+  :db/valueType   :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A roles type (i.e. admin , user)"}
+
+ ;; User entities
  {:db/id          #db/id [:db.part/db]
   :db/ident       :user/id
   :db/valueType   :db.type/string
   :db/unique      :db.unique/identity
   :db/cardinality :db.cardinality/one
   :db/doc         "A user's public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/roles
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/many
+  :db/doc         "A user roles"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :user/handle
@@ -50,6 +70,18 @@
   :db/cardinality :db.cardinality/many
   :db/doc         "All the wombats that belong to a user"}
 
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/created-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Created by metadata"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/updated-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Updated by metadata"}
+
  ;; Wombat entities
  {:db/id          #db/id [:db.part/db]
   :db/ident       :wombat/id
@@ -57,6 +89,12 @@
   :db/unique      :db.unique/identity
   :db/cardinality :db.cardinality/one
   :db/doc         "A Wombats public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :wombat/owner
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A Wombats Owner"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :wombat/name
@@ -68,8 +106,21 @@
  {:db/id          #db/id [:db.part/db]
   :db/ident       :wombat/url
   :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
   :db/cardinality :db.cardinality/one
   :db/doc         "The location of the wombat executable"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :wombat/created-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Created by metadata"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :wombat/updated-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Updated by metadata"}
 
  ;; Arena entities
  {:db/id          #db/id [:db.part/db]
@@ -144,4 +195,102 @@
   :db/ident       :arena/perimeter
   :db/valueType   :db.type/boolean
   :db/cardinality :db.cardinality/one
-  :db/doc         "Should the arena contain a solid perimeter?"}]
+  :db/doc         "Should the arena contain a solid perimeter?"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/created-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Created by metadata"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/updated-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Updated by metadata"}
+
+ ;; Game Entities
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An games public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/status
+  :db/valueType   :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A games current status. Open, Full, Running, Finished"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/arena
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Arena being used for the game"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/name
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An games name"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/max-players
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Max number of players in a game"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/type
+  :db/valueType   :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Game type (i.e. free for all)"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/num-rounds
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of rounds in a game"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/round-intermission
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Length of round intermission"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/is-private
+  :db/valueType   :db.type/boolean
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Determines if a game is private or public"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/password
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Password for private games"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/frame
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Snapshot of the game at a given point in time"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/players
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/many
+  :db/doc         "Players enrolled in a game"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/created-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Created by metadata"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/updated-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Updated by metadata"}]
