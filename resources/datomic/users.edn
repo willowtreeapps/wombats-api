@@ -1,2 +1,1 @@
-[{:db/id      #db/id [:db.part/user]
-  :user/email "matthew.j.oconnell1@gmail.com"}]
+[]

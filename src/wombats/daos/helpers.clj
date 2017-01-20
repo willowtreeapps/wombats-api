@@ -41,9 +41,10 @@
                             :where [?e ?entity-prop]]
                           db
                           prop))]
-     (d/pull-many db
-                  display-props
-                  eids))))
+     (remove nil?
+             (d/pull-many db
+                          display-props
+                          eids)))))
 
 (defn get-entity-id
   "Returns the entity id associated with a given unique prop / value"

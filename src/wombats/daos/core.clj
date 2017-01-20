@@ -17,8 +17,12 @@
    :create-or-update-user (user/create-or-update-user conn)
    ;; Wombat Management DAOS
    :get-user-wombats (user/get-user-wombats conn)
+   :get-wombat-owner-id (user/get-wombat-owner-id conn)
    :get-wombat-by-name (user/get-wombat-by-name conn)
+   :get-wombat-by-id (user/get-wombat-by-id conn)
    :add-user-wombat (user/add-user-wombat conn)
+   :update-user-wombat (user/update-user-wombat conn)
+   :retract-wombat (user/retract-wombat conn)
    ;; Arena Management DAOS
    :get-arenas (arena/get-arenas conn)
    :get-arena-by-name (arena/get-arena-by-name conn)

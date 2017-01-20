@@ -14,22 +14,21 @@
       get-exception-data
       :type))
 
+(defn- resp-custom-ex
+  [exception status]
+  {:status status
+   :body (get-exception-data exception)
+   :headers {"Content-Type" "application/edn"}})
+
 (def service-error-handler
   (error-dispatch
    [context exception]
 
    [{:exception-type ExceptionInfo}]
    (condp = (get-exception-type exception)
-     :invalid-schema (let [data (get-exception-data exception)]
-                       (assoc context :response {:status 401
-                                                 :body data
-                                                 :headers {"Content-Type" "application/edn"}}))
-
-     :db-requirement-error (let [data (get-exception-data exception)]
-                             (assoc context :response {:status 400
-                                                       :body data
-                                                       :headers {"Content-Type" "application/edn"}}))
-
+     :invalid-schema (assoc context :response (resp-custom-ex exception 400))
+     :db-requirement-error (assoc context :response (resp-custom-ex exception 400))
+     :unauthorized (assoc context :response (resp-custom-ex exception 401))
      (assoc context :io.pedestal.interceptor.chain/error exception))
 
    :else

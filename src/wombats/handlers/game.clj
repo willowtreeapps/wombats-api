@@ -4,6 +4,14 @@
             [wombats.daos.helpers :as dao]
             [wombats.specs.utils :as sutils]))
 
+(def ^:private game-body-sample
+  #:game{:name "New Game"
+         :max-players 10
+         :type :round
+         :round-intermission (* 1000 60 20)
+         :num-rounds 3
+         :is-private false})
+
 ;; Swagger Parameters
 (def ^:private game-id-path-param
   {:name "game-id"
@@ -22,12 +30,7 @@
    :in "body"
    :description "values for a new game"
    :required true
-   :default (str #:game{:name "New Game"
-                        :max-players 10
-                        :type :round
-                        :round-intermission (* 1000 60 20)
-                        :num-rounds 3
-                        :is-private false})
+   :default (str game-body-sample)
    :schema {}})
 
 ;; Handlers

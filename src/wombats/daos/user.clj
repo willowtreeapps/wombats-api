@@ -1,9 +1,11 @@
 (ns wombats.daos.user
   (:require [datomic.api :as d]
             [wombats.daos.helpers :refer [gen-id
+                                          db-requirement-error
                                           get-entity-id
                                           get-entity-by-prop
-                                          get-entities-by-prop]]))
+                                          get-entities-by-prop
+                                          retract-entity-by-prop]]))
 
 (def public-user-fields [:user/id
                          :user/github-username
@@ -51,7 +53,7 @@
                   :user/github-id id
                   :user/email email
                   :user/avatar-url avatar_url}]
-      (if current-user-id
+      (if-not current-user-id
         (d/transact-async conn [(merge update {:db/id current-user-id
                                                :user/id (gen-id)})])
         (d/transact-async conn [update])))))
@@ -66,8 +68,8 @@
                                              :wombat/id])
                        :in $ ?user-id
                        :where [?user :user/id ?user-id]
-                       [?user :user/wombats ?wombat]
-                       [?wombats :wombat/name]]
+                              [?user :user/wombats ?wombat]
+                              [?wombats :wombat/name]]
                      (d/db conn)
                      user-id)))))
 
@@ -77,15 +79,88 @@
   (fn [name]
     (get-entity-by-prop conn :wombat/name name)))
 
+(defn get-wombat-by-id
+  "Returns a wombat by querying its id"
+  [conn]
+  (fn [wombat-id]
+    (get-entity-by-prop conn :wombat/id wombat-id)))
+
+(defn get-wombat-by-url
+  "Returns a wombat by querying its url"
+  [conn]
+  (fn [wombat-url]
+    (get-entity-by-prop conn :wombat/url wombat-url)))
+
+(defn get-wombat-owner-id
+  [conn]
+  (fn [wombat-id]
+    (ffirst
+     (d/q '[:find ?user-id
+            :in $ ?wombat-id
+            :where [?wombat :wombat/id ?wombat-id]
+                   [?user :user/wombats ?wombat]
+                   [?user :user/id ?user-id]]
+          (d/db conn)
+          wombat-id))))
+
+(defn- ensure-wombat-name-availability
+  "Ensure that a wombat does not exist with the given name"
+  [conn wombat-name]
+  (let [wombat ((get-wombat-by-name conn) wombat-name)]
+    (when wombat
+      (db-requirement-error
+       (str "Wombat with name '" wombat-name "' is already in use")))))
+
+(defn- ensure-wombat-url-availability
+  "Ensure that a wombat does not exist with the given name"
+  [conn wombat-url]
+  (let [wombat ((get-wombat-by-url conn) wombat-url)]
+    (when wombat
+      (db-requirement-error
+       (str "Wombat source code was already registered. If you own the source code, change the file name and try again.")))))
+
 (defn add-user-wombat
   "Creates a new wombat for a particular user"
   [conn]
-  (fn [user-id {:keys [:wombat/name :wombat/url]}]
+  (fn [user-id {:keys [:wombat/name
+                      :wombat/url
+                      :wombat/id]}]
     (let [wombat-id (d/tempid :db.part/user)
-          user-db-id (get-user-entity-id conn user-id)]
+          user-eid (get-user-entity-id conn user-id)]
+
+      (ensure-wombat-name-availability conn name)
+      (ensure-wombat-url-availability conn url)
+
       (d/transact conn [{:db/id wombat-id
+                         :wombat/owner user-eid
                          :wombat/name name
                          :wombat/url url
-                         :wombat/id (gen-id)}
-                        {:db/id user-db-id
+                         :wombat/id id}
+                        {:db/id user-eid
                          :user/wombats wombat-id}]))))
+
+(defn update-user-wombat
+  "Update a wombat"
+  [conn]
+  (fn [{:keys [:wombat/name
+              :wombat/url
+              :wombat/id]}]
+    (let [{eid :db/id
+           prev-name :wombat/name
+           prev-url :wombat/url} ((get-wombat-by-id conn) id)]
+
+      (when-not (= prev-name name)
+        (ensure-wombat-name-availability conn name))
+
+      (when-not (= prev-url url)
+        (ensure-wombat-url-availability conn url))
+
+      (d/transact conn [{:db/id eid
+                         :wombat/name name
+                         :wombat/url url}]))))
+
+(defn retract-wombat
+  "Retracts a wombat"
+  [conn]
+  (fn [wombat-id]
+    (retract-entity-by-prop conn :wombat/id wombat-id)))

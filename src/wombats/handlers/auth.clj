@@ -83,8 +83,9 @@
         (if (and access-token user)
           (let [user-update (select-keys user [:email :login :id :avatar_url])
                 current-user (get-user-by-email (:email user-update))
-                updated-user @(create-or-update-user user-update access-token
-                                                     (get current-user :db/id nil))]
+                updated-user @(create-or-update-user user-update
+                                                     access-token
+                                                     (:user/id current-user))]
             (redirect-home context web-client-redirect access-token))
           failed-callback))
       failed-callback)))

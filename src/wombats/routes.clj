@@ -44,7 +44,10 @@
           {:get user/get-user-by-id}
           ["/wombats"
            {:get user/get-user-wombats
-            :post user/add-user-wombat}]]]
+            :post user/add-user-wombat}
+           ["/:wombat-id"
+            {:delete user/delete-wombat
+             :put user/update-wombat}]]]]
 
         ["/arenas"
          {:get arena/get-arenas

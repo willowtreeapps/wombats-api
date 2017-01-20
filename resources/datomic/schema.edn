@@ -71,18 +71,6 @@
   :db/doc         "All the wombats that belong to a user"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :user/created-at
-  :db/valueType   :db.type/instant
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Created at metadata"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :user/updated-at
-  :db/valueType   :db.type/instant
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Updated at metadata"}
-
- {:db/id          #db/id [:db.part/db]
   :db/ident       :user/created-by
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
@@ -103,6 +91,12 @@
   :db/doc         "A Wombats public id"}
 
  {:db/id          #db/id [:db.part/db]
+  :db/ident       :wombat/owner
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A Wombats Owner"}
+
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :wombat/name
   :db/valueType   :db.type/string
   :db/unique      :db.unique/identity
@@ -112,20 +106,9 @@
  {:db/id          #db/id [:db.part/db]
   :db/ident       :wombat/url
   :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
   :db/cardinality :db.cardinality/one
   :db/doc         "The location of the wombat executable"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :wombat/created-at
-  :db/valueType   :db.type/instant
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Created at metadata"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :wombat/updated-at
-  :db/valueType   :db.type/instant
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Updated at metadata"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :wombat/created-by
@@ -215,18 +198,6 @@
   :db/doc         "Should the arena contain a solid perimeter?"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :arena/created-at
-  :db/valueType   :db.type/instant
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Created at metadata"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :arena/updated-at
-  :db/valueType   :db.type/instant
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Updated at metadata"}
-
- {:db/id          #db/id [:db.part/db]
   :db/ident       :arena/created-by
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
@@ -311,18 +282,6 @@
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/many
   :db/doc         "Players enrolled in a game"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :game/created-at
-  :db/valueType   :db.type/instant
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Created at metadata"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :game/updated-at
-  :db/valueType   :db.type/instant
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Updated at metadata"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :game/created-by

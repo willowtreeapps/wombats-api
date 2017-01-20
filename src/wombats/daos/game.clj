@@ -26,9 +26,11 @@
               :game/password
               :game/num-rounds
               :game/round-intermission]} arena-id]
-    (let [arena-entity-id (get-entity-id conn :arena/id arena-id)
-          _ (if-not arena-entity-id
-              (db-requirement-error (str "Arena '" arena-id "' not found")))]
+    (let [arena-entity-id (get-entity-id conn :arena/id arena-id)]
+
+      (when-not arena-entity-id
+        (db-requirement-error (str "Arena '" arena-id "' not found")))
+
       (d/transact-async conn [{:db/id (d/tempid :db.part/user)
                                :game/id id
                                :game/name name
