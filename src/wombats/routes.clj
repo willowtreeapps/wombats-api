@@ -68,7 +68,9 @@
          ["/github"
           ^:interceptors [(add-github-settings github)]
           ["/signin"
-           {:get auth/github-redirect}]
+           {:get auth/signin}]
+          ["/signout"
+           {:get auth/signout}]
           ["/callback"
            {:get auth/github-callback}]]]]]]]))
 

@@ -49,8 +49,15 @@
 
 ;; Handlers
 
+(def ^:swagger-spec signin-spec
+  {"/api/v1/auth/github/signin"
+   {:get {:description "Gets authorization and access token"
+          :tags ["auth"]
+          :operationId "signout"
+          :response {:302 {:description "signout response"}}}}})
+
 ;; TODO signing secret should not be consistant across requests. Gen uuid to send.
-(defbefore github-redirect
+(defbefore signin
   [{:keys [response] :as context}]
   (let [{:keys [client-id signing-secret]} (get-github-settings context)
         github-redirect (str github-authorize-url
@@ -89,3 +96,23 @@
             (redirect-home context web-client-redirect access-token))
           failed-callback))
       failed-callback)))
+
+(def ^:swagger-spec signout-spec
+  {"/api/v1/auth/github/signout"
+   {:get {:description "Removes auth token from db and redirects to home."
+          :tags ["auth"]
+          :operationId "signout"
+          :response {:302 {:description "signout response"}}}}})
+
+(defbefore signout
+  [{:keys [request response] :as context}]
+  (let [access-token (get-in request [:headers "authorization"])
+        remove-access-token (dao/get-fn :remove-access-token context)]
+
+    (when access-token
+      @(remove-access-token access-token))
+
+    (assoc context :response (assoc response
+                                    :headers {"Location" "/"}
+                                    :status 302
+                                    :body nil))))
