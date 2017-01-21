@@ -58,6 +58,15 @@
                                                :user/id (gen-id)})])
         (d/transact-async conn [update])))))
 
+(defn remove-access-token
+  [conn]
+  (fn [access-token]
+    (let [user ((get-user-by-access-token conn) access-token)]
+      (if user
+        (d/transact-async conn [[:db/retract (:db/id user)
+                                 :user/access-token access-token]])
+        (future)))))
+
 (defn get-user-wombats
   "Returns all wombats belonging to a specified user"
   [conn]

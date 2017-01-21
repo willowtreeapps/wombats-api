@@ -6,7 +6,7 @@
 (def ^{:private true
        :doc "List of handlers to be sources for api documentation"}
   handlers
-  #{"user" "game" "arena"})
+  #{"user" "game" "arena" "auth"})
 
 (def ^:private swagger-specs {:info {:title "Wombats API"
                                      :description "API documentation for Wombats"
@@ -22,6 +22,8 @@
                               :produces ["application/edn"]
                               :tags [{:name "user"
                                       :description "User API"}
+                                     {:name "auth"
+                                      :description "Authentication API"}
                                      {:name "arena"
                                       :description "Arena Configuration API"}
                                      {:name "game"

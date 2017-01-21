@@ -9,3 +9,7 @@
                   get-user (get-fn :get-user-by-access-token context)
                   user (when access-token (get-user access-token))]
               (assoc context ::current-user user)))})
+
+(defn get-current-user
+  [context]
+  (::current-user context))

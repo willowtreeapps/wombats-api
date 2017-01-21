@@ -14,6 +14,7 @@
    :get-user-by-id (user/get-user-by-id conn)
    :get-user-by-email (user/get-user-by-email conn)
    :get-user-by-access-token (user/get-user-by-access-token conn)
+   :remove-access-token (user/remove-access-token conn)
    :create-or-update-user (user/create-or-update-user conn)
    ;; Wombat Management DAOS
    :get-user-wombats (user/get-user-wombats conn)
