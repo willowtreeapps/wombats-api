@@ -62,7 +62,9 @@
           :post game/add-game}
          ["/:game-id"
           {:get game/get-game-by-id
-           :delete game/delete-game}]]
+           :delete game/delete-game}
+          ["/join"
+           {:post game/join-game}]]]
 
         ["/auth"
          ["/github"

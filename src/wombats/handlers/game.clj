@@ -1,6 +1,7 @@
 (ns wombats.handlers.game
   (:require [io.pedestal.interceptor.helpers :refer [defbefore]]
             [clojure.spec :as s]
+            [wombats.interceptors.current-user :refer [get-current-user]]
             [wombats.daos.helpers :as dao]
             [wombats.specs.utils :as sutils]))
 
@@ -139,3 +140,24 @@
     (assoc context :response (assoc response
                                     :status 200
                                     :body @(retract-game game-id)))))
+
+(def ^:swagger-spec join-game-spec
+  {"/api/v1/games/{game-id}/join"
+   {:post {:description "Attaches the requesting user to an open game"
+           :tags ["game"]
+           :operationId "join-game"
+           :parameters [game-id-path-param]
+           :responses {:200 {:description "join-game response"}}}}})
+
+(defbefore join-game
+  [{:keys [request response] :as context}]
+  (let [add-player-to-game (dao/get-fn :add-player-to-game context)
+        get-game-by-id (dao/get-fn :get-game-by-id context)
+        game-id (get-in request [:path-params :game-id])
+        current-user (get-current-user context)]
+
+    @(add-player-to-game game-id (:db/id current-user))
+
+    (assoc context :response (assoc response
+                                    :status 200
+                                    :body (get-game-by-id game-id)))))
