@@ -4,12 +4,67 @@
                                           get-entity-by-prop
                                           get-entity-id
                                           get-entities-by-prop
-                                          retract-entity-by-prop]]))
+                                          retract-entity-by-prop]]
+            [wombats.daos.user :refer [get-user-entity-id
+                                       public-user-fields]]))
 
-(defn get-games
+;; Note about game states:
+;;
+;; There are four different states that a game can be in.
+;; 1. :pending-open   (the game is awaiting players to join and the game has not yet begun)
+;; 2. :pending-closed (the game is now longer accepting new player enrollment and the game has not yet begun)
+;; 3. :active         (the game is underway)
+;; 4. :closed         (the game is finished and archived)
+;;
+;; Right now these states are hardcoded in their respective DAOs, but this logic should be captured in a FSM
+;; like https://github.com/ztellman/automat or even a simple hand rolled one.
+;;
+;; Looks something like this;
+;;
+;; 1 → 3 → 4
+;; ↓   ↑
+;; 2 → ↑
+
+(defn get-all-games
   [conn]
   (fn []
     (get-entities-by-prop conn :game/id)))
+
+(defn get-game-eids-by-status
+  [conn]
+  (fn [status]
+    (let [db (d/db conn)
+          formatted-status (if (vector? status)
+                             (map keyword status)
+                             [(keyword status)])
+          game-eids (apply concat
+                           (d/q '[:find ?games
+                                  :in $ [?status ...]
+                                  :where [?games :game/status ?status]]
+                                db
+                                formatted-status))]
+      game-eids)))
+
+(defn get-game-eids-by-player
+  [conn]
+  (fn [user-id]
+    (let [db (d/db conn)
+          user-ids (if (vector? user-id)
+                     user-id
+                     [user-id])
+          game-eids (apply concat
+                           (d/q '[:find ?games
+                                  :in $ [?user-ids ...]
+                                  :where [?users :user/id ?user-ids]
+                                         [?games :game/players ?users]]
+                                db
+                                user-ids))]
+      game-eids)))
+
+(defn get-games-by-eids
+  [conn]
+  (fn [game-eids]
+    (d/pull-many (d/db conn) '[*] game-eids)))
 
 (defn get-game-by-id
   [conn]
@@ -17,6 +72,7 @@
     (get-entity-by-prop conn :game/id game-id)))
 
 (defn add-game
+  "Adds a new game entity to Datomic"
   [conn]
   (fn [{:keys [:game/id
               :game/name
