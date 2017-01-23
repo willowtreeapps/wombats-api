@@ -26,6 +26,19 @@
    :description "id of arean"
    :required true})
 
+(def ^:private game-status-query-param
+  {:name "status"
+   :in "query"
+   :description "The status of the games being queried"
+   :enum #{:pending-open :pending-closed :active :closed}
+   :required false})
+
+(def ^:private game-user-query-param
+  {:name "user"
+   :in "query"
+   :description "The id of the player in a game"
+   :required false})
+
 (def ^:private game-body-params
   {:name "game-body"
    :in "body"
@@ -40,14 +53,32 @@
    {:get {:description "Returns all games"
           :tags ["game"]
           :operationId "get-games"
+          :parameters [game-status-query-param
+                       game-user-query-param]
           :responses {:200 {:description "get-games response"}}}}})
 
 (defbefore get-games
-  [{:keys [response] :as context}]
-  (let [get-games (dao/get-fn :get-games context)]
+  [{:keys [request response] :as context}]
+  (let [get-all-games (dao/get-fn :get-all-games context)
+        get-games-by-status (dao/get-fn :get-game-eids-by-status context)
+        get-games-by-player (dao/get-fn :get-game-eids-by-player context)
+        get-games-by-eids (dao/get-fn :get-games-by-eids context)
+        {status :status
+         user :user} (get request :query-params {})
+        game-eids (cond-> [])
+        games (if (empty? (:query-params request))
+                (get-all-games)
+                (get-games-by-eids (->> (cond-> []
+                                         ((complement nil?) status)
+                                         (conj (set (get-games-by-status status)))
+
+                                         ((complement nil?) user)
+                                         (conj (set (get-games-by-player user))))
+                                       (apply clojure.set/intersection)
+                                       (into []))))]
     (assoc context :response (assoc response
                                     :status 200
-                                    :body (get-games)))))
+                                    :body games))))
 
 (def ^:swagger-spec get-game-by-id-spec
   {"/api/v1/games/{game-id}"

@@ -32,7 +32,10 @@
    :update-arena (arena/update-arena conn)
    :retract-arena (arena/retract-arena conn)
    ;; Game Management DAOS
-   :get-games (game/get-games conn)
+   :get-all-games (game/get-all-games conn)
+   :get-game-eids-by-status (game/get-game-eids-by-status conn)
+   :get-game-eids-by-player (game/get-game-eids-by-player conn)
+   :get-games-by-eids (game/get-games-by-eids conn)
    :get-game-by-id (game/get-game-by-id conn)
    :add-game (game/add-game conn)
    :retract-game (game/retract-game conn)

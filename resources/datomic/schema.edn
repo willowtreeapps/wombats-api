@@ -221,7 +221,13 @@
   :db/ident       :game/status
   :db/valueType   :db.type/keyword
   :db/cardinality :db.cardinality/one
-  :db/doc         "A games current status. Open, Full, Running, Finished"}
+  :db/doc         "A games current status. ex: :pending-open, :closed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/start-time
+  :db/valueType   :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The time that the game will start"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :game/arena

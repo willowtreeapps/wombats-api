@@ -11,7 +11,7 @@
                          :user/github-username
                          :user/avatar-url])
 
-(defn- get-user-entity-id
+(defn get-user-entity-id
   "Returns the entity id of a user given the public user id"
   [conn user-id]
   (get-entity-id conn :user/id user-id))
