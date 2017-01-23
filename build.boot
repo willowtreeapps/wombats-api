@@ -18,7 +18,7 @@
                             [com.stuartsierra/component   "0.3.2"]
 
                             ;; Database
-                            [com.datomic/datomic-free "0.9.5544"]
+                            [com.datomic/datomic-pro "0.9.5554"]
 
                             ;; HTTP Server
                             [io.pedestal/pedestal.service "0.5.1"]
@@ -36,7 +36,10 @@
                             ;; Logging
                             [org.slf4j/jul-to-slf4j     "1.7.21"]
                             [org.slf4j/jcl-over-slf4j   "1.7.21"]
-                            [org.slf4j/log4j-over-slf4j "1.7.21"]])
+                            [org.slf4j/log4j-over-slf4j "1.7.21"]]
+          :repositories #(conj % ["my-datomic" {:url "https://my.datomic.com/repo"
+                                                :username (System/getenv "DATOMIC_USERNAME")
+                                                :password (System/getenv "DATOMIC_PASSWORD")}]))
 
 ;; Load testing tasks
 (require '[adzerk.boot-test :refer :all])
