@@ -5,9 +5,21 @@
 
 ;; Private helper functions
 
+(defn- add-auth-to-conn-uri
+  [conn-uri access-key-id secret-key]
+  (str conn-uri
+       "?aws_access_key_id=" access-key-id
+       "&aws_secret_key=" secret-key))
+
 (defn- create-db-connection
   [config]
-  (let [datomic-uri (get-in config [:settings :datomic :uri] nil)
+  (let [{conn-uri :uri
+         requires-auth :requires-auth} (get-in config [:settings :datomic] {})
+        {access-key-id :access-key-id
+         secret-key :secret-key} (get-in config [:settings :aws] {})
+        datomic-uri (if requires-auth
+                      (add-auth-to-conn-uri conn-uri access-key-id secret-key)
+                      conn-uri)
         _ (d/create-database datomic-uri)
         conn (d/connect datomic-uri)]
     (d/transact conn (load-file "resources/datomic/schema.edn"))

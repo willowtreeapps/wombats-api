@@ -299,4 +299,24 @@
   :db/ident       :game/updated-by
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
-  :db/doc         "Updated by metadata"}]
+  :db/doc         "Updated by metadata"}
+
+ ;; Frame Entities
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :frame/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A frames public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :frame/frame-number
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Frame number"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :frame/arena
+  :db/valueType   :db.type/bytes
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The arena representation"}]

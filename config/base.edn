@@ -1,4 +1,5 @@
-{:datomic {:uri #immuconf/override "Specify the database uri in the envioronment config"}
+{:datomic {:uri #immuconf/override "Specify the database uri in the envioronment config"
+           :requires-auth #immuconf/default false}
  :pedestal {:port #immuconf/override "Specify pedestal's http port in the environment config"
             :type :jetty
             :join? false
@@ -8,4 +9,6 @@
  :github {:client-id #immuconf/override "Add your applications github client id to config/.private.edn"
           :client-secret #immuconf/override "Add your applications github client secret to config/.private.edn"
           :signing-secret #immuconf/default "shhhhh....."
-          :web-client-redirect #immuconf/override "Specify the location of the web client"}}
+          :web-client-redirect #immuconf/override "Specify the location of the web client"}
+ :aws {:access-key-id #immuconf/override "Add to config/.private.edn"
+       :secret-key #immuconf/override "Add to config/.private.edn"}}

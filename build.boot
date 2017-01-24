@@ -7,8 +7,14 @@
                             [org.clojure/clojure   "1.9.0-alpha14"]
                             [org.clojure/data.json "0.2.6"]
 
+                            ;; High-performance serialization library
+                            [com.taoensso/nippy "2.12.2"]
+
                             ;; JSON Parsing
                             [cheshire "5.7.0"]
+
+                            ;; Working with time
+                            [clj-time "0.13.0"]
 
                             ;; Environment configuration
                             [environ         "1.1.0"]
@@ -19,6 +25,7 @@
 
                             ;; Database
                             [com.datomic/datomic-pro "0.9.5554"]
+                            [com.amazonaws/aws-java-sdk-dynamodb "1.11.6"]
 
                             ;; HTTP Server
                             [io.pedestal/pedestal.service "0.5.1"]
@@ -49,6 +56,12 @@
 
 (deftask dev []
   (set-env! :source-paths #(conj % "dev/src"))
+
+  (require 'user))
+
+(deftask dev-ddb []
+  (set-env! :source-paths #(conj % "dev/src"))
+  (System/setProperty "app-env" "dev-ddb")
 
   (require 'user))
 

@@ -1,6 +1,7 @@
 (ns wombats.handlers.game
   (:require [io.pedestal.interceptor.helpers :refer [defbefore]]
             [clojure.spec :as s]
+            [clj-time.local :as l]
             [wombats.interceptors.current-user :refer [get-current-user]]
             [wombats.daos.helpers :as dao]
             [wombats.specs.utils :as sutils]))
@@ -11,7 +12,8 @@
          :type :round
          :round-intermission (* 1000 60 20)
          :num-rounds 3
-         :is-private false})
+         :is-private false
+         :start-time (str (l/local-now))})
 
 ;; Swagger Parameters
 (def ^:private game-id-path-param
@@ -110,11 +112,13 @@
 (s/def :game/round-intermission #(instance? Long %))
 (s/def :game/is-private boolean?)
 (s/def :game/password string?)
+(s/def :game/start-time string?)
 
 (s/def ::new-game-input (s/keys :req [:game/name
                                       :game/max-players
                                       :game/type
-                                      :game/is-private]
+                                      :game/is-private
+                                      :game/start-time]
                                 :opt [:game/password
                                       :game/num-rounds
                                       :game/round-intermission]))
