@@ -1,5 +1,6 @@
 (ns wombats.sockets.game
-  (:require [clojure.spec :as s]
+  (:require [clojure.java.io :as io]
+            [clojure.spec :as s]
             [clojure.core.async :refer [put!]]
             [clojure.edn :as edn]
             [io.pedestal.http.jetty.websockets :as ws]
@@ -17,7 +18,7 @@
 
 (defn- get-arena
   [name]
-  (edn/read-string (slurp (str "resources/arena/" name))))
+  (edn/read-string (slurp (io/resource (str "arena/" name)))))
 
 (defn- start-simulation
   [chan-id]

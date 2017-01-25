@@ -6,9 +6,9 @@
             :container-options {:h2c? true
                                 :h2? false
                                 :ssl? true}}
- :github {:client-id #immuconf/override "Add your applications github client id to config/.private.edn"
-          :client-secret #immuconf/override "Add your applications github client secret to config/.private.edn"
+ :github {:client-id #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_GITHUB_CLIENT_ID"
+          :client-secret #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_GITHUB_CLIENT_SECRET"
           :signing-secret #immuconf/default "shhhhh....."
           :web-client-redirect #immuconf/override "Specify the location of the web client"}
- :aws {:access-key-id #immuconf/override "Add to config/.private.edn"
-       :secret-key #immuconf/override "Add to config/.private.edn"}}
+ :aws {:access-key-id #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_AWS_ACCESS_KEY_ID"
+       :secret-key #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_AWS_SECRET_KEY"}}

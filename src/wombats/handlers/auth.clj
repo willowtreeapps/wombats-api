@@ -1,5 +1,5 @@
 (ns wombats.handlers.auth
-  (:require [io.pedestal.interceptor.helpers :refer [defbefore]]
+  (:require [io.pedestal.interceptor.helpers :as interceptor]
             [org.httpkit.client :as http]
             [cheshire.core :refer [parse-string]]
             [wombats.interceptors.github :refer [get-github-settings]]
@@ -57,45 +57,51 @@
           :response {:302 {:description "signout response"}}}}})
 
 ;; TODO signing secret should not be consistant across requests. Gen uuid to send.
-(defbefore signin
-  [{:keys [response] :as context}]
-  (let [{:keys [client-id signing-secret]} (get-github-settings context)
-        github-redirect (str github-authorize-url
-                             "?client_id=" client-id
-                             "&scope=" github-scopes
-                             "&state=" signing-secret)]
+(def signin
+  "Signin handler"
+  (interceptor/before
+   ::sign-in
+   (fn [{:keys [response] :as context}]
+     (let [{:keys [client-id signing-secret]} (get-github-settings context)
+           github-redirect (str github-authorize-url
+                                "?client_id=" client-id
+                                "&scope=" github-scopes
+                                "&state=" signing-secret)]
 
-    (assoc context :response (assoc response
-                                    :headers {"Location" github-redirect}
-                                    :status 302
-                                    :body nil))))
+       (assoc context :response (assoc response
+                                       :headers {"Location" github-redirect}
+                                       :status 302
+                                       :body nil))))))
 
-(defbefore github-callback
-  [{:keys [request response] :as context}]
-  (let [{:keys [client-id
-                client-secret
-                signing-secret
-                web-client-redirect]} (get-github-settings context)
-        {:keys [code state]} (:query-params request)
-        failed-callback (redirect-home context web-client-redirect)]
+(def github-callback
+  "Callback handler from GitHub OAuth request"
+  (interceptor/before
+   ::github-callback
+   (fn [{:keys [request response] :as context}]
+     (let [{:keys [client-id
+                   client-secret
+                   signing-secret
+                   web-client-redirect]} (get-github-settings context)
+           {:keys [code state]} (:query-params request)
+           failed-callback (redirect-home context web-client-redirect)]
 
-    (if (= state signing-secret)
-      (let [access-token @(get-access-token {:client_id client-id
-                                             :client_secret client-secret
-                                             :code code})
-            user (when access-token
-                   (parse-user-response @(get-github-user access-token)))
-            create-or-update-user (dao/get-fn :create-or-update-user context)
-            get-user-by-email (dao/get-fn :get-user-by-email context)]
-        (if (and access-token user)
-          (let [user-update (select-keys user [:email :login :id :avatar_url])
-                current-user (get-user-by-email (:email user-update))
-                updated-user @(create-or-update-user user-update
-                                                     access-token
-                                                     (:user/id current-user))]
-            (redirect-home context web-client-redirect access-token))
-          failed-callback))
-      failed-callback)))
+       (if (= state signing-secret)
+         (let [access-token @(get-access-token {:client_id client-id
+                                                :client_secret client-secret
+                                                :code code})
+               user (when access-token
+                      (parse-user-response @(get-github-user access-token)))
+               create-or-update-user (dao/get-fn :create-or-update-user context)
+               get-user-by-email (dao/get-fn :get-user-by-email context)]
+           (if (and access-token user)
+             (let [user-update (select-keys user [:email :login :id :avatar_url])
+                   current-user (get-user-by-email (:email user-update))
+                   updated-user @(create-or-update-user user-update
+                                                        access-token
+                                                        (:user/id current-user))]
+               (redirect-home context web-client-redirect access-token))
+             failed-callback))
+         failed-callback)))))
 
 (def ^:swagger-spec signout-spec
   {"/api/v1/auth/github/signout"
@@ -104,15 +110,18 @@
           :operationId "signout"
           :response {:302 {:description "signout response"}}}}})
 
-(defbefore signout
-  [{:keys [request response] :as context}]
-  (let [access-token (get-in request [:headers "authorization"])
-        remove-access-token (dao/get-fn :remove-access-token context)]
+(def signout
+  "Signout handler"
+  (interceptor/before
+   ::signout
+   (fn [{:keys [request response] :as context}]
+     (let [access-token (get-in request [:headers "authorization"])
+           remove-access-token (dao/get-fn :remove-access-token context)]
 
-    (when access-token
-      @(remove-access-token access-token))
+       (when access-token
+         @(remove-access-token access-token))
 
-    (assoc context :response (assoc response
-                                    :headers {"Location" "/"}
-                                    :status 302
-                                    :body nil))))
+       (assoc context :response (assoc response
+                                       :headers {"Location" "/"}
+                                       :status 302
+                                       :body nil))))))

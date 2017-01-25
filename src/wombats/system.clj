@@ -5,7 +5,8 @@
             [wombats.components.configuration :as config-component]
             [wombats.components.datomic :as datomic-component]
             [wombats.components.service :as service-component]
-            [wombats.components.pedestal :as pedestal-component]))
+            [wombats.components.pedestal :as pedestal-component])
+  (:gen-class))
 
 (defn system []
   (component/system-map
@@ -23,3 +24,8 @@
    :pedestal (component/using
               (pedestal-component/new-pedestal)
               [:config :service])))
+
+(defn -main
+  "Entry point for builds"
+  []
+  (component/start (system)))

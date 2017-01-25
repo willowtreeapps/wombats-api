@@ -16,25 +16,58 @@
   []
   (keyword (get env :app-env "dev")))
 
+(defn- remove-nil
+  "Remove nil values from a map"
+  [record]
+  (into {} (filter (comp some? val) record)))
+
+(defn- get-private-envs
+  "Pulls out private envs used in the application and stores them in the
+  tmp directory. It the passes them off to immuconf"
+  []
+  (let [wombat-envs (select-keys env [:wombats-aws-access-key-id
+                                      :wombats-aws-secret-key
+                                      :wombats-github-client-id
+                                      :wombats-github-client-secret])
+        file-name "/tmp/wombats-config.edn"
+        formatted-config {:github (remove-nil {:client-id (:wombats-github-client-id wombat-envs)
+                                               :client-secret (:wombats-github-client-secret wombat-envs)})
+                          :aws (remove-nil {:access-key-id (:wombats-aws-access-key-id wombat-envs)
+                                            :secret-key (:wombats-aws-secret-key wombat-envs)})}]
+    (spit file-name (str formatted-config))
+    (io/file file-name)))
+
+(defn- get-private-config-file
+  []
+  (let [file-location (str (System/getProperty "user.home") "/.wombats/config.edn")]
+    (when (.exists (io/as-file file-location))
+      file-location)))
+
 (defn- get-config-files
   "Determins the files that should be used for configuration.
 
-   Defaults -> [config/base.edn, /config/.private.edn,  config/{env}.edn]"
+   Note: java.io/resource returns nil (if a file is not found) &
+         searches for files on the classpate not within the file
+         system. immuconf uses slup under the hood which lets you
+         specify the ~ user dir.
+
+   Defaults -> [config/base.edn, ~/.wombats/config.edn,  config/{env}.edn]"
   [env]
-  (let [base-config "base.edn"
-        private-config ".private.edn"
-        env-config (str (name env) ".edn")]
-    [base-config private-config env-config]))
+  (let [base-config (io/resource "base.edn")
+        private-config-envs (get-private-envs)
+        private-config-file (get-private-config-file)
+        env-config (io/resource (str (name env) ".edn"))]
+    (remove nil? [base-config
+                  private-config-envs
+                  private-config-file
+                  env-config])))
 
 (defn- build-settings-map
-  "Takes a vector of file paths, checks their existance, and runs the remaining
+  "Takes a vector of file paths or configs, checks their existance, and runs the remaining
   files through immuconf to build the settings map."
-  [files]
-  (let [xform (comp
-               (map io/resource)
-               (remove nil?))
-        existing-files (sequence xform (seq files))]
-    (apply immuconf/load existing-files)))
+  [configs]
+  (let [settings-map (apply immuconf/load configs)]
+    settings-map))
 
 ;; Component
 

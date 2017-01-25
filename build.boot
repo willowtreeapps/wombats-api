@@ -1,10 +1,9 @@
-(def project 'wombats)
-(def version "0.1.0-SNAPSHOT")
-
-(set-env! :source-paths #{"src" "test"}
-          :resource-paths #{"resources" "config"}
+(set-env! :project 'wombats
+          :version "0.1.0-SNAPSHOT"
+          :source-paths #{"src" "test"}
+          :resource-paths #{"src" "resources" "config"}
           :dependencies   '[;; Core Clojure libs
-                            [org.clojure/clojure   "1.9.0-alpha14"]
+                            [org.clojure/clojure   "1.9.0-alpha14" :scope "provided"]
                             [org.clojure/data.json "0.2.6"]
 
                             ;; High-performance serialization library
@@ -26,10 +25,12 @@
                             ;; Database
                             [com.datomic/datomic-pro "0.9.5554"]
                             [com.amazonaws/aws-java-sdk-dynamodb "1.11.6"]
+                            [io.rkn/conformity "0.4.0"]
 
                             ;; HTTP Server
-                            [io.pedestal/pedestal.service "0.5.1"]
-                            [io.pedestal/pedestal.jetty   "0.5.1"]
+                            [io.pedestal/pedestal.service "0.5.2"]
+                            [io.pedestal/pedestal.jetty   "0.5.2"]
+                            [io.pedestal/pedestal.interceptor "0.5.2"]
 
                             ;; HTTP Client
                             [http-kit "2.3.0-alpha1"]
@@ -46,7 +47,14 @@
                             [org.slf4j/log4j-over-slf4j "1.7.21"]]
           :repositories #(conj % ["my-datomic" {:url "https://my.datomic.com/repo"
                                                 :username (System/getenv "DATOMIC_USERNAME")
-                                                :password (System/getenv "DATOMIC_PASSWORD")}]))
+                                                :password (System/getenv "DATOMIC_PASSWORD")}])
+          :target-path "target")
+
+(task-options!
+ pom {:project (get-env :project)
+      :version (get-env :version)}
+ aot {:namespace '#{wombats.system}}
+ jar {:main 'wombats.system})
 
 ;; Load testing tasks
 (require '[adzerk.boot-test :refer :all])
@@ -59,9 +67,10 @@
 
   (require 'user))
 
-(deftask dev-ddb []
+(deftask dev-ddb
+  "Start"[]
   (set-env! :source-paths #(conj % "dev/src"))
-  (System/setProperty "app-env" "dev-ddb")
+  (System/setProperty "APP_ENV" "dev-ddb")
 
   (require 'user))
 
@@ -76,3 +85,19 @@
     @(d/transact conn (load-file "resources/datomic/schema.edn"))
     @(d/transact conn (load-file "resources/datomic/roles.edn"))
     @(d/transact conn (load-file "resources/datomic/users.edn"))))
+
+(deftask build
+  "Creates a new build"
+  []
+  (def jar-file (format "%s.jar" (get-env :project)))
+
+  (comp
+   (aot)
+   (pom)
+   (uber)
+   (jar :file jar-file)
+   (sift :include #{(re-pattern jar-file)})
+   (zip :file (format "%s-%s.zip"
+                      (get-env :project)
+                      (get-env :version)))
+   (target)))

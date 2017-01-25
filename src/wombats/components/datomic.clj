@@ -1,5 +1,7 @@
 (ns wombats.components.datomic
-  (:require [com.stuartsierra.component :as component]
+  (:require [clojure.java.io :as io]
+            [io.rkn.conformity :as c]
+            [com.stuartsierra.component :as component]
             [datomic.api :as d]
             [io.pedestal.log :as log]))
 
@@ -21,8 +23,9 @@
                       (add-auth-to-conn-uri conn-uri access-key-id secret-key)
                       conn-uri)
         _ (d/create-database datomic-uri)
-        conn (d/connect datomic-uri)]
-    (d/transact conn (load-file "resources/datomic/schema.edn"))
+        conn (d/connect datomic-uri)
+        schema (c/read-resource "datomic/schema.edn")]
+    (d/transact conn schema)
     {:conn conn}))
 
 ;; Component
