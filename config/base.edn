@@ -6,7 +6,9 @@
             :container-options {:h2c? true
                                 :h2? false
                                 :ssl? true}
-            :allowed-origins ["http://localhost:3449"]}
+            :allowed-origins #{""
+                               "http://localhost:8888"
+                               "http://localhost:3449"}}
  :github {:client-id #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_GITHUB_CLIENT_ID"
           :client-secret #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_GITHUB_CLIENT_SECRET"
           :signing-secret #immuconf/default "shhhhh....."

@@ -81,6 +81,7 @@
               :game/is-private
               :game/password
               :game/num-rounds
+              :game/start-time
               :game/round-intermission]} arena-id]
     (let [arena-entity-id (get-entity-id conn :arena/id arena-id)]
 
@@ -95,6 +96,7 @@
                                :game/is-private is-private
                                :game/password (or password "")
                                :game/num-rounds (or num-rounds 1)
+                               :game/start-time (read-string (str "#inst \"" start-time "\""))
                                :game/round-intermission (or round-intermission 0)
                                :game/arena arena-entity-id
                                :game/status :pending-open}]))))
