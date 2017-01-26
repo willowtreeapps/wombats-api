@@ -316,6 +316,12 @@
   :db/doc         "Players enrolled in a game"}
 
  {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/stats
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/many
+  :db/docs        "Player / AI scores"}
+
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :game/created-by
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
@@ -345,4 +351,35 @@
   :db/ident       :frame/arena
   :db/valueType   :db.type/bytes
   :db/cardinality :db.cardinality/one
-  :db/doc         "The arena representation"}]
+  :db/doc         "The arena representation"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A stats public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/player
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A stats player"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/game
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The game these stats are associated with"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/frame-number
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The frame where the stats were calculated"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/score
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Overall score"}]
