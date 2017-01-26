@@ -10,11 +10,13 @@
   [config service]
   (let [env (:env config)
         {:keys [port type
-                join? container-options]} (get-in config [:settings :pedestal])
+                join? container-options
+                allowed-origins]} (get-in config [:settings :pedestal])
         {:keys [api-routes ws-routes]} (get-in service [:service])]
     {:env env
      ::http/resource-path "/public"
      ::http/file-path "/public"
+     ::http/allowed-origins allowed-origins
      ::http/routes api-routes
      ::http/port port
      ::http/type type

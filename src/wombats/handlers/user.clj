@@ -1,5 +1,5 @@
 (ns wombats.handlers.user
-  (:require [io.pedestal.interceptor.helpers :refer [defbefore]]
+  (:require [io.pedestal.interceptor.helpers :as interceptor]
             [clojure.spec :as s]
             [wombats.daos.helpers :as dao]
             [wombats.interceptors.authorization :refer [authorization-error]]
@@ -38,13 +38,15 @@
           :operationId "get-users"
           :responses {:200 {:description "get-users response"}}}}})
 
-(defbefore get-users
+(def get-users
   "Returns a seq of users"
-  [{:keys [response] :as context}]
-  (let [get-users (dao/get-fn :get-users context)]
-    (assoc context :response (assoc response
-                                    :status 200
-                                    :body (get-users)))))
+  (interceptor/before
+   ::get-users
+   (fn [{:keys [response] :as context}]
+     (let [get-users (dao/get-fn :get-users context)]
+       (assoc context :response (assoc response
+                                       :status 200
+                                       :body (get-users)))))))
 
 (def ^:swagger-spec get-user-by-id-spec
   {"/api/v1/users/{user-id}"
@@ -54,14 +56,16 @@
           :parameters [user-id-path-param]
           :responses {:200 {:description "get-user-by-id response"}}}}})
 
-(defbefore get-user-by-id
+(def get-user-by-id
   "Returns a user by searching for its id"
-  [{:keys [response request] :as context}]
-  (let [get-user-by-id (dao/get-fn :get-user-by-id context)
-        user-id (get-in request [:path-params :user-id])]
-    (assoc context :response (assoc response
-                                    :status 200
-                                    :body (get-user-by-id user-id)))))
+  (interceptor/before
+   ::get-user-by-id
+   (fn [{:keys [response request] :as context}]
+     (let [get-user-by-id (dao/get-fn :get-user-by-id context)
+           user-id (get-in request [:path-params :user-id])]
+       (assoc context :response (assoc response
+                                       :status 200
+                                       :body (get-user-by-id user-id)))))))
 
 (def ^:swagger-spec get-user-self-spec
   {"/api/v1/self"
@@ -71,14 +75,16 @@
           :parameters []
           :responses {:200 {:description "get-user-self response"}}}}})
 
-(defbefore get-user-self
+(def get-user-self
   "Returns a user by access token"
-  [{:keys [response request] :as context}]
-  (let [get-user-by-access-token (dao/get-fn :get-user-by-access-token context)
-        access-token (get-in request [:headers "authorization"])]
-    (assoc context :response (assoc response
-                                    :status 200
-                                    :body (get-user-by-access-token access-token)))))
+  (interceptor/before
+   ::get-user-self
+   (fn [{:keys [response request] :as context}]
+     (let [get-user-by-access-token (dao/get-fn :get-user-by-access-token context)
+           access-token (get-in request [:headers "authorization"])]
+       (assoc context :response (assoc response
+                                       :status 200
+                                       :body (get-user-by-access-token access-token)))))))
 
 (def ^:swagger-spec get-user-wombats-spec
   {"/api/v1/users/{user-id}/wombats"
@@ -88,14 +94,16 @@
           :parameters [user-id-path-param]
           :responses {:200 {:description "get-user-wombats response"}}}}})
 
-(defbefore get-user-wombats
+(def get-user-wombats
   "Returns a seq of user wombats"
-  [{:keys [response request] :as context}]
-  (let [get-user-wombats (dao/get-fn :get-user-wombats context)
-        user-id (get-in request [:path-params :user-id])]
-    (assoc context :response (assoc response
-                                    :status 200
-                                    :body (get-user-wombats user-id)))))
+  (interceptor/before
+   ::get-user-wombats
+   (fn [{:keys [response request] :as context}]
+     (let [get-user-wombats (dao/get-fn :get-user-wombats context)
+           user-id (get-in request [:path-params :user-id])]
+       (assoc context :response (assoc response
+                                       :status 200
+                                       :body (get-user-wombats user-id)))))))
 
 (s/def :wombat/id string?)
 (s/def :wombat/name string?)
@@ -114,24 +122,26 @@
                         wombat-body-params]
            :responses {:200 {:description "get-user-wombats response"}}}}})
 
-(defbefore add-user-wombat
+(def add-user-wombat
   "Creates a new wombat and assigns it to the user"
-  [{:keys [request response] :as context}]
-  (let [add-user-wombat (dao/get-fn :add-user-wombat context)
-        get-wombat (dao/get-fn :get-wombat-by-id context)
-        wombat (:edn-params request)
-        user-id (get-in request [:path-params :user-id])
-        wombat-id (dao/gen-id)
-        new-wombat (merge wombat
-                          {:wombat/id wombat-id})]
+  (interceptor/before
+   ::add-user-wombat
+   (fn [{:keys [request response] :as context}]
+     (let [add-user-wombat (dao/get-fn :add-user-wombat context)
+           get-wombat (dao/get-fn :get-wombat-by-id context)
+           wombat (:edn-params request)
+           user-id (get-in request [:path-params :user-id])
+           wombat-id (dao/gen-id)
+           new-wombat (merge wombat
+                             {:wombat/id wombat-id})]
 
-    (sutils/validate-input ::wombat-params wombat)
+       (sutils/validate-input ::wombat-params wombat)
 
-    @(add-user-wombat user-id new-wombat)
+       @(add-user-wombat user-id new-wombat)
 
-    (assoc context :response (assoc response
-                                    :status 200
-                                    :body (get-wombat wombat-id)))))
+       (assoc context :response (assoc response
+                                       :status 200
+                                       :body (get-wombat wombat-id)))))))
 
 (defn- user-owns-wombat?
   "Determines if a user owns a wombat"
@@ -149,18 +159,20 @@
                           wombat-id-path-param]
              :responses {:200 {:description "delete-wombat response"}}}}})
 
-(defbefore delete-wombat
-  [{:keys [request response] :as context}]
-  (let [retract-wombat (dao/get-fn :retract-wombat context)
-        {wombat-id :wombat-id
-         user-id :user-id} (:path-params request)]
+(def delete-wombat
+  (interceptor/before
+   ::delete-wombat
+   (fn [{:keys [request response] :as context}]
+     (let [retract-wombat (dao/get-fn :retract-wombat context)
+           {wombat-id :wombat-id
+            user-id :user-id} (:path-params request)]
 
-    (when-not (user-owns-wombat? user-id wombat-id context)
-      (authorization-error "Cannot remove this wombat"))
+       (when-not (user-owns-wombat? user-id wombat-id context)
+         (authorization-error "Cannot remove this wombat"))
 
-    (assoc context :response (assoc response
-                                    :status 200
-                                    :body @(retract-wombat wombat-id)))))
+       (assoc context :response (assoc response
+                                       :status 200
+                                       :body @(retract-wombat wombat-id)))))))
 
 (def ^:swagger-spec update-wombat-spec
   {"/api/v1/users/{user-id}/wombats/{wombat-id}"
@@ -172,22 +184,24 @@
                        wombat-body-params]
           :responses {:200 {:description "update-wombat response"}}}}})
 
-(defbefore update-wombat
-  [{:keys [request response] :as context}]
-  (let [update-wombat (dao/get-fn :update-user-wombat context)
-        get-wombat (dao/get-fn :get-wombat-by-id context)
-        {wombat-id :wombat-id
-         user-id :user-id} (:path-params request)
-        wombat (merge (:edn-params request)
-                      {:wombat/id wombat-id})]
+(def update-wombat
+  (interceptor/before
+   ::update-wombat
+   (fn [{:keys [request response] :as context}]
+     (let [update-wombat (dao/get-fn :update-user-wombat context)
+           get-wombat (dao/get-fn :get-wombat-by-id context)
+           {wombat-id :wombat-id
+            user-id :user-id} (:path-params request)
+           wombat (merge (:edn-params request)
+                         {:wombat/id wombat-id})]
 
-    (sutils/validate-input ::wombat-params wombat)
+       (sutils/validate-input ::wombat-params wombat)
 
-    (when-not (user-owns-wombat? user-id wombat-id context)
-      (authorization-error "Cannot update this wombat"))
+       (when-not (user-owns-wombat? user-id wombat-id context)
+         (authorization-error "Cannot update this wombat"))
 
-    @(update-wombat wombat)
+       @(update-wombat wombat)
 
-    (assoc context :response (assoc response
-                                    :status 200
-                                    :body (get-wombat wombat-id)))))
+       (assoc context :response (assoc response
+                                       :status 200
+                                       :body (get-wombat wombat-id)))))))

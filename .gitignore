@@ -13,5 +13,4 @@ pom.xml.asc
 .nrepl-port
 /.nrepl-history
 /logs/
-/config/.private.edn
 /resources/public/swagger

@@ -1,7 +1,9 @@
 (ns wombats.handlers.game
-  (:require [io.pedestal.interceptor.helpers :refer [defbefore]]
+  (:require [io.pedestal.interceptor.helpers :as interceptor]
             [clojure.spec :as s]
+            [clj-time.local :as l]
             [wombats.interceptors.current-user :refer [get-current-user]]
+            [wombats.handlers.helpers :refer [handler-error]]
             [wombats.daos.helpers :as dao]
             [wombats.specs.utils :as sutils]))
 
@@ -11,7 +13,12 @@
          :type :round
          :round-intermission (* 1000 60 20)
          :num-rounds 3
-         :is-private false})
+         :is-private false
+         :start-time (str (l/local-now))})
+
+(def ^:private join-game-body-sample
+  #:player{:wombat-id ""
+           :color "#000000"})
 
 ;; Swagger Parameters
 (def ^:private game-id-path-param
@@ -47,6 +54,14 @@
    :default (str game-body-sample)
    :schema {}})
 
+(def ^:private join-game-body-params
+  {:name "join-body"
+   :in "body"
+   :description "Body params for joining a game"
+   :required true
+   :default (str join-game-body-sample)
+   :schema {}})
+
 ;; Handlers
 (def ^:swagger-spec get-games-spec
   {"/api/v1/games"
@@ -57,28 +72,30 @@
                        game-user-query-param]
           :responses {:200 {:description "get-games response"}}}}})
 
-(defbefore get-games
-  [{:keys [request response] :as context}]
-  (let [get-all-games (dao/get-fn :get-all-games context)
-        get-games-by-status (dao/get-fn :get-game-eids-by-status context)
-        get-games-by-player (dao/get-fn :get-game-eids-by-player context)
-        get-games-by-eids (dao/get-fn :get-games-by-eids context)
-        {status :status
-         user :user} (get request :query-params {})
-        game-eids (cond-> [])
-        games (if (empty? (:query-params request))
-                (get-all-games)
-                (get-games-by-eids (->> (cond-> []
-                                         ((complement nil?) status)
-                                         (conj (set (get-games-by-status status)))
+(def get-games
+  (interceptor/before
+   ::get-games
+   (fn [{:keys [request response] :as context}]
+     (let [get-all-games (dao/get-fn :get-all-games context)
+           get-games-by-status (dao/get-fn :get-game-eids-by-status context)
+           get-games-by-player (dao/get-fn :get-game-eids-by-player context)
+           get-games-by-eids (dao/get-fn :get-games-by-eids context)
+           {status :status
+            user :user} (get request :query-params {})
+           game-eids (cond-> [])
+           games (if (empty? (:query-params request))
+                   (get-all-games)
+                   (get-games-by-eids (->> (cond-> []
+                                             ((complement nil?) status)
+                                             (conj (set (get-games-by-status status)))
 
-                                         ((complement nil?) user)
-                                         (conj (set (get-games-by-player user))))
-                                       (apply clojure.set/intersection)
-                                       (into []))))]
-    (assoc context :response (assoc response
-                                    :status 200
-                                    :body games))))
+                                             ((complement nil?) user)
+                                             (conj (set (get-games-by-player user))))
+                                           (apply clojure.set/intersection)
+                                           (into []))))]
+       (assoc context :response (assoc response
+                                       :status 200
+                                       :body games))))))
 
 (def ^:swagger-spec get-game-by-id-spec
   {"/api/v1/games/{game-id}"
@@ -88,14 +105,16 @@
           :parameters [game-id-path-param]
           :response {:200 {:description "get-game-by-id response"}}}}})
 
-(defbefore get-game-by-id
-  [{:keys [request response] :as context}]
-  (let [get-game (dao/get-fn :get-game-by-id context)
-        game-id (get-in request [:path-params :game-id])
-        game (get-game game-id)]
-    (assoc context :response (assoc response
-                                    :status (if game 200 404)
-                                    :body game))))
+(def get-game-by-id
+  (interceptor/before
+   ::get-game-by-id
+   (fn [{:keys [request response] :as context}]
+     (let [get-game (dao/get-fn :get-game-by-id context)
+           game-id (get-in request [:path-params :game-id])
+           game (get-game game-id)]
+       (assoc context :response (assoc response
+                                       :status (if game 200 404)
+                                       :body game))))))
 
 (s/def :game/id string?)
 (s/def :game/arena #(instance? Long %))
@@ -110,14 +129,22 @@
 (s/def :game/round-intermission #(instance? Long %))
 (s/def :game/is-private boolean?)
 (s/def :game/password string?)
+(s/def :game/start-time string?)
 
 (s/def ::new-game-input (s/keys :req [:game/name
                                       :game/max-players
                                       :game/type
-                                      :game/is-private]
+                                      :game/is-private
+                                      :game/start-time]
                                 :opt [:game/password
                                       :game/num-rounds
                                       :game/round-intermission]))
+
+(s/def :player/wombat-id string?)
+(s/def :player/color string?)
+
+(s/def ::join-game-input (s/keys :req [:player/wombat-id
+                                       :player/color]))
 
 (def ^:swagger-spec add-game-spec
   {"/api/v1/games"
@@ -128,23 +155,25 @@
                         game-body-params]
            :responses {:200 {:description "add-game response"}}}}})
 
-(defbefore add-game
-  [{:keys [request response] :as context}]
-  (let [add-game (dao/get-fn :add-game context)
-        get-game (dao/get-fn :get-game-by-id context)
-        arena-id (get-in request [:query-params :arena-id])
-        game (:edn-params request)]
+(def add-game
+  (interceptor/before
+   ::add-game
+   (fn [{:keys [request response] :as context}]
+     (let [add-game (dao/get-fn :add-game context)
+           get-game (dao/get-fn :get-game-by-id context)
+           arena-id (get-in request [:query-params :arena-id])
+           game (:edn-params request)]
 
-    (sutils/validate-input ::new-game-input game)
+       (sutils/validate-input ::new-game-input game)
 
-    (let [game-id (dao/gen-id)
-          new-game (merge game {:game/id game-id})
-          tx @(add-game new-game arena-id)
-          game-record (get-game game-id)]
+       (let [game-id (dao/gen-id)
+             new-game (merge game {:game/id game-id})
+             tx @(add-game new-game arena-id)
+             game-record (get-game game-id)]
 
-      (assoc context :response (assoc response
-                                      :status 201
-                                      :body game-record)))))
+         (assoc context :response (assoc response
+                                         :status 201
+                                         :body game-record)))))))
 
 #_(def ^:swagger-spec update-game-spec
   {"/api/v1/games/{game-id}"
@@ -163,32 +192,54 @@
              :parameters [game-id-path-param]
              :responses {:200 {:description "delete-game response"}}}}})
 
-(defbefore delete-game
-  [{:keys [request response] :as context}]
-  (let [retract-game (dao/get-fn :retract-game context)
-        game-id (get-in request [:path-params :game-id])]
+(def delete-game
+  (interceptor/before
+   ::delete-game
+   (fn [{:keys [request response] :as context}]
+     (let [retract-game (dao/get-fn :retract-game context)
+           game-id (get-in request [:path-params :game-id])]
 
-    (assoc context :response (assoc response
-                                    :status 200
-                                    :body @(retract-game game-id)))))
+       (assoc context :response (assoc response
+                                       :status 200
+                                       :body @(retract-game game-id)))))))
 
 (def ^:swagger-spec join-game-spec
   {"/api/v1/games/{game-id}/join"
    {:post {:description "Attaches the requesting user to an open game"
            :tags ["game"]
            :operationId "join-game"
-           :parameters [game-id-path-param]
+           :parameters [game-id-path-param
+                        join-game-body-params]
            :responses {:200 {:description "join-game response"}}}}})
 
-(defbefore join-game
-  [{:keys [request response] :as context}]
-  (let [add-player-to-game (dao/get-fn :add-player-to-game context)
-        get-game-by-id (dao/get-fn :get-game-by-id context)
-        game-id (get-in request [:path-params :game-id])
-        current-user (get-current-user context)]
+(def join-game
+  (interceptor/before
+   ::join-game
+   (fn [{:keys [request response] :as context}]
+     (let [add-player-to-game (dao/get-fn :add-player-to-game context)
+           get-wombat-by-id (dao/get-fn :get-wombat-by-id context)
+           get-game-by-id (dao/get-fn :get-game-by-id context)
+           game-id (get-in request [:path-params :game-id])
+           join-params (:edn-params request)
+           current-user (get-current-user context)]
 
-    @(add-player-to-game game-id (:db/id current-user))
+       (sutils/validate-input ::join-game-input join-params)
 
-    (assoc context :response (assoc response
-                                    :status 200
-                                    :body (get-game-by-id game-id)))))
+       (let [{wombat-id :player/wombat-id
+              color :player/color} join-params
+             user-eid (:db/id current-user)
+             wombat (get-wombat-by-id wombat-id)
+             {wombat-eid :db/id} wombat]
+
+         (when-not wombat
+           (handler-error (str "Wombat '" wombat-eid "' cound not be found.")))
+
+         (when-not (= (:wombat/owner wombat)
+                      {:db/id user-eid})
+           (handler-error (str "Wombat '" wombat-eid "' does not belong to requesting user.")))
+
+         @(add-player-to-game game-id user-eid wombat-eid color)
+
+         (assoc context :response (assoc response
+                                         :status 200
+                                         :body (get-game-by-id game-id))))))))

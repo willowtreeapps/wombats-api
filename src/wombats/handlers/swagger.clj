@@ -1,5 +1,5 @@
 (ns wombats.handlers.swagger
-  (:require [io.pedestal.interceptor.helpers :refer [defbefore]]
+  (:require [io.pedestal.interceptor.helpers :as interceptor]
             [clojure.core.async :refer [chan go >!]]
             [cheshire.core :refer [generate-string]]))
 
@@ -57,13 +57,15 @@
       filter-spec-vars
       reduce-path-documentation))
 
-(defbefore get-specs
-  [{:keys [response] :as context}]
-  (let [ch (chan 1)]
-    (go
-      (let [specs (assoc swagger-specs :paths (resolve-swagger-paths))]
-        (>! ch (assoc context :response (assoc response
-                                               :status 201
-                                               :body (generate-string specs)
-                                               :headers {"Content-Type" "application/json"})))))
-    ch))
+(def get-specs
+  (interceptor/before
+   ::get-specs
+   (fn [{:keys [response] :as context}]
+     (let [ch (chan 1)]
+       (go
+         (let [specs (assoc swagger-specs :paths (resolve-swagger-paths))]
+           (>! ch (assoc context :response (assoc response
+                                                  :status 201
+                                                  :body (generate-string specs)
+                                                  :headers {"Content-Type" "application/json"})))))
+       ch))))
