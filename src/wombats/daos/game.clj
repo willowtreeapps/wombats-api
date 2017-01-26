@@ -133,7 +133,6 @@
 
 (defn- color-taken?
   [conn game-id color]
-  ;; TODO Check colors
   (let [player (ffirst
                 (d/q '[:find ?player
                        :in $ ?game-id ?color

@@ -116,12 +116,13 @@
    ::signout
    (fn [{:keys [request response] :as context}]
      (let [access-token (get-in request [:headers "authorization"])
-           remove-access-token (dao/get-fn :remove-access-token context)]
+           remove-access-token (dao/get-fn :remove-access-token context)
+           {web-client-redirect :web-client-redirect} (get-github-settings context)]
 
        (when access-token
          @(remove-access-token access-token))
 
        (assoc context :response (assoc response
-                                       :headers {"Location" "/"}
+                                       :headers {"Location" web-client-redirect}
                                        :status 302
                                        :body nil))))))
