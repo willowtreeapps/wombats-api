@@ -29,6 +29,7 @@
      :invalid-schema (assoc context :response (resp-custom-ex exception 400))
      :db-requirement-error (assoc context :response (resp-custom-ex exception 400))
      :unauthorized (assoc context :response (resp-custom-ex exception 401))
+     :handler-error (assoc context :response (resp-custom-ex exception 400))
      (assoc context :io.pedestal.interceptor.chain/error exception))
 
    :else

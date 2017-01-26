@@ -117,38 +117,62 @@
       max-players)))
 
 (defn- player-in-game?
-  [{:keys [:game/players]} user-eid]
-  (contains?
-   (->> (or players [])
-        (map vals)
-        flatten
-        set)
-   user-eid))
+  "Check to see if a player is already in a game
+
+  TODO: Figure out how to query the game id in the datomic query"
+  [conn user-eid game-eid]
+  (let [games
+        (set (apply concat
+                    (d/q '[:find ?games
+                           :in $ ?user-eid
+                           :where [?players :player/user ?user-eid]
+                                  [?games :game/players ?players]]
+                         (d/db conn)
+                         user-eid)))]
+    (contains? games game-eid)))
+
+(defn- color-taken?
+  [game color]
+  ;; TODO Check colors
+  false)
 
 (defn add-player-to-game
   [conn]
-  (fn [game-id user-eid]
-    (let [game ((get-game-by-id conn) game-id)]
+  (fn [game-id user-eid wombat-eid color]
+    (let [game ((get-game-by-id conn) game-id)
+          game-eid (:db/id game)]
 
       ;; Check for game existence
       (when-not game
-        (db-requirement-error (str "Game '" game-id "' was not found.")))
+        (db-requirement-error (str "Game '" game-id "' was not found")))
 
       ;; Check to see if the game is accepting new players
       (when-not (= (:game/status game) :pending-open)
         (db-requirement-error (str "Game '" game-id "' is not accepting new players")))
 
       ;; Check to see if the player is already in the game
-      (when (player-in-game? game user-eid)
-        (db-requirement-error (str "User '" user-eid "' is already in game '" game-id "'.")))
+      (when (player-in-game? conn user-eid game-eid)
+        (db-requirement-error (str "User '" user-eid "' is already in game '" game-eid "'")))
+
+      (when (color-taken? game color)
+        (db-requirement-error (str "Color '" color "' is already in use")))
 
       ;; This next part builds up the transaction(s)
-      ;; 1. Add the join transaction
-      ;; 2. If the game is now full, add the :pending closed transaction
-      (let [trx (cond-> []
-                  true (conj {:db/id (:db/id game)
-                              :game/players user-eid})
+      ;; 1. Creates the player trx
+      ;; 2. Adds player to the game
+      ;; 3. If the game is now full, add the :pending closed transaction
+      (let [player-tmpid (d/tempid :db.part/user)
+            player-trx {:db/id player-tmpid
+                        :player/user user-eid
+                        :player/wombat wombat-eid
+                        :player/color color}
+            join-trx {:db/id game-eid
+                      :game/players player-tmpid}
+            closed-trx {:db/id game-eid
+                        :game/status :pending-closed}
+            trx (cond-> []
+                  true (conj player-trx)
+                  true (conj join-trx)
+                  (game-full? game 1) (conj closed-trx))]
 
-                  (game-full? game 1) (conj {:db/id (:db/id game)
-                                             :game/status :pending-closed}))]
         (d/transact-async conn trx)))))

@@ -47,16 +47,15 @@
   (fn [{:keys [email login id avatar_url] :as user}
       access-token
       current-user-id]
-    (let [update {:db/id (d/tempid :db.part/user)
-                  :user/access-token access-token
+    (let [update {:user/access-token access-token
                   :user/github-username login
                   :user/github-id id
                   :user/email email
                   :user/avatar-url avatar_url}]
       (if-not current-user-id
-        (d/transact-async conn [(merge update {:db/id current-user-id
+        (d/transact-async conn [(merge update {:db/id (d/tempid :db.part/user)
                                                :user/id (gen-id)})])
-        (d/transact-async conn [update])))))
+        (d/transact-async conn [(merge update {:user/id current-user-id})])))))
 
 (defn remove-access-token
   [conn]

@@ -3,6 +3,7 @@
             [clojure.spec :as s]
             [clj-time.local :as l]
             [wombats.interceptors.current-user :refer [get-current-user]]
+            [wombats.handlers.helpers :refer [handler-error]]
             [wombats.daos.helpers :as dao]
             [wombats.specs.utils :as sutils]))
 
@@ -14,6 +15,10 @@
          :num-rounds 3
          :is-private false
          :start-time (str (l/local-now))})
+
+(def ^:private join-game-body-sample
+  #:player{:wombat-id ""
+           :color "#000000"})
 
 ;; Swagger Parameters
 (def ^:private game-id-path-param
@@ -47,6 +52,14 @@
    :description "values for a new game"
    :required true
    :default (str game-body-sample)
+   :schema {}})
+
+(def ^:private join-game-body-params
+  {:name "join-body"
+   :in "body"
+   :description "Body params for joining a game"
+   :required true
+   :default (str join-game-body-sample)
    :schema {}})
 
 ;; Handlers
@@ -127,6 +140,12 @@
                                       :game/num-rounds
                                       :game/round-intermission]))
 
+(s/def :player/wombat-id string?)
+(s/def :player/color string?)
+
+(s/def ::join-game-input (s/keys :req [:player/wombat-id
+                                       :player/color]))
+
 (def ^:swagger-spec add-game-spec
   {"/api/v1/games"
    {:post {:description "Creates and returns a game"
@@ -189,7 +208,8 @@
    {:post {:description "Attaches the requesting user to an open game"
            :tags ["game"]
            :operationId "join-game"
-           :parameters [game-id-path-param]
+           :parameters [game-id-path-param
+                        join-game-body-params]
            :responses {:200 {:description "join-game response"}}}}})
 
 (def join-game
@@ -197,12 +217,29 @@
    ::join-game
    (fn [{:keys [request response] :as context}]
      (let [add-player-to-game (dao/get-fn :add-player-to-game context)
+           get-wombat-by-id (dao/get-fn :get-wombat-by-id context)
            get-game-by-id (dao/get-fn :get-game-by-id context)
            game-id (get-in request [:path-params :game-id])
+           join-params (:edn-params request)
            current-user (get-current-user context)]
 
-       @(add-player-to-game game-id (:db/id current-user))
+       (sutils/validate-input ::join-game-input join-params)
 
-       (assoc context :response (assoc response
-                                       :status 200
-                                       :body (get-game-by-id game-id)))))))
+       (let [{wombat-id :player/wombat-id
+              color :player/color} join-params
+             user-eid (:db/id current-user)
+             wombat (get-wombat-by-id wombat-id)
+             {wombat-eid :db/id} wombat]
+
+         (when-not wombat
+           (handler-error (str "Wombat '" wombat-eid "' cound not be found.")))
+
+         (when-not (= (:wombat/owner wombat)
+                      {:db/id user-eid})
+           (handler-error (str "Wombat '" wombat-eid "' does not belong to requesting user.")))
+
+         @(add-player-to-game game-id user-eid wombat-eid color)
+
+         (assoc context :response (assoc response
+                                         :status 200
+                                         :body (get-game-by-id game-id))))))))
