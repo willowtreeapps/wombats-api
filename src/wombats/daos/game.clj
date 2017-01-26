@@ -121,20 +121,29 @@
 
   TODO: Figure out how to query the game id in the datomic query"
   [conn user-eid game-eid]
-  (let [games
-        (set (apply concat
-                    (d/q '[:find ?games
-                           :in $ ?user-eid
-                           :where [?players :player/user ?user-eid]
-                                  [?games :game/players ?players]]
-                         (d/db conn)
-                         user-eid)))]
+  (let [games (set
+               (apply concat
+                      (d/q '[:find ?games
+                             :in $ ?user-eid
+                             :where [?players :player/user ?user-eid]
+                                    [?games :game/players ?players]]
+                           (d/db conn)
+                           user-eid)))]
     (contains? games game-eid)))
 
 (defn- color-taken?
-  [game color]
+  [conn game-id color]
   ;; TODO Check colors
-  false)
+  (let [player (ffirst
+                (d/q '[:find ?player
+                       :in $ ?game-id ?color
+                       :where [?game :game/id ?game-id]
+                              [?game :game/players ?player]
+                              [?player :player/color ?color]]
+                     (d/db conn)
+                     game-id
+                     color))]
+    (boolean player)))
 
 (defn add-player-to-game
   [conn]
@@ -144,17 +153,17 @@
 
       ;; Check for game existence
       (when-not game
-        (db-requirement-error (str "Game '" game-id "' was not found")))
+        (db-requirement-error (str "Game '" game-eid "' was not found")))
 
       ;; Check to see if the game is accepting new players
       (when-not (= (:game/status game) :pending-open)
-        (db-requirement-error (str "Game '" game-id "' is not accepting new players")))
+        (db-requirement-error (str "Game '" game-eid "' is not accepting new players")))
 
       ;; Check to see if the player is already in the game
       (when (player-in-game? conn user-eid game-eid)
         (db-requirement-error (str "User '" user-eid "' is already in game '" game-eid "'")))
 
-      (when (color-taken? game color)
+      (when (color-taken? conn game-id color)
         (db-requirement-error (str "Color '" color "' is already in use")))
 
       ;; This next part builds up the transaction(s)
