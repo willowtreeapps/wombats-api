@@ -209,6 +209,32 @@
   :db/cardinality :db.cardinality/one
   :db/doc         "Updated by metadata"}
 
+ ;; Player Entities
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :player/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A players public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :player/user
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A players user reference"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :player/wombat
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A players wombat reference"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :player/color
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A players in game color"}
+
  ;; Game Entities
  {:db/id          #db/id [:db.part/db]
   :db/ident       :game/id
