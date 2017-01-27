@@ -319,7 +319,7 @@
   :db/ident       :game/stats
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/many
-  :db/docs        "Player / AI scores"}
+  :db/doc        "Player / AI scores"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :game/created-by
@@ -353,6 +353,7 @@
   :db/cardinality :db.cardinality/one
   :db/doc         "The arena representation"}
 
+ ;; Stat Entities
  {:db/id          #db/id [:db.part/db]
   :db/ident       :stats/id
   :db/valueType   :db.type/string
