@@ -8,6 +8,9 @@
 (defonce test-4x5-empty-perimeter
   (load-file "resources/arena/4x5-empty-perimeter.edn"))
 
+(defonce test-4x4-empty-arena
+  (load-file "resources/arena/4x4-empty-arena.edn"))
+
 (deftest get-arena-dimensions
   (testing "calculates a square arena"
     (is (= [4 4]
