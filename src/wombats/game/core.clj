@@ -1,6 +1,7 @@
 (ns wombats.game.core
   (:require [wombats.game.initializers :as i]
-            [wombats.game.finalizers :as f]))
+            [wombats.game.finalizers :as f]
+            [wombats.game.processor :as p]))
 
 (defn- game-over?
   "End game condition"
@@ -18,6 +19,9 @@
       current-game-state
       (-> current-game-state
           (i/initialize-frame)
+          (p/process-user-decisions)
+          (p/process-turn-resolution)
+          (f/finalize-frame)
           (recur)))))
 
 (defn initialize-game
