@@ -12,7 +12,7 @@
 (defn gen-id
   "Generates a uuid string to use with db entities"
   []
-  (str(java.util.UUID/randomUUID)))
+  (str (java.util.UUID/randomUUID)))
 
 (defn get-entity-by-prop
   "Helper function for pulling an entity out of datomic.
