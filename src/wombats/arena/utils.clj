@@ -1,5 +1,17 @@
 (ns wombats.arena.utils)
 
+;; Constants
+
+(def arena-items {:open {:type :open}
+                  :wood-barrier {:type :wood-barrier}
+                  :steel-barrier {:type :steel-barrier}
+                  :wombat {:type :wombat}
+                  :zakano {:type :zakano}
+                  :smoke {:type :smoke}
+                  :fog {:type :fog}
+                  :food {:type :food}
+                  :poison {:type :poison}})
+
 ;; Accessors
 
 (defn get-arena-dimensions
@@ -22,6 +34,12 @@
          (< y ydim))))
 
 ;; Random
+
+(defn ensure-uuid
+  [{:keys [uuid] :as item}]
+  (if uuid
+    item
+    (assoc item :uuid (str (java.util.UUID/randomUUID)))))
 
 (defn- print-cell
   [cell]

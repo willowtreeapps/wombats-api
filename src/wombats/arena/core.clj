@@ -3,7 +3,8 @@
 
 ;; Cell structure
 ;;
-;; {:contents {:type keyword}
+;; {:contents {:type keyword
+;;             :uuid xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
 ;;  :meta [metadata]}
 
 (defn- generate-random-coords
@@ -26,7 +27,7 @@
   [arena item]
   (a-utils/update-cell-contents arena
                                 (find-random-open-space arena)
-                                item))
+                                (a-utils/ensure-uuid item)))
 
 (defn- sprinkle
   "sprinkles given item into an arena"
@@ -44,13 +45,13 @@
   [{:keys [config arena] :as arena-map}]
   (let [{dimx :arena/width
          dimy :arena/height} config
-        wall {:type :wood-barrier}
+        wall (:wood-barrier a-utils/arena-items)
         xform (map-indexed (fn [y row]
                              (if (#{0 (dec dimy)} y)
-                               (vec (map #(assoc % :contents wall) row))
+                               (vec (map #(assoc % :contents (a-utils/ensure-uuid wall)) row))
                                (-> (vec row)
-                                   (assoc-in [0 :contents] wall)
-                                   (assoc-in [(dec dimx) :contents] wall)))))]
+                                   (assoc-in [0 :contents] (a-utils/ensure-uuid wall))
+                                   (assoc-in [(dec dimx) :contents] (a-utils/ensure-uuid wall))))))]
     (assoc arena-map
            :arena
            (vec (sequence xform arena)))))
@@ -59,13 +60,15 @@
   "creates empty arena"
   [{:keys [config] :as arena-map}]
   (let [{dimx :arena/width
-         dimy :arena/height} config]
+         dimy :arena/height} config
+        open-space (:open a-utils/arena-items)]
     (assoc arena-map
            :arena
            (vec (repeat dimy
-                        (vec (repeat dimx
-                                     {:contents {:type :open}
-                                      :meta []})))))))
+                        (vec (repeatedly dimx
+                                         (fn []
+                                           {:contents (a-utils/ensure-uuid open-space)
+                                            :meta []}))))))))
 
 (defn generate-arena
   [{:keys [:arena/food
@@ -76,6 +79,6 @@
             :arena nil}
      true (generate-empty-arena)
      (:arena/perimeter arena-config) (add-perimeter)
-     true (add-to-arena {:type :food} food)
-     true (add-to-arena {:type :poison} poison)
-     true (add-to-arena {:type :zakano} zakano))))
+     true (add-to-arena (:food a-utils/arena-items) food)
+     true (add-to-arena (:poison a-utils/arena-items) poison)
+     true (add-to-arena (:zakano a-utils/arena-items) zakano))))
