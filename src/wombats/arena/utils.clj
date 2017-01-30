@@ -5,7 +5,10 @@
 (def arena-items {:open {:type :open}
                   :wood-barrier {:type :wood-barrier}
                   :steel-barrier {:type :steel-barrier}
-                  :wombat {:type :wombat}
+                  :wombat {:type :wombat
+                           :eid nil
+                           :color nil
+                           :hp nil}
                   :zakano {:type :zakano}
                   :smoke {:type :smoke}
                   :fog {:type :fog}
@@ -81,3 +84,32 @@
   (if (coords-inbounds? coords arena)
     (assoc-in arena (conj coords :meta) new-meta)
     arena))
+
+(defn- generate-random-coords
+  "generates random coordinates from a given dimension set"
+  [[x y]]
+  [(rand-int x)
+   (rand-int y)])
+
+(defn- find-random-open-space
+  "returns the coordinates for a random open space in a given arena"
+  [arena]
+  (let [arena-dimensions (get-arena-dimensions arena)]
+    (loop [coords nil]
+      (if (and coords (pos-open? coords arena))
+        coords
+        (recur (generate-random-coords arena-dimensions))))))
+
+(defn- replacer
+  "replaces an empty cell with a value in a given arena"
+  [arena item]
+  (update-cell-contents arena
+                        (find-random-open-space arena)
+                        (ensure-uuid item)))
+
+(defn sprinkle
+  "sprinkles given item into an arena"
+  ([arena item]
+   (sprinkle arena item 1))
+  ([arena item amount]
+   (reduce replacer arena (repeat amount item))))

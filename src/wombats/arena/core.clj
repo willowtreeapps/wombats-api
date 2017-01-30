@@ -7,38 +7,12 @@
 ;;             :uuid xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
 ;;  :meta [metadata]}
 
-(defn- generate-random-coords
-  "generates random coordinates from a given dimension set"
-  [[x y]]
-  [(rand-int x)
-   (rand-int y)])
-
-(defn- find-random-open-space
-  "returns the coordinates for a random open space in a given arena"
-  [arena]
-  (let [arena-dimensions (a-utils/get-arena-dimensions arena)]
-    (loop [coords nil]
-      (if (and coords (a-utils/pos-open? coords arena))
-        coords
-        (recur (generate-random-coords arena-dimensions))))))
-
-(defn- replacer
-  "replaces an empty cell with a value in a given arena"
-  [arena item]
-  (a-utils/update-cell-contents arena
-                                (find-random-open-space arena)
-                                (a-utils/ensure-uuid item)))
-
-(defn- sprinkle
-  "sprinkles given item into an arena"
-  [arena item amount]
-  (reduce replacer arena (repeat amount item)))
-
 (defn- add-to-arena
+  "Adds item(s) randomly to an arena"
   [{:keys [config arena] :as arena-map} item amount]
   (assoc arena-map
          :arena
-         (sprinkle arena item amount)))
+         (a-utils/sprinkle arena item amount)))
 
 (defn- add-perimeter
   "Places block walls contiguously along the border of the arena"

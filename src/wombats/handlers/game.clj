@@ -266,7 +266,7 @@
    (fn [{:keys [request response] :as context}]
      (let [game-id (get-in request [:path-params :game-id])
            get-game-by-id (dao/get-fn :get-game-by-id context)
-           start-game (dao/get-fn :start-game context)
+           start-game-fn (dao/get-fn :start-game context)
            game (get-game-by-id game-id)]
 
        (when-not game
@@ -278,7 +278,7 @@
           (str "Game '" game-id "' is not in a state that can be started")
           {:current-state (:game/status game)}))
 
-       @(start-game game)
+       @(start-game-fn game)
 
        (assoc context :response (assoc response
                                        :status 200
