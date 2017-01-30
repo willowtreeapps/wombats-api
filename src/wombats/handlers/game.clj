@@ -5,7 +5,8 @@
             [wombats.interceptors.current-user :refer [get-current-user]]
             [wombats.handlers.helpers :refer [handler-error]]
             [wombats.daos.helpers :as dao]
-            [wombats.specs.utils :as sutils]))
+            [wombats.specs.utils :as sutils]
+            [wombats.arena.core :refer [generate-arena]]))
 
 (def ^:private game-body-sample
   #:game{:name "New Game"
@@ -161,28 +162,28 @@
    (fn [{:keys [request response] :as context}]
      (let [add-game (dao/get-fn :add-game context)
            get-game (dao/get-fn :get-game-by-id context)
+           get-arena (dao/get-fn :get-arena-by-id context)
            arena-id (get-in request [:query-params :arena-id])
-           game (:edn-params request)]
+           game (:edn-params request)
+           arena-config (get-arena arena-id)]
+
+       (when-not arena-config
+         (handler-error
+          (str "Arena '" arena-id "' was not found.")))
 
        (sutils/validate-input ::new-game-input game)
 
        (let [game-id (dao/gen-id)
              new-game (merge game {:game/id game-id})
-             tx @(add-game new-game arena-id)
+             game-arena (generate-arena arena-config)
+             tx @(add-game new-game
+                           (:db/id arena-config)
+                           game-arena)
              game-record (get-game game-id)]
 
          (assoc context :response (assoc response
                                          :status 201
                                          :body game-record)))))))
-
-#_(def ^:swagger-spec update-game-spec
-  {"/api/v1/games/{game-id}"
-   {:put {:description "Updates and returns a game"
-           :tags ["game"]
-           :operationId "update-game"
-           :parameters [game-id-path-param
-                        game-body-params]
-           :responses {:200 {:description "update-game response"}}}}})
 
 (def ^:swagger-spec delete-game-spec
   {"/api/v1/games/{game-id}"
@@ -205,12 +206,12 @@
 
 (def ^:swagger-spec join-game-spec
   {"/api/v1/games/{game-id}/join"
-   {:post {:description "Attaches the requesting user to an open game"
-           :tags ["game"]
-           :operationId "join-game"
-           :parameters [game-id-path-param
-                        join-game-body-params]
-           :responses {:200 {:description "join-game response"}}}}})
+   {:put {:description "Attaches the requesting user to an open game"
+          :tags ["game"]
+          :operationId "join-game"
+          :parameters [game-id-path-param
+                       join-game-body-params]
+          :responses {:200 {:description "join-game response"}}}}})
 
 (def join-game
   (interceptor/before
@@ -243,3 +244,42 @@
          (assoc context :response (assoc response
                                          :status 200
                                          :body (get-game-by-id game-id))))))))
+
+(def ^:swagger-spec start-game-spec
+  {"/api/v1/games/{game-id}/start"
+   {:put {:description "Starts the game"
+          :tags ["game"]
+          :operationId "start-game"
+          :parameters [game-id-path-param]
+          :responses {:200 {:description "start-game response"}}}}})
+
+(defn- game-can-be-started?
+  "Checks to see if a game can transition to the :active state."
+  [{:keys [:game/status]}]
+  (contains? #{:pending-open
+               :pending-closed}
+             status))
+
+(def start-game
+  (interceptor/before
+   ::start-game
+   (fn [{:keys [request response] :as context}]
+     (let [game-id (get-in request [:path-params :game-id])
+           get-game-by-id (dao/get-fn :get-game-by-id context)
+           start-game (dao/get-fn :start-game context)
+           game (get-game-by-id game-id)]
+
+       (when-not game
+         (handler-error
+          (str "Game '" game-id  "' does not exist.")))
+
+       (when-not (game-can-be-started? game)
+         (handler-error
+          (str "Game '" game-id "' is not in a state that can be started")
+          {:current-state (:game/status game)}))
+
+       @(start-game game)
+
+       (assoc context :response (assoc response
+                                       :status 200
+                                       :body (get-game-by-id game-id)))))))

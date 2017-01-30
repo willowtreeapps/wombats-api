@@ -39,4 +39,5 @@
    :get-game-by-id (game/get-game-by-id conn)
    :add-game (game/add-game conn)
    :retract-game (game/retract-game conn)
-   :add-player-to-game (game/add-player-to-game conn)})
+   :add-player-to-game (game/add-player-to-game conn)
+   :start-game (game/start-game conn)})

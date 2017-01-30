@@ -64,7 +64,9 @@
           {:get game/get-game-by-id
            :delete game/delete-game}
           ["/join"
-           {:post game/join-game}]]]
+           {:put game/join-game}]
+          ["/start"
+           {:put game/start-game}]]]
 
         ["/auth"
          ["/github"
