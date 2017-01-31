@@ -44,11 +44,9 @@
   "Returns a seq of channels that are responsible for fetching user code"
   [players]
   (map (fn [[_ {:keys [player wombat user]}]]
-         (let [url (str "https://api.github.com/repos"
-                        (:wombat/url wombat))
+         (let [url (str "https://api.github.com/repos" (:wombat/url wombat))
                auth-headers {:headers {"Accept" "application/json"
-                                       "Authorization" (str "token "
-                                                            (:user/access-token user))}}
+                                       "Authorization" (str "token " (:user/access-token user))}}
                ch (async/chan 1)]
            (async/go
              (let [resp @(http/get url auth-headers)]
@@ -60,10 +58,11 @@
 (defn- parse-bot-channels
   "If the network request succeeded, attaches a users code to game-state"
   [players responses]
-  (doall (map (fn [{:keys [player-eid resp]}]
-                (if (= 200 (:status resp))
-                  (assoc-in players [player-eid :code] (:body resp))
-                  players)) responses)))
+  (reduce (fn [player-acc {:keys [player-eid resp]}]
+            (when (= 200 (:status resp))
+              (assoc-in player-acc [player-eid :code] (:body resp))))
+          players
+          responses))
 
 (defn- source-user-code
   "Kicks off the code source process"

@@ -19,8 +19,8 @@
       current-game-state
       (-> current-game-state
           (i/initialize-frame)
+          (p/source-user-decisions)
           (p/process-user-decisions)
-          (p/process-turn-resolution)
           (f/finalize-frame)
           (recur)))))
 
