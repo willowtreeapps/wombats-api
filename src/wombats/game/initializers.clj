@@ -15,7 +15,7 @@
       (fn [new-arena [_ {:keys [player stats]}]]
         (let [formatted-player (-> (:wombat a-utils/arena-items)
                                    (a-utils/ensure-uuid)
-                                   (merge {:eid (:db/id player)
+                                   (merge {:player-eid (:db/id player)
                                            :color (:player/color player)
                                            :hp (:stats/hp stats)}))]
           (a-utils/sprinkle new-arena formatted-player)))
@@ -43,14 +43,14 @@
 (defn- get-bot-channels
   "Returns a seq of channels that are responsible for fetching user code"
   [players]
-  (map (fn [[_ {:keys [player wombat user]}]]
+  (map (fn [[player-eid {:keys [wombat user]}]]
          (let [url (str "https://api.github.com/repos" (:wombat/url wombat))
                auth-headers {:headers {"Accept" "application/json"
                                        "Authorization" (str "token " (:user/access-token user))}}
                ch (async/chan 1)]
            (async/go
              (let [resp @(http/get url auth-headers)]
-               (async/>! ch {:player-eid (:db/id player)
+               (async/>! ch {:player-eid player-eid
                              :resp resp})))
            ch))
        players))

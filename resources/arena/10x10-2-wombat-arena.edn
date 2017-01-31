@@ -1,0 +1,312 @@
+[[{:contents
+   {:type :wood-barrier, :uuid "70ddedb2-d75c-45cb-a543-9deabf189aaf"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "163afd50-c8b6-4416-aca9-620be6ad58c9"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "b92df0f6-6424-43b6-ba34-0ca707bf529b"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "7d2d6b34-eeb5-47a8-a195-124f641965c1"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "e5726984-f658-4727-8bf8-4dbf5ef25d02"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "6e38197f-18f1-418d-85b5-3b22233b61c0"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "3a099d3e-1449-43b2-8346-6a9b6a5ae001"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "61584880-de6c-4950-8978-4c72fc3d2b52"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "c07f4622-08de-4433-a8a9-82fa041f7aed"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "0c97110b-3a9f-4901-9adb-7d3b553f56fd"},
+   :meta []}]
+ [{:contents
+   {:type :wood-barrier, :uuid "15f439f8-43ca-4034-b705-38d71c96aa13"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "c6d5dfd4-c6b2-45fc-88e5-9d58aad0ccc5"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "ccfaf0bb-c7c4-4bbf-b494-1bf1b3f90227"},
+   :meta []}
+  {:contents
+   {:type :poison, :uuid "fe23fbe9-c3e7-4b3b-abdb-d073ef32f5f6"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "02813fe7-9553-4572-a19d-03f5d6b459fc"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "78e212c9-0d6d-451b-8c7f-61f445bcb2a1"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "8053aa6f-2329-471c-9c76-0c2f59c953a7"},
+   :meta []}
+  {:contents
+   {:type :poison, :uuid "247228df-8bcc-495d-ade7-529bff1c862f"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "29c111e1-47a2-435e-ac30-7a216e496310"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "01f112c6-adc3-4c70-863f-0c6118446782"},
+   :meta []}]
+ [{:contents
+   {:type :wood-barrier, :uuid "90283f42-06ed-4d4f-abd8-9c74deb86966"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "c6d5dfd4-c6b2-45fc-88e5-9d58aad0ccc5"},
+   :meta []}
+  {:contents
+   {:type :zakano, :uuid "9e30086c-e3b3-4bc4-8131-8d133146ab2e"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "8dacc9ae-c57c-4d52-b7b0-ba9cf577d5ec"},
+   :meta []}
+  {:contents
+   {:type :poison, :uuid "a7e93b59-c62c-4d41-acb5-9ad6670f8411"},
+   :meta []}
+  {:contents
+   {:type :poison, :uuid "ac92446a-48e7-41cd-aebf-f9d2bf941812"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "8053aa6f-2329-471c-9c76-0c2f59c953a7"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "4b10fee4-4aca-47ce-89f9-8ec03160cda3"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "29c111e1-47a2-435e-ac30-7a216e496310"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "38c63fa4-61e1-4f85-9029-f1db4f22da6f"},
+   :meta []}]
+ [{:contents
+   {:type :wood-barrier, :uuid "aab64f02-3f9a-4f0b-80c2-9177045f5f8b"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "c6d5dfd4-c6b2-45fc-88e5-9d58aad0ccc5"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "ccfaf0bb-c7c4-4bbf-b494-1bf1b3f90227"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "8dacc9ae-c57c-4d52-b7b0-ba9cf577d5ec"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "02813fe7-9553-4572-a19d-03f5d6b459fc"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "78e212c9-0d6d-451b-8c7f-61f445bcb2a1"},
+   :meta []}
+  {:contents
+   {:type :zakano, :uuid "cf252c83-e2ae-4234-ae3e-aee9e25fe2ff"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "4b10fee4-4aca-47ce-89f9-8ec03160cda3"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "29c111e1-47a2-435e-ac30-7a216e496310"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "b953a4d5-31ca-42b0-9307-40e1aa794dc8"},
+   :meta []}]
+ [{:contents
+   {:type :wood-barrier, :uuid "78a07f1f-3c46-44e2-bf5e-921d3f2f63df"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "c6d5dfd4-c6b2-45fc-88e5-9d58aad0ccc5"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "ccfaf0bb-c7c4-4bbf-b494-1bf1b3f90227"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "8dacc9ae-c57c-4d52-b7b0-ba9cf577d5ec"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "02813fe7-9553-4572-a19d-03f5d6b459fc"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "78e212c9-0d6d-451b-8c7f-61f445bcb2a1"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "8053aa6f-2329-471c-9c76-0c2f59c953a7"},
+   :meta []}
+  {:contents
+   {:type :poison, :uuid "6527008a-2862-40b5-a90d-b1bc9db2eb13"},
+   :meta []}
+  {:contents
+   {:type :zakano, :uuid "1f4c847d-dfb7-45ef-a430-611cb095e9aa"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "445e212b-439e-4403-9cc2-749c28102350"},
+   :meta []}]
+ [{:contents
+   {:type :wood-barrier, :uuid "bb8ce029-ded6-469f-b5d2-d96a72785d33"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "c6d5dfd4-c6b2-45fc-88e5-9d58aad0ccc5"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "ccfaf0bb-c7c4-4bbf-b494-1bf1b3f90227"},
+   :meta []}
+  {:contents
+   {:type :poison, :uuid "fe2408c1-10b1-410f-87e6-e4afdf64c5c5"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "02813fe7-9553-4572-a19d-03f5d6b459fc"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "78e212c9-0d6d-451b-8c7f-61f445bcb2a1"},
+   :meta []}
+  {:contents
+   {:type :food, :uuid "065aaaf2-c3b9-4934-bf24-4d8adb0362fb"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "4b10fee4-4aca-47ce-89f9-8ec03160cda3"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "29c111e1-47a2-435e-ac30-7a216e496310"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "1daaa14e-372e-4d07-a46a-ec759849f4b0"},
+   :meta []}]
+ [{:contents
+   {:type :wood-barrier, :uuid "a09a1f20-655a-42c2-b314-3ea0dd746247"},
+   :meta []}
+  {:contents
+   {:type :zakano, :uuid "a6e6196d-8fc8-4ebf-b235-510f9e579376"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "ccfaf0bb-c7c4-4bbf-b494-1bf1b3f90227"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "8dacc9ae-c57c-4d52-b7b0-ba9cf577d5ec"},
+   :meta []}
+  {:contents
+   {:type :poison, :uuid "7903594d-3037-4840-8e2d-180f8091fd92"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "78e212c9-0d6d-451b-8c7f-61f445bcb2a1"},
+   :meta []}
+  {:contents
+
+   {:type :food, :uuid "91b40d78-d461-4d0d-b65f-34104aa28042"},
+   :meta []}
+  {:contents
+   {:type :food, :uuid "45f36560-c918-4290-94f7-ce1639a851a2"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "29c111e1-47a2-435e-ac30-7a216e496310"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "d9ad5913-9058-4711-b32f-91776bc2af80"},
+   :meta []}]
+ [{:contents
+   {:type :wood-barrier, :uuid "a72d0e0c-25d6-453b-8ba0-626d8836daa1"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "c6d5dfd4-c6b2-45fc-88e5-9d58aad0ccc5"},
+   :meta []}
+  {:contents
+   {:type :food, :uuid "61c954b8-3a8d-4931-ac99-a0da55270dae"},
+   :meta []}
+  {:contents
+   {:type :poison, :uuid "ffb49b55-6665-4e76-9371-130352f16004"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "02813fe7-9553-4572-a19d-03f5d6b459fc"},
+   :meta []}
+  {:contents
+   {:type :food, :uuid "7406c78b-46ad-4713-bf25-d34757f409e4"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "8053aa6f-2329-471c-9c76-0c2f59c953a7"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "4b10fee4-4aca-47ce-89f9-8ec03160cda3"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "29c111e1-47a2-435e-ac30-7a216e496310"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "1ec767e1-835f-4944-86fd-7267f80fa4b0"},
+   :meta []}]
+ [{:contents
+   {:type :wood-barrier, :uuid "66fe637f-8481-483d-896b-0f81d7055602"},
+   :meta []}
+  {:contents
+   {:type :food, :uuid "4cc65332-8b7e-4863-bff4-bc057252cb4e"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "ccfaf0bb-c7c4-4bbf-b494-1bf1b3f90227"},
+   :meta []}
+  {:contents
+   {:type :wombat,
+    :eid nil,
+    :color "#0d0000",
+    :hp 100,
+    :uuid "10ca7ef0-67f1-4c2b-ac5b-7714203b55aa",
+    :player-eid 17592186046374},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "02813fe7-9553-4572-a19d-03f5d6b459fc"},
+   :meta []}
+  {:contents
+   {:type :food, :uuid "00ac8d78-21ad-4d4b-b1ff-21dacf3ec46e"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "8053aa6f-2329-471c-9c76-0c2f59c953a7"},
+   :meta []}
+  {:contents
+   {:type :wombat,
+    :eid nil,
+    :color "#000000",
+    :hp 100,
+    :uuid "70abef16-cc56-4eca-a3b2-6b489ebcc8ce",
+    :player-eid 17592186046310},
+   :meta []}
+  {:contents
+   {:type :food, :uuid "f498f9f2-be62-4b7c-8548-06a8fd482679"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "f7fd3b31-2aad-43c2-a69e-281cc8e58763"},
+   :meta []}]
+ [{:contents
+   {:type :wood-barrier, :uuid "1e669435-31be-4b38-8ff1-34f5a1f99488"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "10fedf11-6c04-44b0-adec-d1f997a91a97"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "d0381979-9c3e-40fd-ad02-35d66feaeab3"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "76a20f4c-69b7-4aaf-ab59-e74dcfa703d2"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "bd07ea63-21a7-4a9a-b2a8-aaf0bbaf3641"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "ce59fa25-012b-451b-8075-0530021db912"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "f7733d18-5938-4761-80bf-16ddc0ebb216"},
+   :meta []}
+  {:contents
+   {:type
+    :wood-barrier, :uuid "380029c3-325b-461a-b8c8-817c7973e399"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "89b19522-3832-4d3a-b30d-bbc8913dab19"},
+   :meta []}
+  {:contents
+   {:type :wood-barrier, :uuid "db452fce-8e8f-4344-89b0-1c55cff5db04"},
+   :meta []}]]

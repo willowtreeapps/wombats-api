@@ -46,7 +46,19 @@
 
 (defn- print-cell
   [cell]
-  (print (get-in cell [:contents :type])))
+  (let [display-values {:wood-barrier "w"
+                        :steel-barrier "s"
+                        :wombat "W"
+                        :zakano "z"
+                        :poison "p"
+                        :food "f"
+                        :open "o"
+                        :fog "?"}]
+    (print (format
+            " %s "
+            (-> cell
+                (get-in [:contents :type])
+                (display-values))))))
 
 (defn- print-row
   [row]
@@ -55,12 +67,15 @@
 
 (defn print-arena
   "Pretty prints an arena"
-  [arena {:keys [:arena/height
-                 :arena/width] :as arena-config}]
+  [arena]
 
-  (println "\n--------------------------------")
-  (doall (map print-row arena))
-  (println "\n\n--------------------------------"))
+  (let [[x y] (get-arena-dimensions arena)]
+
+    (println "\n--------------------------------")
+
+    (print (str " " (clojure.string/join "  " (range 0 x))))
+    (doall (map print-row arena))
+    (println "\n\n--------------------------------")))
 
 ;; Modifiers. Probably belong somewhere else
 

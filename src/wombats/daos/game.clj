@@ -222,7 +222,10 @@
                                   :stats stats
                                   :user user
                                   :wombat wombat
-                                  :code nil}) players)]
+                                  :code nil
+                                  :command nil
+                                  :error nil
+                                  :saved-state {}}) players)]
     (reduce #(assoc %1 (get-in %2 [:player :db/id]) %2)
             {}
             formatted-players)))
