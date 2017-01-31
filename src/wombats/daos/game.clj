@@ -1,6 +1,7 @@
 (ns wombats.daos.game
   (:require [datomic.api :as d]
             [taoensso.nippy :as nippy]
+            [wombats.game.core :refer [initialize-game]]
             [wombats.daos.helpers :refer [db-requirement-error
                                           get-entity-by-prop
                                           get-entity-id
@@ -198,9 +199,10 @@
                        :stats/player player-tmpid
                        :stats/game game-eid
                        :stats/frame-number 0
-                       :stats/score 0}
+                       :stats/score 0
+                       :stats/hp 100}
             stats-link-to-game-trx {:db/id game-eid
-                                   :game/stats stats-tmpid}
+                                    :game/stats stats-tmpid}
             closed-trx {:db/id game-eid
                         :game/status :pending-closed}
             trx (cond-> []
@@ -212,10 +214,65 @@
 
         (d/transact-async conn trx)))))
 
+(defn- format-player-map
+  "Formats the player map attached to game-state"
+  [players]
+  (let [formatted-players (map (fn [[player stats user wombat]]
+                                 {:player player
+                                  :stats stats
+                                  :user user
+                                  :wombat wombat
+                                  :code nil
+                                  :command nil
+                                  :error nil
+                                  :saved-state {}}) players)]
+    (reduce #(assoc %1 (get-in %2 [:player :db/id]) %2)
+            {}
+            formatted-players)))
+
+(defn- get-game-state
+  [conn game-id]
+  (let [[frame
+         arena] (first
+                 (d/q '[:find (pull ?frame [*])
+                              (pull ?arena [*])
+                        :in $ ?game-id
+                        :where [?game :game/id ?game-id]
+                               [?game :game/frame ?frame]
+                               [?game :game/arena ?arena]]
+                      (d/db conn)
+                      game-id))
+        players (d/q '[:find (pull ?players [*])
+                             (pull ?stats [*])
+                             (pull ?user [:db/id
+                                          :user/github-username
+                                          :user/access-token])
+                             (pull ?wombat [*])
+                       :in $ ?game-id
+                       :where [?game :game/id ?game-id]
+                              [?game :game/players ?players]
+                              [?game :game/stats ?stats]
+                              [?players :player/user ?user]
+                              [?players :player/wombat ?wombat]]
+                     (d/db conn)
+                     game-id)]
+
+    {:frame (update frame :frame/arena nippy/thaw)
+     :arena-config arena
+     :players (format-player-map players)}))
+
 (defn start-game
   "Transitions the game status to active"
   [conn]
-  (fn [{:keys [:db/id]}]
+  (fn [game]
+    (let [{game-id :game/id
+           game-eid :db/id} game
+          game-state (get-game-state conn game-id)]
 
-    (d/transact-async conn [{:db/id id
-                             :game/status :active}])))
+      (initialize-game game-state)
+
+      (db-requirement-error
+       (str "Color '" "' is already in use"))
+
+      (d/transact-async conn [{:db/id game-eid
+                               :game/status :active}]))))

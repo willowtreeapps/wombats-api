@@ -365,7 +365,7 @@
   :db/ident       :stats/player
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
-  :db/doc         "A stats player"}
+  :db/doc         "The player associated with the stats"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :stats/game
@@ -383,4 +383,10 @@
   :db/ident       :stats/score
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Overall score"}]
+  :db/doc         "Overall score"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/hp
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Players current hp"}]

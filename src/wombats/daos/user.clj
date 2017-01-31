@@ -77,7 +77,7 @@
                        :in $ ?user-id
                        :where [?user :user/id ?user-id]
                               [?user :user/wombats ?wombat]
-                              [?wombats :wombat/name]]
+                              [?wombats :wombat/owner ?user]]
                      (d/db conn)
                      user-id)))))
 

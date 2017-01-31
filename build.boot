@@ -41,6 +41,9 @@
                             ;; Testing
                             [adzerk/boot-test "1.1.2" :scope "test"]
 
+                            ;; Code Analysis
+                            [tolitius/boot-check "0.1.4" :scope "test"]
+
                             ;; Logging
                             [org.slf4j/jul-to-slf4j     "1.7.21"]
                             [org.slf4j/jcl-over-slf4j   "1.7.21"]
@@ -61,6 +64,9 @@
 
 ;; Load datomic Move this task into its own file
 (require '[datomic.api :as d])
+
+;; Load code analysis tasks
+(require '[tolitius.boot-check :as check])
 
 (deftask dev []
   (set-env! :source-paths #(conj % "dev/src"))
@@ -101,3 +107,9 @@
                       (get-env :project)
                       (get-env :version)))
    (target)))
+
+(deftask check-sources
+  "Analyzes source code"
+  []
+  (comp
+   (check/with-eastwood)))
