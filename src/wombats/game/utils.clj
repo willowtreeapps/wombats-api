@@ -1,6 +1,13 @@
 (ns wombats.game.utils
   (:require [wombats.arena.utils :as au]))
 
+(defonce orientations #{:n :e :s :w})
+
+(defn rand-orientation
+  "Returns a random orientation"
+  []
+  (rand-nth orientations))
+
 (defn- is-player?
   ""
   ([value]

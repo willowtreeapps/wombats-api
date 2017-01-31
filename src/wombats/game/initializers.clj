@@ -1,7 +1,8 @@
 (ns wombats.game.initializers
   (:require [clojure.core.async :as async]
             [org.httpkit.client :as http]
-            [wombats.arena.utils :as a-utils]))
+            [wombats.arena.utils :as a-utils]
+            [wombats.game.utils :as g-utils]))
 
 (defn- add-players-to-game
   "Adds players to random cells in the arena"
@@ -17,7 +18,8 @@
                                    (a-utils/ensure-uuid)
                                    (merge {:player-eid (:db/id player)
                                            :color (:player/color player)
-                                           :hp (:stats/hp stats)}))]
+                                           :hp (:stats/hp stats)
+                                           :orientation (g-utils/rand-orientation)}))]
           (a-utils/sprinkle new-arena formatted-player)))
       arena
       players))))

@@ -5,10 +5,7 @@
 (def arena-items {:open {:type :open}
                   :wood-barrier {:type :wood-barrier}
                   :steel-barrier {:type :steel-barrier}
-                  :wombat {:type :wombat
-                           :eid nil
-                           :color nil
-                           :hp nil}
+                  :wombat {:type :wombat}
                   :zakano {:type :zakano}
                   :smoke {:type :smoke}
                   :fog {:type :fog}

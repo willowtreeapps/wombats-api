@@ -1,5 +1,6 @@
 (ns wombats.arena.core
-  (:require [wombats.arena.utils :as a-utils]))
+  (:require [wombats.arena.utils :as a-utils]
+            [wombats.game.utils :as g-utils]))
 
 ;; Cell structure
 ;;
@@ -55,4 +56,5 @@
      (:arena/perimeter arena-config) (add-perimeter)
      true (add-to-arena (:food a-utils/arena-items) food)
      true (add-to-arena (:poison a-utils/arena-items) poison)
-     true (add-to-arena (:zakano a-utils/arena-items) zakano))))
+     true (add-to-arena (merge (:zakano a-utils/arena-items)
+                               {:orientation (g-utils/rand-orientation)}) zakano))))
