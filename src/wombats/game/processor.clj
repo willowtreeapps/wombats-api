@@ -116,8 +116,19 @@
      game-state
      lambda-responses)))
 
+(defn- process-command
+  "process a decision makers command"
+  [game-state {decision-maker-uuid :uuid
+               decision-maker-type :type}]
+
+  ;; TODO Wire up to move logic
+  (let [decision-maker-state (get-in game-state [(if (= decision-maker-type :wombat)
+                                                   :players
+                                                   :zakano)
+                                                 decision-maker-uuid
+                                                 :state])])
+  game-state)
+
 (defn process-decisions
   [game-state]
-  ;; TODO #151
-
-  game-state)
+  (reduce process-command game-state (:initiative-order game-state)))

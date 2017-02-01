@@ -31,4 +31,4 @@
       (i/initialize-game)
       (game-loop)
       (f/finalize-game)
-      (clojure.pprint/pprint)))
+      #_(clojure.pprint/pprint)))
