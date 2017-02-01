@@ -30,7 +30,9 @@
       (vec (subvec padded-vec stop-one (inc calculated-stop))))))
 
 (defn get-partial-arena
-  [{:keys [frame arena-config] :as game-state} coords]
+  [{:keys [frame arena-config] :as game-state}
+   coords
+   decision-maker-type]
   (let [arena (:frame/arena frame)
         {x :arena/width
          y :arena/height

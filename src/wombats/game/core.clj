@@ -19,8 +19,8 @@
       current-game-state
       (-> current-game-state
           (i/initialize-frame)
-          (p/source-user-decisions)
-          (p/process-user-decisions)
+          (p/source-decisions)
+          (p/process-decisions)
           (f/finalize-frame)
           (recur)))))
 
@@ -31,4 +31,4 @@
       (i/initialize-game)
       (game-loop)
       (f/finalize-game)
-      #_(clojure.pprint/pprint)))
+      (clojure.pprint/pprint)))

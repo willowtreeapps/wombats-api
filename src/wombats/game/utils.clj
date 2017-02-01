@@ -1,12 +1,32 @@
 (ns wombats.game.utils
   (:require [wombats.arena.utils :as au]))
 
+(defonce decision-maker-state {:code nil
+                               :command nil
+                               :error nil
+                               :saved-state {}})
+
 (defonce orientations #{:n :e :s :w})
 
 (defn rand-orientation
   "Returns a random orientation"
   []
-  (rand-nth orientations))
+  (rand-nth (seq orientations)))
+
+(defn get-item-type
+  "Returns the type of an arena item"
+  [item]
+  (get-in item [:contents :type]))
+
+(defn get-uuids
+  "Gets all the uuids in a given arena that match a specified :type"
+  [arena item-type]
+  (reduce (fn [uuids item]
+            (if (= (get-in item [:contents :type])
+                   item-type)
+              (conj uuids (get-in item [:contents :uuid]))
+              uuids))
+          [] (flatten arena)))
 
 (defn- is-player?
   ""
@@ -15,13 +35,13 @@
   ([value player-eid]
    (= (get-in value [:contents :player-eid]) player-eid)))
 
-(defn get-player-coords
-  [arena player-eid]
-
+(defn get-item-coords
+  "Given an arena and uuid, lookup position of uuid"
+  [arena uuid]
   (first
    (for [[y row] (map-indexed vector arena)
          [x val] (map-indexed vector row)
-         :when (is-player? val player-eid)]
+         :when (= (get-in val [:contents :uuid]) uuid)]
      [x y])))
 
 (defn- wrap-coords
