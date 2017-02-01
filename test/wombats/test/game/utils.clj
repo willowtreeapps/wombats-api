@@ -6,9 +6,10 @@
 (defonce test-10x10-2-wombat-arena
   (load-file "resources/arena/10x10-2-wombat-arena.edn"))
 
-(deftest get-player-coords
+(deftest get-item-coords
   (testing "Returns a players coords when they exist in the arena"
-    (is (= (g-utils/get-player-coords test-10x10-2-wombat-arena 17592186046374)
+    (is (= (g-utils/get-item-coords test-10x10-2-wombat-arena
+                                    "10ca7ef0-67f1-4c2b-ac5b-7714203b55aa")
            [3 8]))))
 
 (deftest adjust-coords
