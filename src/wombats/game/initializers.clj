@@ -1,7 +1,8 @@
 (ns wombats.game.initializers
   (:require [clojure.core.async :as async]
             [org.httpkit.client :as http]
-            [wombats.arena.utils :as a-utils]))
+            [wombats.arena.utils :as a-utils]
+            [wombats.game.utils :as g-utils]))
 
 (defn- add-players-to-game
   "Adds players to random cells in the arena"
@@ -12,35 +13,52 @@
    [:frame :frame/arena]
    (fn [arena]
      (reduce
-      (fn [new-arena [_ {:keys [player stats]}]]
+      (fn [new-arena [player-uuid {:keys [player stats]}]]
         (let [formatted-player (-> (:wombat a-utils/arena-items)
-                                   (a-utils/ensure-uuid)
-                                   (merge {:player-eid (:db/id player)
+                                   (merge {:uuid player-uuid
                                            :color (:player/color player)
-                                           :hp (:stats/hp stats)}))]
+                                           :hp (:stats/hp stats)
+                                           :orientation (g-utils/rand-orientation)}))]
           (a-utils/sprinkle new-arena formatted-player)))
       arena
       players))))
 
 (defn- update-initiative-order
   "Rotates the initiative order"
-  ([initiative-order]
-   (concat (take-last 1 initiative-order)
-           (drop-last 1 initiative-order)))
-  ([initiative-order players]
-   (->> players
-        (map (fn [[_ {:keys [player]}]]
-               (:db/id player)))
-        (shuffle))))
+  [initiative-order]
+  (concat (take-last 1 initiative-order)
+          (drop-last 1 initiative-order)))
+
+(defn- is-decision-maker?
+  [item]
+  (let [decision-makers #{:wombat :zakano}]
+    (contains? decision-makers (g-utils/get-item-type item))))
 
 (defn- set-initiative-order
   "Sets the initial initiative order"
-  [{:keys [players] :as game-state}]
-  (assoc game-state
-         :initiative-order
-         (update-initiative-order nil players)))
+  [{:keys [frame] :as game-state}]
+  (let [decision-makers (reduce
+                         (fn [order item]
+                           (if (is-decision-maker? item)
+                             (conj order (select-keys (:contents item) [:uuid :type]))
+                             order))
+                         [] (flatten (:frame/arena frame)))]
 
-(defn- get-bot-channels
+    (assoc game-state
+           :initiative-order
+           (shuffle decision-makers))))
+
+(defn- set-zakano-state
+  [game-state]
+  (reduce (fn [game-state-acc {:keys [uuid type]}]
+            (if (= :zakano type)
+              (assoc-in game-state-acc
+                        [:zakano uuid]
+                        {:state g-utils/decision-maker-state})
+              game-state-acc))
+          game-state (:initiative-order game-state)))
+
+(defn- get-player-channels
   "Returns a seq of channels that are responsible for fetching user code"
   [players]
   (map (fn [[player-eid {:keys [wombat user]}]]
@@ -55,28 +73,29 @@
            ch))
        players))
 
-(defn- parse-bot-channels
+(defn- parse-player-channels
   "If the network request succeeded, attaches a users code to game-state"
   [players responses]
   (reduce (fn [player-acc {:keys [player-eid resp]}]
             (when (= 200 (:status resp))
-              (assoc-in player-acc [player-eid :code] (:body resp))))
+              (assoc-in player-acc [player-eid :state :code] (:body resp))))
           players
           responses))
 
-(defn- source-user-code
+(defn- source-player-code
   "Kicks off the code source process"
   [{:keys [players] :as game-state}]
-  (let [bot-chans (get-bot-channels players)
+  (let [bot-chans (get-player-channels players)
         responses (async/<!! (async/map vector bot-chans))]
-    (update game-state :players parse-bot-channels responses)))
+    (update game-state :players parse-player-channels responses)))
 
 (defn initialize-game
   [game-state]
   (-> game-state
       (add-players-to-game)
       (set-initiative-order)
-      (source-user-code)))
+      (set-zakano-state)
+      (source-player-code)))
 
 (defn initialize-frame
   [game-state]

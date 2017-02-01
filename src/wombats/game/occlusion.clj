@@ -59,7 +59,7 @@
 
 (defn get-occluded-arena
   "Returns an arena copy with occluded arena cells"
-  [arena start-pos arena-config]
+  [arena start-pos arena-config decision-maker-type]
 
   (let [non-transparent-cells (get-non-transparent-set arena arena-config)
         perimeter (calculate-perimeter arena)

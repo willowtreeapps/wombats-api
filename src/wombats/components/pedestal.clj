@@ -16,7 +16,10 @@
     {:env env
      ::http/resource-path "/public"
      ::http/file-path "/public"
-     ::http/allowed-origins allowed-origins
+     ::http/allowed-origins (fn [origin]
+                              ;; TODO #177
+                              ;; allowed-origins
+                              true)
      ::http/routes api-routes
      ::http/port port
      ::http/type type

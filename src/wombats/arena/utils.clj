@@ -5,10 +5,7 @@
 (def arena-items {:open {:type :open}
                   :wood-barrier {:type :wood-barrier}
                   :steel-barrier {:type :steel-barrier}
-                  :wombat {:type :wombat
-                           :eid nil
-                           :color nil
-                           :hp nil}
+                  :wombat {:type :wombat}
                   :zakano {:type :zakano}
                   :smoke {:type :smoke}
                   :fog {:type :fog}
@@ -36,13 +33,15 @@
     (and (< x xdim)
          (< y ydim))))
 
-;; Random
-
 (defn ensure-uuid
   [{:keys [uuid] :as item}]
   (if uuid
     item
     (assoc item :uuid (str (java.util.UUID/randomUUID)))))
+
+(defn create-new-contents
+  [content-type]
+  (ensure-uuid (content-type arena-items)))
 
 (defn- print-cell
   [cell]
@@ -81,23 +80,23 @@
 
 (defn update-cell
   "Updates a cells contents and metadata"
-  [arena coords item]
-  (if (coords-inbounds? coords arena)
-    (assoc-in arena coords item)
+  [arena [x y] item]
+  (if (coords-inbounds? [x y] arena)
+    (assoc-in arena [y x] item)
     arena))
 
 (defn update-cell-contents
   "Update a cells contents"
-  [arena coords new-contents]
-  (if (coords-inbounds? coords arena)
-    (assoc-in arena (conj coords :contents) new-contents)
+  [arena [x y] new-contents]
+  (if (coords-inbounds? [x y] arena)
+    (assoc-in arena [y x :contents] new-contents)
     arena))
 
 (defn update-cell-metadata
   "Update a cells metadata"
-  [arena coords new-meta]
-  (if (coords-inbounds? coords arena)
-    (assoc-in arena (conj coords :meta) new-meta)
+  [arena [x y] new-meta]
+  (if (coords-inbounds? [x y] arena)
+    (assoc-in arena [y x :meta] new-meta)
     arena))
 
 (defn- generate-random-coords
