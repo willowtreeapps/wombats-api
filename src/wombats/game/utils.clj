@@ -6,12 +6,31 @@
                                :error nil
                                :saved-state {}})
 
-(defonce orientations #{:n :e :s :w})
+(defonce orientations [:n :e :s :w])
+
+(defn modify-orientation
+  [current-orientation modifier]
+  (let [current-idx (.indexOf orientations current-orientation)]
+    (if (not= current-idx -1)
+      (condp = modifier
+          :right (get orientations (mod (inc current-idx) 4))
+          :left (get orientations (mod (dec current-idx) 4))
+          :about-face (get orientations (mod (+ 2 current-idx) 4))
+          current-orientation)
+      current-orientation)))
 
 (defn rand-orientation
   "Returns a random orientation"
   []
   (rand-nth (seq orientations)))
+
+(defn get-item-at-coords
+  [[x y] arena]
+  (get-in arena [y x]))
+
+(defn get-content-at-coords
+  [coords arena]
+  (:contents (get-item-at-coords coords arena)))
 
 (defn get-item-type
   "Returns the type of an arena item"
@@ -28,12 +47,9 @@
               uuids))
           [] (flatten arena)))
 
-(defn- is-player?
-  ""
-  ([value]
-   (= (get-in value [:contents :type]) :wombat))
-  ([value player-eid]
-   (= (get-in value [:contents :player-eid]) player-eid)))
+(defn is-player?
+  [contents]
+  (= (:type contents) :wombat))
 
 (defn get-item-coords
   "Given an arena and uuid, lookup position of uuid"
@@ -43,6 +59,16 @@
          [x val] (map-indexed vector row)
          :when (= (get-in val [:contents :uuid]) uuid)]
      [x y])))
+
+(defn get-item-and-coords
+  "Given an arena and uuid, lookup position of uuid and return its contents"
+  [arena uuid]
+  (first
+   (for [[y row] (map-indexed vector arena)
+         [x val] (map-indexed vector row)
+         :when (= (get-in val [:contents :uuid]) uuid)]
+     {:coords [x y]
+      :item val})))
 
 (defn- wrap-coords
   "Wraps out-of-bounds coordinates (zero-based) to opposite edge of m x n arena"

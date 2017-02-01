@@ -3,7 +3,10 @@
             [wombats.game.partial :refer [get-partial-arena]]
             [wombats.game.occlusion :refer [get-occluded-arena]]
             [wombats.game.utils :as gu]
-            [wombats.arena.utils :as au]))
+            [wombats.arena.utils :as au]
+            [wombats.game.decisions.turn :refer [turn]]
+            [wombats.game.decisions.move :refer [move]]
+            [wombats.game.decisions.shoot :refer [shoot]]))
 
 (defn- add-global-coords
   "Add the global coordinates of decision maker"
@@ -52,6 +55,11 @@
         custom-state (get-in game-state [decision-maker-lookup uuid :state :saved-state] {})]
     (assoc state :saved-state custom-state)))
 
+(defn- add-decision-maker
+  [state {:keys [frame] :as game-state} uuid]
+  (assoc state :decision-maker (gu/get-item-and-coords (:frame/arena frame)
+                                                       uuid)))
+
 (defn- calculate-decision-maker-state
   [{:keys [players zakano frame] :as game-state} uuid type]
   (let [arena (:frame/arena frame)]
@@ -66,7 +74,8 @@
   [player-state]
   ;; TODO #162
   (future {:saved-state {:updated true}
-           :command {:turn :right}}))
+           :command {:action :shoot
+                     :metadata {}}}))
 
 (defn- get-lamdba-channels
   "Kicks off the AWS Lambda process"
@@ -116,18 +125,42 @@
      game-state
      lambda-responses)))
 
+(defn- build-decision-maker-data
+  [game-state uuid]
+  (-> {}
+      (add-decision-maker game-state uuid)))
+
+(def ^:private command-map
+  {:turn turn
+   :move move
+   :shoot shoot})
+
+(defn- get-command
+  "Returns the request command handler or an identity function if none exist"
+  [command]
+  (get command-map command (fn [game-state _ _]
+                             game-state)))
+
 (defn- process-command
-  "process a decision makers command"
+  "Process a decision makers command"
   [game-state {decision-maker-uuid :uuid
                decision-maker-type :type}]
 
-  ;; TODO Wire up to move logic
-  (let [decision-maker-state (get-in game-state [(if (= decision-maker-type :wombat)
-                                                   :players
-                                                   :zakano)
-                                                 decision-maker-uuid
-                                                 :state])])
-  game-state)
+  (let [{{action :action
+          metadata :metadata}
+         :command} (get-in game-state
+                           [(if (= decision-maker-type :wombat)
+                              :players
+                              :zakano)
+                            decision-maker-uuid
+                            :state]
+                           {})
+        cmd-function (get-command action)]
+
+    (cmd-function game-state
+                  (or metadata {})
+                  (build-decision-maker-data game-state
+                                             decision-maker-uuid))))
 
 (defn process-decisions
   [game-state]

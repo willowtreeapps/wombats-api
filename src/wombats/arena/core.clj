@@ -20,7 +20,9 @@
   [{:keys [config arena] :as arena-map}]
   (let [{dimx :arena/width
          dimy :arena/height} config
-        wall (:wood-barrier a-utils/arena-items)
+        wall (merge (:wood-barrier a-utils/arena-items)
+                    ;; TODO Pull from config
+                    {:hp 30})
         xform (map-indexed (fn [y row]
                              (if (#{0 (dec dimy)} y)
                                (vec (map #(assoc % :contents (a-utils/ensure-uuid wall)) row))
@@ -57,4 +59,6 @@
      true (add-to-arena (:food a-utils/arena-items) food)
      true (add-to-arena (:poison a-utils/arena-items) poison)
      true (add-to-arena (merge (:zakano a-utils/arena-items)
-                               {:orientation (g-utils/rand-orientation)}) zakano))))
+                               {:orientation (g-utils/rand-orientation)
+                                ;; TODO Add to arena config
+                                :hp 50}) zakano))))
