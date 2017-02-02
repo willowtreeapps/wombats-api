@@ -12,6 +12,9 @@
                             ;; JSON Parsing
                             [cheshire "5.7.0"]
 
+                            ;; Base64 Decoding
+                            [base64-clj "0.1.1"]
+
                             ;; Working with time
                             [clj-time "0.13.0"]
 
@@ -26,6 +29,9 @@
                             [com.datomic/datomic-pro "0.9.5554"]
                             [com.amazonaws/aws-java-sdk-dynamodb "1.11.6"]
                             [io.rkn/conformity "0.4.0"]
+
+                            ;; Amazon SDK
+                            [com.amazonaws/aws-java-sdk "1.11.6"]
 
                             ;; HTTP Server
                             [io.pedestal/pedestal.service "0.5.2"]

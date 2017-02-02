@@ -1,12 +1,19 @@
 (ns wombats.game.processor
-  (:require [clojure.core.async :as async]
+  (:require [cheshire.core :as cheshire]
+            [clojure.core.async :as async]
             [wombats.game.partial :refer [get-partial-arena]]
             [wombats.game.occlusion :refer [get-occluded-arena]]
             [wombats.game.utils :as gu]
             [wombats.arena.utils :as au]
             [wombats.game.decisions.turn :refer [turn]]
             [wombats.game.decisions.move :refer [move]]
-            [wombats.game.decisions.shoot :refer [shoot]]))
+            [wombats.game.decisions.shoot :refer [shoot]])
+
+  (:import [com.amazonaws.auth
+            BasicAWSCredentials]
+           [com.amazonaws.services.lambda
+            AWSLambdaClient
+            model.InvokeRequest]))
 
 (defn- add-global-coords
   "Add the global coordinates of decision maker"
@@ -70,23 +77,53 @@
         (add-occlusion-view game-state type)
         (add-custom-state game-state uuid type))))
 
+(defn- lambda-client
+  [{:keys [access-key-id secret-key]}]
+  (let [credentials (new BasicAWSCredentials access-key-id secret-key)]
+    (new AWSLambdaClient credentials)))
+
+(defn- lambda-request-body
+  [player-state bot-code]
+  (cheshire/generate-string {:code (:code bot-code)
+                             :state player-state}))
+
+(defn- lambda-invoke-request
+  [player-state bot-code]
+  (let [request (new InvokeRequest)]
+    (.setFunctionName request "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure")
+    (.setPayload request (lambda-request-body player-state bot-code))
+    request))
+
 (defn- lambda-request
-  [player-state]
-  ;; TODO #162
-  (future {:saved-state {:updated true}
-           :command {:action :shoot
-                     :metadata {}}}))
+  [player-state bot-code aws-credentials]
+  (let [client (lambda-client aws-credentials)
+        request (lambda-invoke-request player-state bot-code)
+        result (.invoke client request)
+        response (.getPayload result)
+        response-string (new String (.array response) "UTF-8")
+        response-parsed (cheshire/parse-string response-string true)]
+
+    (future response-parsed)))
+
+(defn- get-decision-maker-code
+  [game-state uuid type]
+  (let [key-name (if (= type :wombat) :players type)]
+    (get-in game-state [key-name uuid :state :code])))
 
 (defn- get-lamdba-channels
   "Kicks off the AWS Lambda process"
-  [{:keys [initiative-order] :as game-state}]
+  [{:keys [initiative-order] :as game-state} aws-credentials]
   (map (fn [{:keys [uuid type]}]
          (let [ch (async/chan 1)]
            (async/go
              (try
                (let [lambda-resp @(lambda-request (calculate-decision-maker-state game-state
                                                                                   uuid
-                                                                                  type))]
+                                                                                  type)
+                                                  (get-decision-maker-code game-state
+                                                                           uuid
+                                                                           type)
+                                                  aws-credentials)]
                  (async/>! ch {:uuid uuid
                                :response lambda-resp
                                :error nil
@@ -101,8 +138,8 @@
 
 (defn source-decisions
   "Source decisions by running their code through AWS Lambda"
-  [game-state]
-  (let [lambda-chans (get-lamdba-channels game-state)
+  [game-state aws-credentials]
+  (let [lambda-chans (get-lamdba-channels game-state aws-credentials)
         lambda-responses (async/<!! (async/map vector lambda-chans))]
     (reduce
      (fn [game-state-acc {:keys [uuid response error type]}]

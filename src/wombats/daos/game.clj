@@ -268,13 +268,13 @@
 
 (defn start-game
   "Transitions the game status to active"
-  [conn]
+  [conn aws-credentials]
   (fn [game]
     (let [{game-id :game/id
            game-eid :db/id} game
           game-state (get-game-state conn game-id)]
 
-      (initialize-game game-state)
+      (initialize-game game-state aws-credentials)
 
       (db-requirement-error
        (str "Color '" "' is already in use"))

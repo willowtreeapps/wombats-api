@@ -1,5 +1,7 @@
 (ns wombats.game.initializers
-  (:require [clojure.core.async :as async]
+  (:require [base64-clj.core :as b64]
+            [cheshire.core :as cheshire]
+            [clojure.core.async :as async]
             [org.httpkit.client :as http]
             [wombats.arena.utils :as a-utils]
             [wombats.game.utils :as g-utils]))
@@ -74,12 +76,24 @@
            ch))
        players))
 
+(defn- decode-bot
+  [encoded]
+  (let [base64-string (clojure.string/replace encoded #"\n" "")]
+    (b64/decode base64-string "UTF-8")))
+
+(defn- parse-user-code
+  [resp]
+  (let [body (:body resp)
+        parsed (cheshire/parse-string body true)]
+    {:code (decode-bot (:content parsed))
+     :path (:path parsed)}))
+
 (defn- parse-player-channels
   "If the network request succeeded, attaches a users code to game-state"
   [players responses]
   (reduce (fn [player-acc {:keys [player-eid resp]}]
             (when (= 200 (:status resp))
-              (assoc-in player-acc [player-eid :state :code] (:body resp))))
+              (assoc-in player-acc [player-eid :state :code] (parse-user-code resp))))
           players
           responses))
 
