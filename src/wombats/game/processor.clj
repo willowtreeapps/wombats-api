@@ -87,9 +87,13 @@
   [player-state bot-code]
   (let [request (new InvokeRequest)]
     (.setFunctionName request "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure")
-    (.setPayload request (cheshire/generate-string {:code (:code bot-code)
-                                                    :state player-state}))
+    (.setPayload request (lambda-request-body player-state bot-code))
     request))
+
+(defn- lambda-request-body
+  [player-state bot-code]
+  (cheshire/generate-string {:code (:code bot-code)
+                             :state player-state}))
 
 (defn- lambda-request
   [player-state aws-credentials bot-code]
@@ -100,7 +104,6 @@
         response-string (new String (.array response) "UTF-8")
         response-parsed (cheshire/parse-string response-string true)]
 
-    (prn response-parsed)
     (future response-parsed)))
 
 (defn- get-decision-maker-code
@@ -119,7 +122,6 @@
                bot-code (get-decision-maker-code game-state
                                                  uuid
                                                  type)]
-           
            (async/go
              (try
                (let [lambda-resp @(lambda-request player-state
