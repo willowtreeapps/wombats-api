@@ -392,16 +392,34 @@
   :db/doc         "Number of wombats destroyed"}
 
  {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wombats-hit
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wombats hit"}
+
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :stats/zakano-destroyed
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
   :db/doc         "Number of zakano destroyed"}
 
  {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/zakano-hit
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of zakano hit"}
+
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :stats/wood-barriers-destroyed
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
   :db/doc         "Number of wood-barriers destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wood-barriers-hit
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wood-barriers hit"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :stats/shots-fired

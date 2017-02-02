@@ -77,6 +77,34 @@
                    ;; TODO Apply damage & update score
                    player))
 
+      ;; ;; If the shooter hit something, update their stats
+      (and contains-hp? wombat-shooter?)
+      (update-in [:players (:uuid shooter) :stats]
+                 (fn [stats]
+                   (let [item-hit (:type cell-contents)]
+                     (cond-> stats
+                       ;; Always update hit counter
+                       true
+                       (update :stats/shots-hit inc)
+
+                       ;; Update wombat hit stats
+                       (= item-hit :wombat)
+                       (-> (update :stats/wombats-hit inc)
+                           ;; TODO Pull from config
+                           (update :stats/score + 3))
+
+                       ;; Update zakano hit stats
+                       (= item-hit :zakano)
+                       (-> (update :stats/zakano-hit inc)
+                           ;; TODO Pull from config
+                           (update :stats/score + 2))
+
+                       ;; Update wood-barrier hit stats
+                       (= item-hit :wood-barrier)
+                       (-> (update :stats/wood-barriers-hit inc)
+                           ;; TODO Pull from config
+                           (update :stats/score inc))))))
+
       ;; If the shooter was a player and they destroyed something, update their stats
       (and destroyed? wombat-shooter?)
       (update-in [:players (:uuid shooter) :stats]
@@ -135,10 +163,17 @@
                                              direction
                                              ;; TODO Add to config
                                              (or shot-distance 5))]
-    (:game-state
-     (reduce process-shot
-             {:game-state game-state
-              :shot-damage shot-damage
-              :should-progress? true
-              :shooter decision-maker-contents}
-             shoot-coords))))
+    (cond-> (:game-state
+             (reduce process-shot
+                     {:game-state game-state
+                      :shot-damage shot-damage
+                      :should-progress? true
+                      :shooter decision-maker-contents}
+                     shoot-coords))
+
+      ;; Update shooter stats if the shooter is a player
+      (= (:type decision-maker-contents) :wombat)
+      (update-in [:players (:uuid decision-maker-contents) :stats]
+                 (fn [stats]
+                   (-> stats
+                       (update :stats/shots-fired inc)))))))
