@@ -12,6 +12,9 @@
                             ;; JSON Parsing
                             [cheshire "5.7.0"]
 
+                            ;; Base64 Decoding
+                            [base64-clj "0.1.1"]
+
                             ;; Working with time
                             [clj-time "0.13.0"]
 

@@ -85,10 +85,11 @@
 
 (defn- lambda-invoke-request
   [player-state bot-code]
-  (-> (new InvokeRequest)
-      (.setFunctionName "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure")
-      (.setPayload (cheshire/generate-string {:code bot-code
-                                              :state player-state}))))
+  (let [request (new InvokeRequest)]
+    (.setFunctionName request "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure")
+    (.setPayload request (cheshire/generate-string {:code (:code bot-code)
+                                                    :state player-state}))
+    request))
 
 (defn- lambda-request
   [player-state aws-credentials bot-code]
@@ -96,19 +97,16 @@
         request (lambda-invoke-request player-state bot-code)
         result (.invoke client request)
         response (.getPayload result)
-        response-string (new String (.array response) "UTF-8")]
+        response-string (new String (.array response) "UTF-8")
+        response-parsed (cheshire/parse-string response-string true)]
 
-    (future (cheshire/parse-string response-string true))))
+    (prn response-parsed)
+    (future response-parsed)))
 
 (defn- get-decision-maker-code
   [game-state uuid type]
-  
-  (let [key-name (if (= type :wombat) :players type)
-        code (get-in game-state [key-name uuid :state :code])]
-    (when (not (nil? code))
-      ;; Remove all instances of \n
-      (let [with-new-lines (get (cheshire/parse-string code true) :content)]
-        (clojure.string/replace with-new-lines "\n" "")))))
+  (let [key-name (if (= type :wombat) :players type)]
+    (get-in game-state [key-name uuid :state :code])))
 
 (defn- get-lamdba-channels
   "Kicks off the AWS Lambda process"
@@ -121,7 +119,6 @@
                bot-code (get-decision-maker-code game-state
                                                  uuid
                                                  type)]
-
            
            (async/go
              (try
