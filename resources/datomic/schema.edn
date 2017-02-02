@@ -386,7 +386,43 @@
   :db/doc         "Overall score"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/hp
+  :db/ident       :stats/wombats-destroyed
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Players current hp"}]
+  :db/doc         "Number of wombats destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/zakano-destroyed
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of zakano destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wood-barriers-destroyed
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wood-barriers destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/shots-fired
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of shots fired"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/shots-hit
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of shots that found target"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/number-of-moves
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of moves"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/number-of-smoke-deploys
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of smoke deploys"}]
