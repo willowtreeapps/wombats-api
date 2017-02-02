@@ -201,7 +201,16 @@
                        :stats/game game-eid
                        :stats/frame-number 0
                        :stats/score 0
-                       :stats/hp 100}
+                       :stats/wombats-destroyed 0
+                       :stats/wombats-hit 0
+                       :stats/zakano-destroyed 0
+                       :stats/zakano-hit 0
+                       :stats/wood-barriers-destroyed 0
+                       :stats/wood-barriers-hit 0
+                       :stats/shots-fired 0
+                       :stats/shots-hit 0
+                       :stats/number-of-moves 0
+                       :stats/number-of-smoke-deploys 0}
             stats-link-to-game-trx {:db/id game-eid
                                     :game/stats stats-tmpid}
             closed-trx {:db/id game-eid

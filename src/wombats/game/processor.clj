@@ -125,10 +125,19 @@
      game-state
      lambda-responses)))
 
-(defn- build-decision-maker-data
+(defn- build-decision-maker-state
   [game-state uuid]
   (-> {}
       (add-decision-maker game-state uuid)))
+
+(defn- remove-from-initiative-order
+  [game-state uuid]
+  (update game-state
+          :initiative-order
+          (fn [initiative-order]
+            (filter (fn [{active-uuid :uuid}]
+                      (not= active-uuid uuid))
+                    initiative-order))))
 
 (def ^:private command-map
   {:turn turn
@@ -155,12 +164,16 @@
                             decision-maker-uuid
                             :state]
                            {})
-        cmd-function (get-command action)]
+        cmd-function (get-command action)
+        decision-maker-state (build-decision-maker-state game-state
+                                                         decision-maker-uuid)]
 
-    (cmd-function game-state
-                  (or metadata {})
-                  (build-decision-maker-data game-state
-                                             decision-maker-uuid))))
+    (if-not (:decision-maker decision-maker-state)
+      (remove-from-initiative-order game-state
+                                    decision-maker-uuid)
+      (cmd-function game-state
+                    (or metadata {})
+                    decision-maker-state))))
 
 (defn process-decisions
   [game-state]
