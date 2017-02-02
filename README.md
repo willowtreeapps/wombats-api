@@ -22,14 +22,16 @@ Want to contribute? [See how](./CONTRIBUTING.md) you can get involved.
 
 ### Decision Log
 
-This is where all project decisions that effect the team will be logged.
+This is where all project decisions that affect the team will be logged.
 
 [Decision Log](./docs/decision-logs/README.md)
 
 ### Liscense Information
 
-TODO:
+MIT License 
 
-### Pivacy Information
+Copyright (c) 2017 WillowTree, Inc.
+
+### Privacy Information
 
 TODO:
