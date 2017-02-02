@@ -83,17 +83,17 @@
   (let [credentials (new BasicAWSCredentials access-key-id secret-key)]
     (new AWSLambdaClient credentials)))
 
+(defn- lambda-request-body
+  [player-state bot-code]
+  (cheshire/generate-string {:code (:code bot-code)
+                             :state player-state}))
+
 (defn- lambda-invoke-request
   [player-state bot-code]
   (let [request (new InvokeRequest)]
     (.setFunctionName request "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure")
     (.setPayload request (lambda-request-body player-state bot-code))
     request))
-
-(defn- lambda-request-body
-  [player-state bot-code]
-  (cheshire/generate-string {:code (:code bot-code)
-                             :state player-state}))
 
 (defn- lambda-request
   [player-state aws-credentials bot-code]
@@ -115,18 +115,16 @@
   "Kicks off the AWS Lambda process"
   [{:keys [initiative-order] :as game-state} aws-credentials]
   (map (fn [{:keys [uuid type]}]
-         (let [ch (async/chan 1)
-               player-state (calculate-decision-maker-state game-state
-                                                            uuid
-                                                            type)
-               bot-code (get-decision-maker-code game-state
-                                                 uuid
-                                                 type)]
+         (let [ch (async/chan 1)]
            (async/go
              (try
-               (let [lambda-resp @(lambda-request player-state
+               (let [lambda-resp @(lambda-request (calculate-decision-maker-state game-state
+                                                                                  uuid
+                                                                                  type)
                                                   aws-credentials
-                                                  bot-code)]
+                                                  (get-decision-maker-code game-state
+                                                                           uuid
+                                                                           type))]
                  (async/>! ch {:uuid uuid
                                :response lambda-resp
                                :error nil

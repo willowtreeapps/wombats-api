@@ -32,7 +32,6 @@
 
                             ;; Amazon SDK
                             [com.amazonaws/aws-java-sdk "1.11.6"]
-                            ;;[com.amazonaws/aws-java-sdk-lambda "1.11.86"]
 
                             ;; HTTP Server
                             [io.pedestal/pedestal.service "0.5.2"]
