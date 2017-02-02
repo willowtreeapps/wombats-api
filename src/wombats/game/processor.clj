@@ -91,8 +91,6 @@
 
 (defn- lambda-request
   [player-state aws-credentials bot-code]
-  
-  ;; TODO #162
   (let [client (lambda-client aws-credentials)
         request (lambda-invoke-request player-state bot-code)
         result (.invoke client request)
@@ -104,9 +102,8 @@
 (defn- get-decision-maker-code
   [game-state uuid type]
   
-  (let [key-name (if (= type :wombat) :players type)
-        code (get-in game-state [key-name uuid :state :code])]
-    code))
+  (let [key-name (if (= type :wombat) :players type)]
+    (get-in game-state [key-name uuid :state :code])))
 
 (defn- get-lamdba-channels
   "Kicks off the AWS Lambda process"
