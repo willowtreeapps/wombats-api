@@ -52,16 +52,16 @@
 (defn get-game-eids-by-player
   [conn]
   (fn [user-id]
-    (let [db (d/db conn)
-          user-ids (if (vector? user-id)
+    (let [user-ids (if (vector? user-id)
                      user-id
                      [user-id])
           game-eids (apply concat
                            (d/q '[:find ?games
                                   :in $ [?user-ids ...]
                                   :where [?users :user/id ?user-ids]
-                                         [?games :game/players ?users]]
-                                db
+                                         [?players :player/user ?users]
+                                         [?games :game/players ?players]]
+                                (d/db conn)
                                 user-ids))]
       game-eids)))
 
