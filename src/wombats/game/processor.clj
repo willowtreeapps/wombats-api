@@ -1,10 +1,16 @@
 (ns wombats.game.processor
   (:require [clojure.core.async :as async]
+            [clojure.data.json :as json]
             [wombats.game.partial :refer [get-partial-arena]]
             [wombats.game.occlusion :refer [get-occluded-arena]]
             [wombats.game.utils :as gu]
-            [wombats.arena.utils :as au]))
-
+            [wombats.arena.utils :as au])
+  (:import [com.amazonaws.auth
+            BasicAWSCredentials]
+           [com.amazonaws.services.lambda
+            AWSLambdaClient
+            model.InvokeRequest]))
+  
 (defn- add-player-global-coords
   "Add the coordinates that a player is globally"
   [player-state game-state player-eid]
@@ -55,22 +61,45 @@
         (add-player-occlusion-view game-state)
         (add-custom-player-state game-state player-eid))))
 
-(defn- lambda-request
-  [player-state]
-  ;; TODO #162
-  (future {:saved-state {:updated true}
-           :command {:turn :right}}))
+(defn- lambda-client
+  [aws-credentials]
+  (let [access-key (:access-key-id aws-credentials)
+        secret-key (:secret-key aws-credentials)
+        credentials (new BasicAWSCredentials access-key secret-key)
+        client (new AWSLambdaClient credentials)]
+    client))
 
+(defn- lambda-invoke-request
+  []
+  (let [request (new InvokeRequest)]
+    (.setFunctionName request "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure")
+    (.setPayload request (json/write-str {:arena nil
+                                          :code "(fn [time-left arena] {:saved-state {:updated true} :command {:turn :right}})"}))
+    request))
+
+(defn- lambda-request
+  [player-state aws-credentials]
+  ;; TODO #162
+  (let [client (lambda-client aws-credentials)
+        request (lambda-invoke-request)
+        result (.invoke client request)
+        response (.getPayload result)
+        response-string (new String (.array response) "UTF-8")
+        object (json/read-str response-string)]
+
+    (future object)))
+    
 (defn- get-lamdba-channels
   "Kicks off the AWS Lambda process of sourcing user code"
-  [{:keys [players] :as game-state}]
+  [{:keys [players] :as game-state} aws-credentials]
 
   (map (fn [[player-eid {:keys [code]}]]
          (let [ch (async/chan 1)]
            (async/go
              (try
                (let [lambda-resp @(lambda-request (calculate-player-state game-state
-                                                                          player-eid))]
+                                                                          player-eid) 
+                                                  aws-credentials)]
                  (async/>! ch {:player-eid player-eid
                                :response lambda-resp
                                :error nil}))
@@ -83,8 +112,8 @@
 
 (defn source-user-decisions
   "Source users decisions by running their code through AWS Lambda"
-  [game-state]
-  (let [lambda-chans (get-lamdba-channels game-state)
+  [game-state aws-credentials]
+  (let [lambda-chans (get-lamdba-channels game-state aws-credentials)
         user-responses (async/<!! (async/map vector lambda-chans))]
     (reduce
      (fn [game-state-acc {:keys [player-eid response error]}]

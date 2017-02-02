@@ -21,7 +21,8 @@
 (defn new-api-router
   [services]
   (let [datomic (get-in services [:datomic :database])
-        github (:github services)]
+        github (:github services)
+        aws-credentials (:aws services)]
     [[["/"
        ^:interceptors [html-body]
        {:get static/home-page}]
@@ -31,7 +32,8 @@
                        coerce-body
                        content-neg-intc
                        (body-params)
-                       (add-dao-functions (dao/init-dao-map datomic))
+                       (add-dao-functions (dao/init-dao-map datomic
+                                                            aws-credentials))
                        add-current-user]
        ["/docs" {:get swagger/get-specs}]
        ["/v1"
@@ -81,6 +83,7 @@
 (defn new-ws-router
   [services]
   (let [datomic (get-in services [:datomic :database])
-        dao-map (dao/init-dao-map datomic)]
+        aws-credentials (:aws services)
+        dao-map (dao/init-dao-map datomic aws-credentials)]
     {"/ws/chat" (chat-ws/chat-room-map dao-map)
      "/ws/game" (game-ws/in-game-ws dao-map)}))

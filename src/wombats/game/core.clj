@@ -13,22 +13,22 @@
 
 (defn- game-loop
   "Game loop"
-  [game-state]
+  [game-state aws-credentials]
   (loop [current-game-state game-state]
     (if (game-over? current-game-state)
       current-game-state
       (-> current-game-state
           (i/initialize-frame)
-          (p/source-user-decisions)
+          (p/source-user-decisions aws-credentials)
           (p/process-user-decisions)
           (f/finalize-frame)
           (recur)))))
 
 (defn initialize-game
   "Main entry point for the game engine"
-  [game-state]
+  [game-state aws-credentials]
   (-> game-state
       (i/initialize-game)
-      (game-loop)
+      (game-loop aws-credentials)
       (f/finalize-game)
       #_(clojure.pprint/pprint)))

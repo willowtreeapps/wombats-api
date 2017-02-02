@@ -27,6 +27,10 @@
                             [com.amazonaws/aws-java-sdk-dynamodb "1.11.6"]
                             [io.rkn/conformity "0.4.0"]
 
+                            ;; Amazon SDK
+                            [com.amazonaws/aws-java-sdk "1.11.6"]
+                            ;;[com.amazonaws/aws-java-sdk-lambda "1.11.86"]
+
                             ;; HTTP Server
                             [io.pedestal/pedestal.service "0.5.2"]
                             [io.pedestal/pedestal.jetty   "0.5.2"]

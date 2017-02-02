@@ -21,7 +21,9 @@
                                                    route-map
                                                    {:datomic datomic
                                                     :github (get-in config [:settings
-                                                                            :github])}))))
+                                                                            :github])
+                                                    :aws (get-in config [:settings
+                                                                         :aws])}))))
   (stop [component]
     (if-not service
       component
