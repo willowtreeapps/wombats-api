@@ -1,6 +1,7 @@
 (ns wombats.game.processor
   (:require [clojure.core.async :as async]
             [clojure.data.json :as json]
+            [cheshire.core :as cheshire]
             [wombats.game.partial :refer [get-partial-arena]]
             [wombats.game.occlusion :refer [get-occluded-arena]]
             [wombats.game.utils :as gu]
@@ -86,8 +87,8 @@
   [player-state bot-code]
   (-> (new InvokeRequest)
       (.setFunctionName "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure")
-      (.setPayload (json/write-str {:code bot-code
-                                    :state player-state}))))
+      (.setPayload (cheshire/generate-string {:code bot-code
+                                              :state player-state}))))
 
 (defn- lambda-request
   [player-state aws-credentials bot-code]
@@ -97,28 +98,36 @@
         response (.getPayload result)
         response-string (new String (.array response) "UTF-8")]
 
-    (future (json/read-str response-string))))
+    (future (cheshire/parse-string response-string true))))
 
 (defn- get-decision-maker-code
   [game-state uuid type]
   
-  (let [key-name (if (= type :wombat) :players type)]
-    (get-in game-state [key-name uuid :state :code])))
+  (let [key-name (if (= type :wombat) :players type)
+        code (get-in game-state [key-name uuid :state :code])]
+    (when (not (nil? code))
+      ;; Remove all instances of \n
+      (let [with-new-lines (get (cheshire/parse-string code true) :content)]
+        (clojure.string/replace with-new-lines "\n" "")))))
 
 (defn- get-lamdba-channels
   "Kicks off the AWS Lambda process"
   [{:keys [initiative-order] :as game-state} aws-credentials]
   (map (fn [{:keys [uuid type]}]
-         (let [ch (async/chan 1)]
+         (let [ch (async/chan 1)
+               player-state (calculate-decision-maker-state game-state
+                                                            uuid
+                                                            type)
+               bot-code (get-decision-maker-code game-state
+                                                 uuid
+                                                 type)]
+
+           
            (async/go
              (try
-               (let [lambda-resp @(lambda-request (calculate-decision-maker-state game-state
-                                                                                  uuid
-                                                                                  type)
+               (let [lambda-resp @(lambda-request player-state
                                                   aws-credentials
-                                                  (get-decision-maker-code game-state
-                                                                           uuid
-                                                                           type))]
+                                                  bot-code)]
                  (async/>! ch {:uuid uuid
                                :response lambda-resp
                                :error nil
