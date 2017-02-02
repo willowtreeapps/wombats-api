@@ -56,7 +56,13 @@
                                 [0 8]
                                 {:update true}))))
   (testing "returns a modified arena if x & y are inbounds"
-    (is (not= test-4x4-empty-arena
-           (a-utils/update-cell test-4x4-empty-arena
-                                [1 1]
-                                {:update true})))))
+    (is (= {:update true}
+           (get-in (a-utils/update-cell test-4x4-empty-arena
+                                        [1 1]
+                                        {:update true})
+                   [1 1])))
+    (is (= {:update true}
+           (get-in (a-utils/update-cell test-4x4-empty-arena
+                                        [3 1]
+                                        {:update true})
+                   [1 3])))))

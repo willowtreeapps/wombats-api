@@ -2,6 +2,7 @@
   (:require [datomic.api :as d]
             [taoensso.nippy :as nippy]
             [wombats.game.core :refer [initialize-game]]
+            [wombats.game.utils :refer [decision-maker-state]]
             [wombats.daos.helpers :refer [db-requirement-error
                                           get-entity-by-prop
                                           get-entity-id
@@ -222,13 +223,8 @@
                                   :stats stats
                                   :user user
                                   :wombat wombat
-                                  :code nil
-                                  :command nil
-                                  :error nil
-                                  :saved-state {}}) players)]
-    (reduce #(assoc %1 (get-in %2 [:player :db/id]) %2)
-            {}
-            formatted-players)))
+                                  :state decision-maker-state}) players)]
+    (reduce #(assoc %1 (gen-id) %2) {} formatted-players)))
 
 (defn- get-game-state
   [conn game-id]
