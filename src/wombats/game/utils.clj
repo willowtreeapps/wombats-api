@@ -100,6 +100,26 @@
      7 [(incx (- dist)) identity]
      [identity identity])))
 
+(defn orientation-to-direction
+  [orientation]
+  (condp = orientation
+    :n 1
+    :e 3
+    :s 5
+    :w 7
+    nil))
+
+(defn draw-line-from-point
+  "Draws a line from on point to another in a given arena"
+  [arena pos direction dist]
+  (let [arena-dimensions (au/get-arena-dimensions arena)]
+    (vec (map (fn [idx]
+                (vec (wrap-coords
+                      (map (fn [fnc dim] (fnc dim))
+                           (directional-functions direction idx) pos)
+                      arena-dimensions)))
+              (range 1 (inc dist))))))
+
 (defn adjust-coords
   "Returns a new set of coords based off of an applied direction."
   ([coords direction dimensions]

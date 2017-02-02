@@ -18,7 +18,17 @@
   [{:keys [frame] :as game-state} interval]
 
   ;; Pretty print the arena
-  (au/print-arena (:frame/arena frame))
+  #_(au/print-arena (:frame/arena frame))
+
+  ;; Pretty print the full arena state
+  #_(clojure.pprint/pprint (:frame/arena frame))
+
+  ;; Pretty print everything but the arena
+  (clojure.pprint/pprint
+   (dissoc game-state :frame))
+
+  ;; Pretty print everything
+  #_(clojure.pprint/pprint game-state)
 
   ;; Sleep before next frame
   (Thread/sleep interval)
@@ -36,8 +46,8 @@
           (i/initialize-frame)
           (p/source-decisions aws-credentials)
           (p/process-decisions)
-          #_(frame-debugger 1000)
           (f/finalize-frame)
+          #_(frame-debugger 1000)
           (recur)))))
 
 (defn initialize-game
@@ -46,4 +56,5 @@
   (-> game-state
       (i/initialize-game)
       (game-loop aws-credentials)
+      #_(frame-debugger 0)
       (f/finalize-game)))

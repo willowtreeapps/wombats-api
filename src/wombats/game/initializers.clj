@@ -17,7 +17,8 @@
         (let [formatted-player (-> (:wombat a-utils/arena-items)
                                    (merge {:uuid player-uuid
                                            :color (:player/color player)
-                                           :hp (:stats/hp stats)
+                                           ;; TODO Pull from config
+                                           :hp 100
                                            :orientation (g-utils/rand-orientation)}))]
           (a-utils/sprinkle new-arena formatted-player)))
       arena
