@@ -1,10 +1,10 @@
 (ns wombats.game.initializers
-  (:require [cheshire.core :as cheshire]
+  (:require [base64-clj.core :as b64]
+            [cheshire.core :as cheshire]
             [clojure.core.async :as async]
             [org.httpkit.client :as http]
             [wombats.arena.utils :as a-utils]
-            [wombats.game.utils :as g-utils]
-            [base64-clj.core :as b64]))
+            [wombats.game.utils :as g-utils]))
 
 (defn- add-players-to-game
   "Adds players to random cells in the arena"
@@ -84,11 +84,9 @@
 (defn- parse-user-code
   [resp]
   (let [body (:body resp)
-        parsed (cheshire/parse-string body true)
-        path (:path parsed)
-        code64 (:content parsed)
-        code (decode-bot code64)]
-    {:code code :path path}))
+        parsed (cheshire/parse-string body true)]
+    {:code (decode-bot (:content parsed))
+     :path (:path parsed)}))
 
 (defn- parse-player-channels
   "If the network request succeeded, attaches a users code to game-state"

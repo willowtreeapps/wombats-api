@@ -1,7 +1,6 @@
 (ns wombats.game.processor
-  (:require [clojure.core.async :as async]
-            [clojure.data.json :as json]
-            [cheshire.core :as cheshire]
+  (:require [cheshire.core :as cheshire]
+            [clojure.core.async :as async]
             [wombats.game.partial :refer [get-partial-arena]]
             [wombats.game.occlusion :refer [get-occluded-arena]]
             [wombats.game.utils :as gu]
@@ -96,7 +95,7 @@
     request))
 
 (defn- lambda-request
-  [player-state aws-credentials bot-code]
+  [player-state bot-code aws-credentials]
   (let [client (lambda-client aws-credentials)
         request (lambda-invoke-request player-state bot-code)
         result (.invoke client request)
@@ -121,10 +120,10 @@
                (let [lambda-resp @(lambda-request (calculate-decision-maker-state game-state
                                                                                   uuid
                                                                                   type)
-                                                  aws-credentials
                                                   (get-decision-maker-code game-state
                                                                            uuid
-                                                                           type))]
+                                                                           type)
+                                                  aws-credentials)]
                  (async/>! ch {:uuid uuid
                                :response lambda-resp
                                :error nil
