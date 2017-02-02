@@ -78,33 +78,36 @@
         (add-custom-state game-state uuid type))))
 
 (defn- lambda-client
-  [aws-credentials]
-  (let [access-key (:access-key-id aws-credentials)
-        secret-key (:secret-key aws-credentials)
-        credentials (new BasicAWSCredentials access-key secret-key)
-        client (new AWSLambdaClient credentials)]
-    client))
+  [{:keys [access-key-id secret-key]}]
+  (let [credentials (new BasicAWSCredentials access-key-id secret-key)]
+    (new AWSLambdaClient credentials)))
 
 (defn- lambda-invoke-request
-  []
-  (let [request (new InvokeRequest)]
-    (.setFunctionName request "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure")
-    (.setPayload request (json/write-str {:arena nil
-                                          :code "(fn [time-left arena] {:saved-state {:updated true} :command {:action :shoot :metadata{}}})"}))
-    request))
+  [player-state bot-code]
+  (-> (new InvokeRequest)
+      (.setFunctionName "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure")
+      (.setPayload (json/write-str {:code bot-code
+                                    :state player-state}))))
 
 (defn- lambda-request
-  [player-state aws-credentials]
+  [player-state aws-credentials bot-code]
+  
   ;; TODO #162
   (let [client (lambda-client aws-credentials)
-        request (lambda-invoke-request)
+        request (lambda-invoke-request player-state bot-code)
         result (.invoke client request)
         response (.getPayload result)
-        response-string (new String (.array response) "UTF-8")
-        object (json/read-str response-string)]
+        response-string (new String (.array response) "UTF-8")]
 
-    (future object)))
-    
+    (future (json/read-str response-string))))
+
+(defn- get-decision-maker-code
+  [game-state uuid type]
+  
+  (let [key-name (if (= type :wombat) :players type)
+        code (get-in game-state [key-name uuid :state :code])]
+    code))
+
 (defn- get-lamdba-channels
   "Kicks off the AWS Lambda process"
   [{:keys [initiative-order] :as game-state} aws-credentials]
@@ -115,7 +118,10 @@
                (let [lambda-resp @(lambda-request (calculate-decision-maker-state game-state
                                                                                   uuid
                                                                                   type)
-                                                  aws-credentials)]
+                                                  aws-credentials
+                                                  (get-decision-maker-code game-state
+                                                                           uuid
+                                                                           type))]
                  (async/>! ch {:uuid uuid
                                :response lambda-resp
                                :error nil
