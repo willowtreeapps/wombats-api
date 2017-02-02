@@ -103,7 +103,6 @@
         response-string (new String (.array response) "UTF-8")
         object (json/read-str response-string)]
 
-    (prn object)
     (future object)))
     
 (defn- get-lamdba-channels
