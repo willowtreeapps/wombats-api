@@ -1,6 +1,7 @@
 (ns wombats.game.initializers
   (:require [base64-clj.core :as b64]
             [cheshire.core :as cheshire]
+            [taoensso.nippy :as nippy]
             [clojure.core.async :as async]
             [org.httpkit.client :as http]
             [wombats.arena.utils :as a-utils]
@@ -81,11 +82,12 @@
   (let [base64-string (clojure.string/replace encoded #"\n" "")]
     (b64/decode base64-string "UTF-8")))
 
-(defn- parse-user-code
+(defn- parse-github-code
   [resp]
   (let [body (:body resp)
         parsed (cheshire/parse-string body true)]
-    {:code (decode-bot (:content parsed))
+    {:code (nippy/freeze
+            (decode-bot (:content parsed)))
      :path (:path parsed)}))
 
 (defn- parse-player-channels
@@ -93,7 +95,7 @@
   [players responses]
   (reduce (fn [player-acc {:keys [player-eid resp]}]
             (when (= 200 (:status resp))
-              (assoc-in player-acc [player-eid :state :code] (parse-user-code resp))))
+              (assoc-in player-acc [player-eid :state :code] (parse-github-code resp))))
           players
           responses))
 
@@ -104,13 +106,29 @@
         responses (async/<!! (async/map vector bot-chans))]
     (update game-state :players parse-player-channels responses)))
 
+(defn- source-zakano-code
+  "Sources a bot to run as the zakano"
+  [game-state]
+  (let [;; TODO put zakano in db, maybe allow for selecting specific zakano?
+        url "https://api.github.com/repos/willowtreeapps/wombats-bots/contents/zakano.clj"
+        ;; TODO add auth headers to increase limit
+        response @(http/get url)
+        code (parse-github-code response)]
+    (update game-state :zakano (fn [zakano]
+                                 (reduce (fn [zakano-acc [zakano-id zakano-state]]
+                                           (assoc zakano-acc
+                                                  zakano-id
+                                                  (assoc-in zakano-state [:state :code] code)))
+                                         {} zakano)))))
+
 (defn initialize-game
   [game-state]
   (-> game-state
       (add-players-to-game)
       (set-initiative-order)
       (set-zakano-state)
-      (source-player-code)))
+      (source-player-code)
+      (source-zakano-code)))
 
 (defn initialize-frame
   [game-state]
