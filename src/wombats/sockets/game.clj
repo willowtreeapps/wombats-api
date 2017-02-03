@@ -1,111 +1,147 @@
 (ns wombats.sockets.game
   (:require [clojure.java.io :as io]
             [clojure.spec :as s]
-            [clojure.core.async :refer [put!]]
+            [clojure.core.async :refer [put! <! timeout]]
             [clojure.edn :as edn]
-            [io.pedestal.http.jetty.websockets :as ws]
-            [wombats.sockets.core :as ws-core]))
+            [io.pedestal.http.jetty.websockets :as ws]))
 
 (def ^:private game-rooms (atom {}))
 
-(def ^:private game-connections (atom {}))
+(def ^:private connections (atom {}))
 
-(s/def ::user-id int?)
-(s/def ::game-id int?)
-(s/def ::game-handshake (s/keys :req [::user-id ::game-id]))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn parse-message
+  "Attempts to parse the clent message as EDN"
+  [raw-message]
+  (try
+    (edn/read-string raw-message)
+    (catch Exception e (prn (str "Invalid client message: " raw-message)))))
+
+(defn format-message
+  "Converts the msg into a string before sending it"
+  [msg] (prn-str msg))
+
+(defn send-message
+  [chan-id message]
+  (let [chan (get-in @connections [chan-id :chan])]
+    (put! chan (format-message message))))
+
+(defn- get-socket-user
+  [chan-id]
+  (-> (get-in @connections [chan-id :metadata :user])
+      (assoc :chan-id chan-id)
+      (select-keys [:user/id
+                    :user/github-username
+                    :user/avatar-url
+                    :chan-id])))
 
 (defn- get-channel-ids
   [game-id]
   (keys (get-in @game-rooms [game-id :players])))
 
-(defn broadcast-arena
-  [game-id arena]
-  (let [channel-ids (get-channel-ids game-id)]
-    (doseq [channel-id channel-ids] (ws-core/send-message game-connections
-                                                          channel-id
-                                                          {:meta {:type :frame-update}
-                                                           :payload arena}))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Handlers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn- keep-alive
+  "Jetty's WS server has an idle timeout. This handler supports keeping
+  that connection open"
+  [chan-id msg])
 
-;; -------------------------------------
-;; -------- Dev Simulator --------------
-;; -------------------------------------
-
-(defn- get-arena
-  [name]
-  (edn/read-string (slurp (io/resource (str "arena/" name)))))
-
-(defn- start-simulation
-  [chan-id]
-  (let [frames [(get-arena "small-1.edn")
-                (get-arena "small-2.edn")
-                (get-arena "small-3.edn")
-                (get-arena "small-4.edn")]]
-
-    (doall (map (fn [frame]
-                  (Thread/sleep 500)
-                  (ws-core/send-message game-connections
-                                        chan-id
-                                        {:meta {:msg-type :frame-update}
-                                         :payload {:arena frame}}))
-                frames))))
-
-;; -------------------------------------
-;; -------- Message Handlers -----------
-;; -------------------------------------
-
-(defn- command-handler
-  [{:keys [chan-id]} msg]
-  ;; TODO Handle command queue
-  )
-
-(defn- handshake-handler
+(defn- handshake
   "Performs the inital game handshake.
 
   Client - initiate request, passing conn-id"
   [datomic]
   (fn [{:keys [chan-id]} msg]
-    (swap! game-connections assoc-in [chan-id :metadata] msg)))
-
-(defn- join-game-handler
-  [datomic]
-  (fn [{:keys [chan-id] :as socket-user}
-      {:keys [game-id]}]
-    ;; TODO Check for ghost connections
-    (swap! game-rooms assoc-in [game-id :players chan-id] socket-user)))
+    (swap! connections assoc-in [chan-id :metadata] msg)))
 
 (defn- authenticate-user
   [datomic]
   (fn [{:keys [chan-id]} msg]
     (let [user ((:get-user-by-access-token datomic)
                 (:access-token msg))]
-      (swap! game-connections assoc-in [chan-id :metadata :user] user))))
+      (swap! connections assoc-in [chan-id :metadata :user] user))))
+
+(defn- join-game
+  [datomic]
+  (fn [{:keys [chan-id] :as socket-user}
+      {:keys [game-id]}]
+    ;; TODO Check for ghost connections
+    (swap! game-rooms assoc-in [game-id :players chan-id] socket-user)))
+
+;; Broadcast functions
+
+(defn broadcast-arena
+  [game-id arena]
+  (let [channel-ids (get-channel-ids game-id)]
+    (doseq [channel-id channel-ids] (send-message channel-id
+                                                  {:meta {:msg-type :frame-update}
+                                                   :payload arena}))))
+
+(defn broadcast-stats
+  [game-id stats]
+  (let [channel-ids (get-channel-ids game-id)]
+    (doseq [channel-id channel-ids] (send-message channel-id
+                                                  {:meta {:msg-type :stats-update}
+                                                   :payload stats}))))
+
+(defn create-socket-handler-map
+  "Allows for adding custom handlers that respond to namespaced messages
+  emitted from the ws channel"
+  [handler-map]
+  (fn [raw-msg]
+    (let [msg (parse-message raw-msg)
+          {:keys [chan-id msg-type]} (:meta msg)
+          socket-user (get-socket-user chan-id)
+          msg-payload (get msg :payload {})
+          msg-fn (msg-type handler-map)]
+
+      ;; Log in dev mode
+      (println "\n---------- Start Client Message ----------")
+      (clojure.pprint/pprint msg)
+      (println "------------ End Client Message ----------\n\n")
+
+      (msg-fn socket-user msg-payload))))
 
 (defn- message-handlers
   [datomic]
-  {:handshake (handshake-handler datomic)
-   :cmd command-handler
-   :join-game (join-game-handler datomic)
+  {:keep-alive keep-alive
+   :handshake (handshake datomic)
+   :join-game (join-game datomic)
    :authenticate-user (authenticate-user datomic)})
 
-;; -------------------------------------
-;; -------- Public Functions -----------
-;; -------------------------------------
+(defn new-ws-connection
+  [datomic]
+  (fn [ws-session send-ch]
+    (let [chan-id (.hashCode ws-session)]
+      (prn (str "Connection " chan-id " establised"))
 
+      (swap! connections assoc chan-id {:session ws-session
+                                        :chan send-ch
+                                        :metadata {}})
+
+      (send-message chan-id
+                    {:meta {:msg-type :handshake}
+                     :payload {:chan-id chan-id}}))))
+
+(defn- socket-error
+  "Called when there has been an error"
+  [t]
+  (prn (str "WS Error " (.getMessage t))))
+
+(defn- socket-close
+  "Called when a websocket has closed"
+  [code reason]
+  (prn (str "WS Closed - Code: " code " Reason: " reason)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PUBLIC FUNCTIONS
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn in-game-ws
   [datomic]
-  {:on-connect (ws/start-ws-connection (ws-core/new-ws-connection game-connections
-                                                                  datomic))
-   :on-text    (ws-core/create-socket-handler-map (message-handlers datomic)
-                                                  game-connections)
-   :on-error   ws-core/socket-error
-   :on-close   ws-core/socket-close})
-
-;; -------------------------------------
-;; -------- Dev Funcitons -------------
-;; -------------------------------------
-
-(defn- reset-atom
-  "NOTE: Working on clearing out closed soket connections.
-  In the time being this will work."
-  []
-  (reset! game-connections {}))
+  {:on-connect (ws/start-ws-connection (new-ws-connection datomic))
+   :on-text    (create-socket-handler-map (message-handlers datomic))
+   :on-error   socket-error
+   :on-close   socket-close})

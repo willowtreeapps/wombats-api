@@ -14,7 +14,6 @@
             [wombats.handlers.user :as user]
             [wombats.handlers.auth :as auth]
             [wombats.handlers.arena :as arena]
-            [wombats.sockets.chat :as chat-ws]
             [wombats.sockets.game :as game-ws]
             [wombats.daos.core :as dao]))
 
@@ -85,5 +84,4 @@
   (let [datomic (get-in services [:datomic :database])
         aws-credentials (:aws services)
         dao-map (dao/init-dao-map datomic aws-credentials)]
-    {"/ws/chat" (chat-ws/chat-room-map dao-map)
-     "/ws/game" (game-ws/in-game-ws dao-map)}))
+    {"/ws/game" (game-ws/in-game-ws dao-map)}))
