@@ -262,7 +262,8 @@
                      (d/db conn)
                      game-id)]
 
-    {:frame (update frame :frame/arena nippy/thaw)
+    {:game-id game-id
+     :frame (update frame :frame/arena nippy/thaw)
      :arena-config arena
      :players (format-player-map players)}))
 

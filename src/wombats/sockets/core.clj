@@ -44,13 +44,23 @@
   that connection open"
   [chan-id msg])
 
+(defn- get-socket-user
+  [ws-atom chan-id]
+  (-> (get-in @ws-atom [chan-id :metadata :user])
+      (assoc :chan-id chan-id)
+      (select-keys [:user/id
+                    :user/github-username
+                    :user/avatar-url
+                    :chan-id])))
+
 (defn create-socket-handler-map
   "Allows for adding custom handlers that respond to namespaced messages
   emitted from the ws channel"
   [handler-map ws-atom]
   (fn [raw-msg]
     (let [msg (parse-message raw-msg)
-          {:keys [chan-id msg-type]} (get msg :meta)
+          {:keys [chan-id msg-type]} (:meta msg)
+          socket-user (get-socket-user ws-atom chan-id)
           msg-payload (get msg :payload {})
           msg-fn (msg-type (merge {:handshake (handshake-handler ws-atom)
                                    :keep-alive keep-alive}
@@ -61,7 +71,7 @@
       (clojure.pprint/pprint msg)
       (println "------------ End Client Message ----------\n\n")
 
-      (msg-fn chan-id msg-payload))))
+      (msg-fn socket-user msg-payload))))
 
 (defn- remove-chan
   [ws-atom chan-id]

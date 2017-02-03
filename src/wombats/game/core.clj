@@ -2,7 +2,8 @@
   (:require [wombats.game.initializers :as i]
             [wombats.game.finalizers :as f]
             [wombats.game.processor :as p]
-            [wombats.arena.utils :as au]))
+            [wombats.arena.utils :as au]
+            [wombats.sockets.game :as game-sockets]))
 
 (defn- game-over?
   "End game condition"
@@ -24,16 +25,25 @@
   #_(clojure.pprint/pprint (:frame/arena frame))
 
   ;; Pretty print everything but the arena
-  (clojure.pprint/pprint
+  #_(clojure.pprint/pprint
    (dissoc game-state :frame))
 
   ;; Pretty print everything
-  #_(clojure.pprint/pprint game-state)
+  (clojure.pprint/pprint game-state)
 
   ;; Sleep before next frame
   (Thread/sleep interval)
 
   ;; Return game-state
+  game-state)
+
+(defn- push-frame-to-clients
+  [game-state]
+
+  (game-sockets/broadcast-arena
+   (:game-id game-state)
+   (get-in game-state [:frame :frame/arena]))
+
   game-state)
 
 (defn- game-loop
@@ -47,6 +57,7 @@
           (p/source-decisions aws-credentials)
           (p/process-decisions)
           (f/finalize-frame)
+          (push-frame-to-clients)
           #_(frame-debugger 1000)
           (recur)))))
 
