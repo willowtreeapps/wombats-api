@@ -6,6 +6,8 @@
             [io.pedestal.http.jetty.websockets :as ws]
             [wombats.sockets.core :as ws-core]))
 
+(def ^:private game-rooms (atom {}))
+
 (def ^:private game-connections (atom {}))
 
 (s/def ::user-id int?)
@@ -40,33 +42,39 @@
 ;; -------------------------------------
 
 (defn- command-handler
-  [chan-id msg]
+  [{:keys [chan-id]} msg]
   ;; TODO Handle command queue
   )
 
 (defn- handshake-handler
   "Performs the inital game handshake.
 
-  Handshake Steps:
-
-  1. Client - initiate request, passing conn-id, user-token, and game-id
-  2. Server - Authenticate user and lookup game
-  3. Server - Check user is authorized to join game
-  4. Server - Verify conn-id exists & not take. Assign user data to connection
-  5. Server - Send frames (in game) / status messages (pre / post game)"
+  Client - initiate request, passing conn-id"
   [datomic]
-  (fn [chan-id msg]
-    ;; TODO Auth / Game lookup
+  (fn [{:keys [chan-id]} msg]
+    (swap! game-connections assoc-in [chan-id :metadata] msg)))
 
-    (swap! game-connections assoc-in [chan-id :metadata] msg)
+(defn- join-game-handler
+  [datomic]
+  (fn [{:keys [chan-id] :as socket-user}
+      {:keys [game-id]}]
+    ;; TODO Check for ghost connections
+    (swap! game-rooms assoc-in [game-id :players chan-id] socket-user)
+    (prn @game-rooms)))
 
-    ;; Simulation for dev mode
-    (start-simulation chan-id)))
+(defn- authenticate-user
+  [datomic]
+  (fn [{:keys [chan-id]} msg]
+    (let [user ((:get-user-by-access-token datomic)
+                (:access-token msg))]
+      (swap! game-connections assoc-in [chan-id :metadata :user] user))))
 
 (defn- message-handlers
   [datomic]
   {:handshake (handshake-handler datomic)
-   :cmd command-handler})
+   :cmd command-handler
+   :join-game (join-game-handler datomic)
+   :authenticate-user (authenticate-user datomic)})
 
 ;; -------------------------------------
 ;; -------- Public Functions -----------

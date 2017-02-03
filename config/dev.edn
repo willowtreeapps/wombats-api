@@ -2,4 +2,4 @@
            :requires-auth false}
  :pedestal {:port 8888
             :container-options {:ssl? false}}
- :github {:web-client-redirect "http://localhost:8888"}}
+ :github {:web-client-redirect "http://localhost:3449"}}
