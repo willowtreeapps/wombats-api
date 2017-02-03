@@ -262,10 +262,22 @@
                      (d/db conn)
                      game-id)]
 
-    {:game-id game-id
-     :frame (update frame :frame/arena nippy/thaw)
-     :arena-config arena
-     :players (format-player-map players)}))
+    ;; TODO The datomic query pulls 2 of each player. The following will filter
+    ;;      out the duplicates.
+    (let [n-players (vec
+                     (vals
+                      (reduce (fn [player-acc player]
+                                (let [id (:db/id (first player))
+                                      existing-ids (set (vals player-acc))]
+                                  (if (contains? existing-ids id)
+                                    player-acc
+                                    (assoc player-acc id player))))
+                              {} players)))]
+
+      {:game-id game-id
+       :frame (update frame :frame/arena nippy/thaw)
+       :arena-config arena
+       :players (format-player-map n-players)})))
 
 (defn start-game
   "Transitions the game status to active"

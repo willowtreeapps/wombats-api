@@ -115,7 +115,8 @@
         ;;url "https://api.github.com/repos/willowtreeapps/wombats-bots/contents/zakano.clj"
         ;;response @(http/get url)
         ;; code (parse-github-code response)
-        code (get-zakano-code)]
+        code {:code (nippy/freeze (get-zakano-code))
+              :path "zakano.clj"}]
     (update game-state :zakano (fn [zakano]
                                  (reduce (fn [zakano-acc [zakano-id zakano-state]]
                                            (assoc zakano-acc

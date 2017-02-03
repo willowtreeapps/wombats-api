@@ -11,31 +11,7 @@
   ;; TODO For now we're only calculating a fix number of rounds
   ;; This will have to be updated with the base condition for
   ;; each game type
-  (= 10 (get-in game-state [:frame :frame/frame-number])))
-
-(defn- frame-debugger
-  "This is a debugger that will print out a ton of additional
-  information in between each frame"
-  [{:keys [frame] :as game-state} interval]
-
-  ;; Pretty print the arena
-  #_(au/print-arena (:frame/arena frame))
-
-  ;; Pretty print the full arena state
-  #_(clojure.pprint/pprint (:frame/arena frame))
-
-  ;; Pretty print everything but the arena
-  #_(clojure.pprint/pprint
-   (dissoc game-state :frame))
-
-  ;; Pretty print everything
-  (clojure.pprint/pprint game-state)
-
-  ;; Sleep before next frame
-  (Thread/sleep interval)
-
-  ;; Return game-state
-  game-state)
+  (= 80 (get-in game-state [:frame :frame/frame-number])))
 
 (defn- push-frame-to-clients
   [game-state]
@@ -80,7 +56,39 @@
     (game-sockets/broadcast-stats
      (:game-id game-state)
      player-stats))
+  game-state)
 
+(defn frame-debugger
+  "This is a debugger that will print out a ton of additional
+  information in between each frame"
+  [{:keys [frame] :as game-state} interval]
+
+  ;; Pretty print the arena
+  #_(au/print-arena (:frame/arena frame))
+
+  ;; Pretty print the full arena state
+  #_(clojure.pprint/pprint (:frame/arena frame))
+
+  ;; Pretty print everything but the arena
+  #_(clojure.pprint/pprint
+   (dissoc game-state :frame))
+
+  ;; Pretty print everything
+  #_(clojure.pprint/pprint game-state)
+
+  ;; Print number of players
+  (prn (str "Player Count: " (count (keys (:players game-state)))))
+
+  ;; Sleep before next frame
+  (Thread/sleep interval)
+
+  ;; Return game-state
+  game-state)
+
+(defn- timeout-frame
+  "Pause the frame to allow the client to catch up"
+  [game-state time]
+  (Thread/sleep time)
   game-state)
 
 (defn- game-loop
@@ -94,6 +102,7 @@
           (p/source-decisions aws-credentials)
           (p/process-decisions)
           (f/finalize-frame)
+          #_(timeout-frame 500)
           (push-frame-to-clients)
           (push-stats-update-to-clients)
           #_(frame-debugger 1000)
@@ -105,6 +114,6 @@
   [game-state aws-credentials]
   (-> game-state
       (i/initialize-game)
-      (game-loop aws-credentials)
       #_(frame-debugger 0)
+      (game-loop aws-credentials)
       (f/finalize-game)))

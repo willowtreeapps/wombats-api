@@ -1,7 +1,7 @@
 (ns wombats.game.zakano-code)
 
 (def zakano-fn
-  (fn [state time-left]
+  "(fn [state time-left]
     (def turn-directions [:right :left :about-face])
 
     (let [command-options [{:command {:action :move
@@ -11,8 +11,8 @@
                            {:command {:action :shoot
                                       :metadata {}}}]]
       {:command (rand-nth command-options)
-       :state {:test true}})))
+       :state {:test true}}))")
 
 (defn get-zakano-code
   []
-  (prn-str zakano-fn))
+  zakano-fn)
