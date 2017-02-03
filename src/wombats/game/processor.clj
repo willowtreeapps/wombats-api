@@ -91,15 +91,20 @@
 (defn- lambda-invoke-request
   [player-state bot-code]
   (let [request (new InvokeRequest)]
+    ;; TODO Move to config
     (.setFunctionName request "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure")
     (.setPayload request (lambda-request-body player-state bot-code))
     request))
 
 (defn- lambda-request
-  [player-state bot-code aws-credentials]
+  [decision-maker-state
+   {:keys [code path]}
+   aws-credentials]
+
   (let [client (lambda-client aws-credentials)
-        request (lambda-invoke-request player-state
-                                       (nippy/thaw bot-code))
+        request (lambda-invoke-request decision-maker-state
+                                       {:code (nippy/thaw code)
+                                        :path path})
         result (.invoke client request)
         response (.getPayload result)
         response-string (new String (.array response) "UTF-8")
@@ -128,12 +133,12 @@
                                                   aws-credentials)]
                  (async/>! ch {:uuid uuid
                                :response lambda-resp
-                               :error nil
+                               :channel-error nil
                                :type type}))
                (catch Exception e
                  (async/>! ch {:uuid uuid
-                               :response nil
-                               :error e
+                               :response {}
+                               :channel-error e
                                :type type}))))
            ch))
        initiative-order))
@@ -148,20 +153,26 @@
        (update game-state-acc
                (if (= type :wombat) :players :zakano)
                (fn [decision-makers]
-                 (let [decision-maker (get decision-makers uuid)
-                       {response-command :response
-                        user-code-stacktrace :error} response
+                 (let [decision-maker
+                       (get decision-makers uuid)
+
+                       {{response-command :command
+                         response-state :state} :response
+                        user-code-stacktrace :error
+                        lambda-error :errorMessage}
+                       response
+
                        decision-maker-update
                        (assoc decision-maker :state
                               (merge (:state decision-maker)
-                                     {:command response-command
-                                      ;; Note: Saved state should not be updated
+                                     {;; Note: Saved state should not be updated
                                       ;;       to nil on error
-                                      :saved-state (get response
-                                                        :saved-state
-                                                        (:saved-state decision-maker))
-                                      :error user-code-stacktrace}))]
+                                      :saved-state (or response-state
+                                                       (:saved-state decision-maker))
+                                      :error user-code-stacktrace}
+                                     response-command))]
                    (merge decision-makers {uuid decision-maker-update})))))
+
      game-state
      lambda-responses)))
 
@@ -204,7 +215,7 @@
                             decision-maker-uuid
                             :state]
                            {})
-        cmd-function (get-command action)
+        cmd-function (get-command (keyword action))
         decision-maker-state (build-decision-maker-state game-state
                                                          decision-maker-uuid)]
 

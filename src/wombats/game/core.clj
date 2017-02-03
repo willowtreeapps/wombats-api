@@ -19,7 +19,7 @@
   [{:keys [frame] :as game-state} interval]
 
   ;; Pretty print the arena
-  #_(au/print-arena (:frame/arena frame))
+  (au/print-arena (:frame/arena frame))
 
   ;; Pretty print the full arena state
   #_(clojure.pprint/pprint (:frame/arena frame))
@@ -29,7 +29,7 @@
    (dissoc game-state :frame))
 
   ;; Pretty print everything
-  (clojure.pprint/pprint game-state)
+  #_(clojure.pprint/pprint game-state)
 
   ;; Sleep before next frame
   (Thread/sleep interval)
@@ -60,6 +60,7 @@
           (push-frame-to-clients)
           #_(frame-debugger 1000)
           (recur)))))
+
 
 (defn initialize-game
   "Main entry point for the game engine"
