@@ -1,5 +1,6 @@
 (ns wombats.game.processor
   (:require [cheshire.core :as cheshire]
+            [taoensso.nippy :as nippy]
             [clojure.core.async :as async]
             [wombats.game.partial :refer [get-partial-arena]]
             [wombats.game.occlusion :refer [get-occluded-arena]]
@@ -97,7 +98,8 @@
 (defn- lambda-request
   [player-state bot-code aws-credentials]
   (let [client (lambda-client aws-credentials)
-        request (lambda-invoke-request player-state bot-code)
+        request (lambda-invoke-request player-state
+                                       (nippy/thaw bot-code))
         result (.invoke client request)
         response (.getPayload result)
         response-string (new String (.array response) "UTF-8")
@@ -142,22 +144,23 @@
   (let [lambda-chans (get-lamdba-channels game-state aws-credentials)
         lambda-responses (async/<!! (async/map vector lambda-chans))]
     (reduce
-     (fn [game-state-acc {:keys [uuid response error type]}]
+     (fn [game-state-acc {:keys [uuid response channel-error type]}]
        (update game-state-acc
                (if (= type :wombat) :players :zakano)
                (fn [decision-makers]
                  (let [decision-maker (get decision-makers uuid)
-
+                       {response-command :response
+                        user-code-stacktrace :error} response
                        decision-maker-update
                        (assoc decision-maker :state
                               (merge (:state decision-maker)
-                                     {:command (get response :command nil)
+                                     {:command response-command
                                       ;; Note: Saved state should not be updated
                                       ;;       to nil on error
                                       :saved-state (get response
                                                         :saved-state
                                                         (:saved-state decision-maker))
-                                      :error error}))]
+                                      :error user-code-stacktrace}))]
                    (merge decision-makers {uuid decision-maker-update})))))
      game-state
      lambda-responses)))

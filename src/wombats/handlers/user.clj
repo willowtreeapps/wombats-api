@@ -6,8 +6,8 @@
             [wombats.specs.utils :as sutils]))
 
 (def ^:private wombat-body-sample
-  #:wombat{:name "teddy"
-           :url "/oconn/wombats/teddy.clj"})
+  #:wombat{:name "Teddy"
+           :url "/oconn/wombat-bots/contents/bot-one.clj"})
 
 ;; Swagger Parameters
 (def ^:private user-id-path-param
@@ -23,7 +23,7 @@
    :required true})
 
 (def ^:private wombat-body-params
-  {:name "wombat body"
+  {:name "wombat-body"
    :in "body"
    :description "values for a new wombat"
    :required true
