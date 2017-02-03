@@ -14,6 +14,18 @@
 (s/def ::game-id int?)
 (s/def ::game-handshake (s/keys :req [::user-id ::game-id]))
 
+(defn- get-channel-ids
+  [game-id]
+  (keys (get-in @game-rooms [game-id :players])))
+
+(defn broadcast-arena
+  [game-id arena]
+  (let [channel-ids (get-channel-ids game-id)]
+    (doseq [channel-id channel-ids] (ws-core/send-message game-connections
+                                                          channel-id
+                                                          {:meta {:type :frame-update}
+                                                           :payload arena}))))
+
 ;; -------------------------------------
 ;; -------- Dev Simulator --------------
 ;; -------------------------------------
@@ -59,8 +71,7 @@
   (fn [{:keys [chan-id] :as socket-user}
       {:keys [game-id]}]
     ;; TODO Check for ghost connections
-    (swap! game-rooms assoc-in [game-id :players chan-id] socket-user)
-    (prn @game-rooms)))
+    (swap! game-rooms assoc-in [game-id :players chan-id] socket-user)))
 
 (defn- authenticate-user
   [datomic]
