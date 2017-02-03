@@ -19,7 +19,7 @@
   [{:keys [frame] :as game-state} interval]
 
   ;; Pretty print the arena
-  (au/print-arena (:frame/arena frame))
+  #_(au/print-arena (:frame/arena frame))
 
   ;; Pretty print the full arena state
   #_(clojure.pprint/pprint (:frame/arena frame))
@@ -29,7 +29,7 @@
    (dissoc game-state :frame))
 
   ;; Pretty print everything
-  #_(clojure.pprint/pprint game-state)
+  (clojure.pprint/pprint game-state)
 
   ;; Sleep before next frame
   (Thread/sleep interval)
@@ -46,10 +46,40 @@
 
   game-state)
 
+(defn- add-player-scores
+  [stats players]
+  (reduce
+   (fn [stats-acc [uuid {:keys [stats user wombat]
+                        :as player}]]
+     (let [score (:stats/score stats)
+           user (:user/github-username user)
+           wombat (:wombat/name wombat)]
+       (assoc stats-acc uuid {:score score
+                              :username user
+                              :wombat-name wombat})))
+   stats players))
+
+(defn- add-player-hp
+  [stats arena]
+  (let [player-ids (set (keys stats))]
+    (reduce
+     (fn [stats-acc cell]
+       (let [cell-uuid (get-in cell [:contents :uuid])]
+         (if (contains? player-ids cell-uuid)
+           (assoc-in stats-acc [cell-uuid :hp] (get-in cell [:contents :hp]))
+           stats-acc)))
+     stats (flatten arena))))
+
 (defn- push-stats-update-to-clients
   [game-state]
 
-  #_(let [player-stats (-> (:players game-state))])
+  (let [player-stats (-> {}
+                         (add-player-scores (:players game-state))
+                         (add-player-hp (get-in game-state [:frame
+                                                            :frame/arena])))]
+    (game-sockets/broadcast-stats
+     (:game-id game-state)
+     player-stats))
 
   game-state)
 

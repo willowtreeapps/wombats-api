@@ -5,7 +5,8 @@
             [clojure.core.async :as async]
             [org.httpkit.client :as http]
             [wombats.arena.utils :as a-utils]
-            [wombats.game.utils :as g-utils]))
+            [wombats.game.utils :as g-utils]
+            [wombats.game.zakano-code :refer [get-zakano-code]]))
 
 (defn- add-players-to-game
   "Adds players to random cells in the arena"
@@ -93,9 +94,10 @@
 (defn- parse-player-channels
   "If the network request succeeded, attaches a users code to game-state"
   [players responses]
-  (reduce (fn [player-acc {:keys [player-eid resp]}]
-            (when (= 200 (:status resp))
-              (assoc-in player-acc [player-eid :state :code] (parse-github-code resp))))
+  (reduce (fn [player-acc {:keys [player-eid resp] :as player}]
+            (if (= 200 (:status resp))
+              (assoc-in player-acc [player-eid :state :code] (parse-github-code resp))
+              player-acc))
           players
           responses))
 
@@ -110,10 +112,10 @@
   "Sources a bot to run as the zakano"
   [game-state]
   (let [;; TODO put zakano in db, maybe allow for selecting specific zakano?
-        url "https://api.github.com/repos/willowtreeapps/wombats-bots/contents/zakano.clj"
-        ;; TODO add auth headers to increase limit
-        response @(http/get url)
-        code (parse-github-code response)]
+        ;;url "https://api.github.com/repos/willowtreeapps/wombats-bots/contents/zakano.clj"
+        ;;response @(http/get url)
+        ;; code (parse-github-code response)
+        code (get-zakano-code)]
     (update game-state :zakano (fn [zakano]
                                  (reduce (fn [zakano-acc [zakano-id zakano-state]]
                                            (assoc zakano-acc

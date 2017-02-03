@@ -37,6 +37,10 @@
                     :user/avatar-url
                     :chan-id])))
 
+(defn- get-channel-ids
+  [game-id]
+  (keys (get-in @game-rooms [game-id :players])))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Handlers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -67,16 +71,21 @@
     ;; TODO Check for ghost connections
     (swap! game-rooms assoc-in [game-id :players chan-id] socket-user)))
 
-(defn- get-channel-ids
-  [game-id]
-  (keys (get-in @game-rooms [game-id :players])))
+;; Broadcast functions
 
 (defn broadcast-arena
   [game-id arena]
   (let [channel-ids (get-channel-ids game-id)]
     (doseq [channel-id channel-ids] (send-message channel-id
-                                                  {:meta {:type :frame-update}
+                                                  {:meta {:msg-type :frame-update}
                                                    :payload arena}))))
+
+(defn broadcast-stats
+  [game-id stats]
+  (let [channel-ids (get-channel-ids game-id)]
+    (doseq [channel-id channel-ids] (send-message channel-id
+                                                  {:meta {:msg-type :stats-update}
+                                                   :payload stats}))))
 
 (defn create-socket-handler-map
   "Allows for adding custom handlers that respond to namespaced messages

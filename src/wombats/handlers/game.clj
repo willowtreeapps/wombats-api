@@ -83,7 +83,6 @@
            get-games-by-eids (dao/get-fn :get-games-by-eids context)
            {status :status
             user :user} (get request :query-params {})
-           game-eids (cond-> [])
            games (if (empty? (:query-params request))
                    (get-all-games)
                    (get-games-by-eids (->> (cond-> []
