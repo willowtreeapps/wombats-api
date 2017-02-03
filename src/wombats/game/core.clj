@@ -46,6 +46,13 @@
 
   game-state)
 
+(defn- push-stats-update-to-clients
+  [game-state]
+
+  #_(let [player-stats (-> (:players game-state))])
+
+  game-state)
+
 (defn- game-loop
   "Game loop"
   [game-state aws-credentials]
@@ -58,6 +65,7 @@
           (p/process-decisions)
           (f/finalize-frame)
           (push-frame-to-clients)
+          (push-stats-update-to-clients)
           #_(frame-debugger 1000)
           (recur)))))
 
