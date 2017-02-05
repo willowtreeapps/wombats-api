@@ -89,6 +89,8 @@
          (let [access-token @(get-access-token {:client_id client-id
                                                 :client_secret client-secret
                                                 :code code})
+               ;; TODO BUG If the user does not have their email setup on GH this
+               ;; step will fail
                user (when access-token
                       (parse-user-response @(get-github-user access-token)))
                create-or-update-user (dao/get-fn :create-or-update-user context)
