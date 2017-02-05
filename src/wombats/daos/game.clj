@@ -183,6 +183,14 @@
         (db-requirement-error
          (str "Color '" color "' is already in use")))
 
+      (when-not user-eid
+        (db-requirement-error
+         (str "Cannot add player to game without a user-eid")))
+
+      (when-not wombat-eid
+        (db-requirement-error
+         (str "Cannot add player to game without a wombat-eid")))
+
       ;; This next part builds up the transaction(s)
       ;; 1. Creates the player trx
       ;; 2. Adds player to the game
