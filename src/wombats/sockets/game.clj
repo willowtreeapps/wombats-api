@@ -22,6 +22,24 @@
       (when-not channel-open?
         (swap! connections dissoc chan-id)))))
 
+(defn connection-clean-err
+  "If the scheduler fails this will be called
+
+  TODO: Send to logs
+  "
+  [error]
+  (prn error))
+
+(defn start-connection-cleanup
+  "Kicks off the cleanup job responsible for removing closed channels
+  from state."
+  []
+  (chime-at
+   (rest (p/periodic-seq (t/now) (-> 10 t/seconds)))
+   clean-connections
+   {:error-handler connection-clean-err}))
+
+(start-connection-cleanup)
 
 (defn dev-socket-helpers
   "Dev functions for easy access to atom state
@@ -38,19 +56,6 @@
   ;; Remove all closed connections
   (clean-connections 0)
   )
-
-(defn connection-clean-err
-  "If the scheduler fails this will be called
-
-  TODO: Send to logs
-  "
-  [error]
-  (prn error))
-
-(chime-at
- (rest (p/periodic-seq (t/now) (-> 10 t/seconds)))
- clean-connections
- {:error-handler connection-clean-err})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
@@ -112,7 +117,6 @@
   [datomic]
   (fn [{:keys [chan-id] :as socket-user}
       {:keys [game-id]}]
-    ;; TODO Check for ghost connections
     (swap! game-rooms assoc-in [game-id :players chan-id] socket-user)))
 
 (defn- broadcast-game-message
@@ -129,14 +133,10 @@
   (fn [{:keys [chan-id user/github-username] :as socket-user}
       {:keys [game-id message]}]
 
-    ;; TODO Each msg needs a unique way to id itself
     (when (and github-username (not= (count message) 0))
       (let [formatted-message {:username github-username
                                :message message
-                               :timestamp (str (l/local-now))
-                               ;; (f/unparse (f/formatter-local "HH:mm:ss")
-                               ;;                       (l/local-now))
-                               }]
+                               :timestamp (str (l/local-now))}]
         (broadcast-game-message game-id formatted-message)))))
 
 ;; Broadcast functions
