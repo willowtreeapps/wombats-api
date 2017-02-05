@@ -18,6 +18,9 @@
                             ;; Working with time
                             [clj-time "0.13.0"]
 
+                            ;; Scheduler
+                            [jarohen/chime "0.2.0"]
+
                             ;; Environment configuration
                             [environ         "1.1.0"]
                             [levand/immuconf "0.1.0"]

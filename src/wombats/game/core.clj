@@ -74,10 +74,10 @@
    (dissoc game-state :frame))
 
   ;; Pretty print everything
-  #_(clojure.pprint/pprint game-state)
+  (clojure.pprint/pprint game-state)
 
   ;; Print number of players
-  (prn (str "Player Count: " (count (keys (:players game-state)))))
+  #_(prn (str "Player Count: " (count (keys (:players game-state)))))
 
   ;; Sleep before next frame
   (Thread/sleep interval)

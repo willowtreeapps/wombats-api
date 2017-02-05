@@ -3,11 +3,59 @@
             [clojure.spec :as s]
             [clojure.core.async :refer [put! <! timeout]]
             [clojure.edn :as edn]
+            [clj-time.core :as t]
+            [clj-time.local :as l]
+            [clj-time.format :as f]
+            [clj-time.periodic :as p]
+            [chime :refer [chime-at]]
             [io.pedestal.http.jetty.websockets :as ws]))
 
 (def ^:private game-rooms (atom {}))
 
 (def ^:private connections (atom {}))
+
+(defn clean-connections
+  "Removes all closed connections from state"
+  [time]
+  (doseq [[chan-id {:keys [session]}] @connections]
+    (let [channel-open? (.isOpen session)]
+      (when-not channel-open?
+        (swap! connections dissoc chan-id)))))
+
+(defn connection-clean-err
+  "If the scheduler fails this will be called
+
+  TODO: Send to logs
+  "
+  [error]
+  (prn error))
+
+(defn start-connection-cleanup
+  "Kicks off the cleanup job responsible for removing closed channels
+  from state."
+  []
+  (chime-at
+   (rest (p/periodic-seq (t/now) (-> 10 t/seconds)))
+   clean-connections
+   {:error-handler connection-clean-err}))
+
+(start-connection-cleanup)
+
+(defn dev-socket-helpers
+  "Dev functions for easy access to atom state
+
+  If running cider, use C-x C-e to eval the helper functions"
+  []
+
+  ;; Print number of connections
+  (prn (count (keys @connections)))
+
+  ;; Print connections
+  (clojure.pprint/pprint @connections)
+
+  ;; Remove all closed connections
+  (clean-connections 0)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
@@ -26,7 +74,8 @@
 (defn send-message
   [chan-id message]
   (let [chan (get-in @connections [chan-id :chan])]
-    (put! chan (format-message message))))
+    (when chan
+      (put! chan (format-message message)))))
 
 (defn- get-socket-user
   [chan-id]
@@ -68,24 +117,45 @@
   [datomic]
   (fn [{:keys [chan-id] :as socket-user}
       {:keys [game-id]}]
-    ;; TODO Check for ghost connections
     (swap! game-rooms assoc-in [game-id :players chan-id] socket-user)))
+
+(defn- broadcast-game-message
+  [game-id formatted-message]
+  (let [channel-ids (get-channel-ids game-id)]
+    (doseq [channel-id channel-ids]
+      (send-message channel-id
+                    {:meta {:msg-type :chat-message
+                            :game-id game-id}
+                     :payload formatted-message}))))
+
+(defn- chat-message
+  [datomic]
+  (fn [{:keys [chan-id user/github-username] :as socket-user}
+      {:keys [game-id message]}]
+
+    (when (and github-username (not= (count message) 0))
+      (let [formatted-message {:username github-username
+                               :message message
+                               :timestamp (str (l/local-now))}]
+        (broadcast-game-message game-id formatted-message)))))
 
 ;; Broadcast functions
 
 (defn broadcast-arena
   [game-id arena]
   (let [channel-ids (get-channel-ids game-id)]
-    (doseq [channel-id channel-ids] (send-message channel-id
-                                                  {:meta {:msg-type :frame-update}
-                                                   :payload arena}))))
+    (doseq [channel-id channel-ids]
+      (send-message channel-id
+                    {:meta {:msg-type :frame-update}
+                     :payload arena}))))
 
 (defn broadcast-stats
   [game-id stats]
   (let [channel-ids (get-channel-ids game-id)]
-    (doseq [channel-id channel-ids] (send-message channel-id
-                                                  {:meta {:msg-type :stats-update}
-                                                   :payload stats}))))
+    (doseq [channel-id channel-ids]
+      (send-message channel-id
+                    {:meta {:msg-type :stats-update}
+                     :payload stats}))))
 
 (defn create-socket-handler-map
   "Allows for adding custom handlers that respond to namespaced messages
@@ -110,7 +180,8 @@
   {:keep-alive keep-alive
    :handshake (handshake datomic)
    :join-game (join-game datomic)
-   :authenticate-user (authenticate-user datomic)})
+   :authenticate-user (authenticate-user datomic)
+   :chat-message (chat-message datomic)})
 
 (defn new-ws-connection
   [datomic]
