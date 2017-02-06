@@ -86,9 +86,25 @@
                     :user/avatar-url
                     :chan-id])))
 
-(defn- get-channel-ids
+(defn- get-game-room
   [game-id]
-  (keys (get-in @game-rooms [game-id :players])))
+  (get @game-rooms game-id))
+
+(defn- get-game-room-players
+  [game-id]
+  (:players (get-game-room game-id)))
+
+(defn- get-game-room-channel-ids
+  [game-id]
+  (keys (get-game-room-players game-id)))
+
+(defn- get-game-room-player
+  [game-id chan-id]
+  (get (get-game-room-players game-id) chan-id))
+
+(defn- get-player-color
+  [game-id chan-id]
+  (:color (get-game-room-player game-id chan-id)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Handlers
@@ -115,13 +131,17 @@
 
 (defn- join-game
   [datomic]
-  (fn [{:keys [chan-id] :as socket-user}
+  (fn [{:keys [chan-id :user/id] :as socket-user}
       {:keys [game-id]}]
-    (swap! game-rooms assoc-in [game-id :players chan-id] socket-user)))
+    (let [player ((:get-player-from-game datomic) game-id id)]
+      (swap! game-rooms
+             assoc-in
+             [game-id :players chan-id]
+             (assoc socket-user :color (:player/color player))))))
 
 (defn- broadcast-game-message
   [game-id formatted-message]
-  (let [channel-ids (get-channel-ids game-id)]
+  (let [channel-ids (get-game-room-channel-ids game-id)]
     (doseq [channel-id channel-ids]
       (send-message channel-id
                     {:meta {:msg-type :chat-message
@@ -130,12 +150,13 @@
 
 (defn- chat-message
   [datomic]
-  (fn [{:keys [chan-id user/github-username] :as socket-user}
-      {:keys [game-id message]}]
+  (fn [{:keys [chan-id user/github-username color] :as socket-user}
+      {:keys [game-id message] :as msg}]
 
     (when (and github-username (not= (count message) 0))
       (let [formatted-message {:username github-username
                                :message message
+                               :color (get-player-color game-id chan-id)
                                :timestamp (str (l/local-now))}]
         (broadcast-game-message game-id formatted-message)))))
 
@@ -143,7 +164,7 @@
 
 (defn broadcast-arena
   [game-id arena]
-  (let [channel-ids (get-channel-ids game-id)]
+  (let [channel-ids (get-game-room-channel-ids game-id)]
     (doseq [channel-id channel-ids]
       (send-message channel-id
                     {:meta {:msg-type :frame-update}
@@ -151,11 +172,12 @@
 
 (defn broadcast-stats
   [game-id stats]
-  (let [channel-ids (get-channel-ids game-id)]
-    (doseq [channel-id channel-ids]
-      (send-message channel-id
+  (let [players (get-game-room-players game-id)]
+    (doseq [[chan-id player] players]
+      (clojure.pprint/pprint stats)
+      (send-message chan-id
                     {:meta {:msg-type :stats-update}
-                     :payload stats}))))
+                     :payload (assoc stats :color (:color player))}))))
 
 (defn create-socket-handler-map
   "Allows for adding custom handlers that respond to namespaced messages

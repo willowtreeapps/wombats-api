@@ -302,3 +302,18 @@
 
       (d/transact-async conn [{:db/id game-eid
                                :game/status :active}]))))
+
+(defn get-player-from-game
+  "Returns the player entity from a specified game"
+  [conn]
+  (fn [game-id user-id]
+    (let [player (ffirst
+                  (d/q '[:find (pull ?player [*])
+                         :in $ ?game-id ?user-id
+                         :where [?user :user/id ?user-id]
+                                [?player :player/user ?user]
+                                [?game :game/players ?player]]
+                       (d/db conn)
+                       game-id
+                       user-id))]
+      player)))

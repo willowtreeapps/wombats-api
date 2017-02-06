@@ -8,7 +8,7 @@
   "Creates a map of all the data accessors that can be used inside of handlers / socket connections.
   This makes no assumption of authentication / authorization which should be handled prior to gaining
   access to these functions."
-  [{:keys [conn] :as datomic} 
+  [{:keys [conn] :as datomic}
    aws-credentials]
   {;; User DAOS
    :get-users (user/get-users conn)
@@ -38,6 +38,7 @@
    :get-game-eids-by-player (game/get-game-eids-by-player conn)
    :get-games-by-eids (game/get-games-by-eids conn)
    :get-game-by-id (game/get-game-by-id conn)
+   :get-player-from-game (game/get-player-from-game conn)
    :add-game (game/add-game conn)
    :retract-game (game/retract-game conn)
    :add-player-to-game (game/add-player-to-game conn)
