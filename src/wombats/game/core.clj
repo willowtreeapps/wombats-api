@@ -116,6 +116,6 @@
   [game-state aws-credentials]
   (-> game-state
       (i/initialize-game)
-      #_(frame-debugger 0)
       (game-loop aws-credentials)
+      #_(frame-debugger 0)
       (f/finalize-game)))
