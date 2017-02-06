@@ -11,7 +11,7 @@
   ;; TODO For now we're only calculating a fix number of rounds
   ;; This will have to be updated with the base condition for
   ;; each game type
-  (= 80 (get-in game-state [:frame :frame/frame-number])))
+  (= 10 (get-in game-state [:frame :frame/frame-number])))
 
 (defn- push-frame-to-clients
   [game-state]
@@ -52,7 +52,9 @@
   (let [player-stats (-> {}
                          (add-player-scores (:players game-state))
                          (add-player-hp (get-in game-state [:frame
-                                                            :frame/arena])))]
+                                                            :frame/arena]))
+                         vals
+                         first)]
     (game-sockets/broadcast-stats
      (:game-id game-state)
      player-stats))
