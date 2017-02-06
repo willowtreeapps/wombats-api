@@ -177,7 +177,7 @@
     (doseq [chan-id viewers]
       (send-message chan-id
                     {:meta {:msg-type :stats-update}
-                     :payload stats}))))
+                     :payload (vec stats)}))))
 
 (defn create-socket-handler-map
   "Allows for adding custom handlers that respond to namespaced messages
