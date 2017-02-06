@@ -48,13 +48,11 @@
 
 (defn- push-stats-update-to-clients
   [game-state]
-
   (let [player-stats (-> {}
                          (add-player-scores (:players game-state))
                          (add-player-hp (get-in game-state [:frame
                                                             :frame/arena]))
-                         vals
-                         first)]
+                         vals)]
     (game-sockets/broadcast-stats
      (:game-id game-state)
      player-stats))
@@ -116,6 +114,6 @@
   [game-state aws-credentials]
   (-> game-state
       (i/initialize-game)
-      #_(frame-debugger 0)
       (game-loop aws-credentials)
+      #_(frame-debugger 0)
       (f/finalize-game)))

@@ -26,12 +26,25 @@
                           :zakano}]
     (not (contains? collision-items (:type contents)))))
 
+(defn- apply-food-effects
+  [decision-maker-contents]
+  ;; TODO pull from config
+  (update decision-maker-contents :hp #(+ % 10)))
+
+(defn- apply-poison-effects
+  [decision-maker-contents]
+  ;; TODO pull from config
+  (update decision-maker-contents :hp #(- % 10)))
+
 (defn update-decision-maker-with
   [decision-maker-contents
    desired-space-contents
    desired-space-metadata]
-  ;; TODO Apply effects
-  decision-maker-contents)
+
+  (condp = (:type desired-space-contents)
+    :food (apply-food-effects decision-maker-contents)
+    :poison (apply-poison-effects decision-maker-contents)
+    decision-maker-contents))
 
 (defn- move-into-cell
   [game-state
@@ -43,10 +56,6 @@
   (let [updated-decision-maker-contents (update-decision-maker-with decision-maker-contents
                                                                     desired-space-contents
                                                                     desired-space-metadata)
-        update-player-stats (fn [game-state]
-                              game-state)
-        update-player-messages (fn [game-state]
-                                 game-state)
         is-player? (gu/is-player? decision-maker-contents)]
     (cond-> game-state
       true (update-in [:frame :frame/arena] #(au/update-cell-contents %
@@ -55,8 +64,16 @@
       true (update-in [:frame :frame/arena] #(au/update-cell-contents %
                                                                       decision-maker-coords
                                                                       (au/create-new-contents :open)))
-      is-player? (update-player-stats)
-      is-player? (update-player-messages))))
+      is-player? (update-in [:players (:uuid decision-maker-contents) :stats]
+                            (fn [stats]
+                              (condp = (:type desired-space-contents)
+                                :food (-> stats
+                                          (update :stats/food-collected inc)
+                                          ;; TODO Pull from config
+                                          (update :stats/score + 5))
+                                :poison (-> stats
+                                            (update :stats/poison-collected inc))
+                                stats))))))
 
 (defn- apply-collision-damage
   [contents damage]

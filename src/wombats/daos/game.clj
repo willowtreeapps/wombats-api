@@ -208,6 +208,8 @@
                        :stats/player player-tmpid
                        :stats/game game-eid
                        :stats/frame-number 0
+                       :stats/food-collected 0
+                       :stats/poison-collected 0
                        :stats/score 0
                        :stats/wombats-destroyed 0
                        :stats/wombats-hit 0
