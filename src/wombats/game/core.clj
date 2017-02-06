@@ -11,7 +11,7 @@
   ;; TODO For now we're only calculating a fix number of rounds
   ;; This will have to be updated with the base condition for
   ;; each game type
-  (= 10 (get-in game-state [:frame :frame/frame-number])))
+  (= 50 (get-in game-state [:frame :frame/frame-number])))
 
 (defn- push-frame-to-clients
   [game-state]

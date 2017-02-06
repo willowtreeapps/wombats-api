@@ -131,6 +131,7 @@
                                                                            uuid
                                                                            type)
                                                   aws-credentials)]
+
                  (async/>! ch {:uuid uuid
                                :response lambda-resp
                                :channel-error nil
