@@ -103,7 +103,7 @@
           (p/source-decisions aws-credentials)
           (p/process-decisions)
           (f/finalize-frame)
-          #_(timeout-frame 500)
+          (timeout-frame 1000)
           (push-frame-to-clients)
           (push-stats-update-to-clients)
           #_(frame-debugger 1000)
