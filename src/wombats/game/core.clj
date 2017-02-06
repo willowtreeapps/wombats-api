@@ -25,14 +25,15 @@
 (defn- add-player-scores
   [stats players]
   (reduce
-   (fn [stats-acc [uuid {:keys [stats user wombat]
-                        :as player}]]
+   (fn [stats-acc [uuid {:keys [stats user wombat player]}]]
      (let [score (:stats/score stats)
            user (:user/github-username user)
-           wombat (:wombat/name wombat)]
+           wombat (:wombat/name wombat)
+           color (:player/color player)]
        (assoc stats-acc uuid {:score score
                               :username user
-                              :wombat-name wombat})))
+                              :wombat-name wombat
+                              :color color})))
    stats players))
 
 (defn- add-player-hp
