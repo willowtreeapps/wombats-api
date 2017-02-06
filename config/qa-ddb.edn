@@ -1,0 +1,5 @@
+{:datomic {:uri "datomic:ddb://us-east-1/wombats/qa"
+           :requires-auth true}
+ :pedestal {:port 8888
+            :container-options {:ssl? false}}
+ :github {:web-client-redirect "qa.wombats.io"}}
