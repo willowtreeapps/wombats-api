@@ -48,13 +48,11 @@
 
 (defn- push-stats-update-to-clients
   [game-state]
-
   (let [player-stats (-> {}
                          (add-player-scores (:players game-state))
                          (add-player-hp (get-in game-state [:frame
                                                             :frame/arena]))
-                         vals
-                         first)]
+                         vals)]
     (game-sockets/broadcast-stats
      (:game-id game-state)
      player-stats))

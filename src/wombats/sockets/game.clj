@@ -172,12 +172,22 @@
 
 (defn broadcast-stats
   [game-id stats]
-  (let [players (get-game-room-players game-id)]
+  (let [players
+        (get-game-room-players game-id)
+
+        formatted-players
+        (reduce
+         (fn [player-acc [_ player]]
+           (let [p-stats (first (filter #(= (:username %)
+                                            (:user/github-username player))
+                                        stats))]
+             (conj player-acc (assoc p-stats :color (:color player)))))
+         []
+         players)]
     (doseq [[chan-id player] players]
-      (clojure.pprint/pprint stats)
       (send-message chan-id
                     {:meta {:msg-type :stats-update}
-                     :payload (assoc stats :color (:color player))}))))
+                     :payload formatted-players}))))
 
 (defn create-socket-handler-map
   "Allows for adding custom handlers that respond to namespaced messages
