@@ -11,7 +11,7 @@
   ;; TODO For now we're only calculating a fix number of rounds
   ;; This will have to be updated with the base condition for
   ;; each game type
-  (= 10 (get-in game-state [:frame :frame/frame-number])))
+  (= 50 (get-in game-state [:frame :frame/frame-number])))
 
 (defn- push-frame-to-clients
   [game-state]
@@ -25,14 +25,15 @@
 (defn- add-player-scores
   [stats players]
   (reduce
-   (fn [stats-acc [uuid {:keys [stats user wombat]
-                        :as player}]]
+   (fn [stats-acc [uuid {:keys [stats user wombat player]}]]
      (let [score (:stats/score stats)
            user (:user/github-username user)
-           wombat (:wombat/name wombat)]
+           wombat (:wombat/name wombat)
+           color (:player/color player)]
        (assoc stats-acc uuid {:score score
                               :username user
-                              :wombat-name wombat})))
+                              :wombat-name wombat
+                              :color color})))
    stats players))
 
 (defn- add-player-hp

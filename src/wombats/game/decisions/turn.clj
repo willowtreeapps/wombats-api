@@ -9,7 +9,7 @@
   (let [contents (dh/get-decision-maker-contents decision-maker-state)
         orientation (:orientation contents)
         new-orientation (gu/modify-orientation orientation
-                                               (:direction metadata))
+                                               (keyword (:direction metadata)))
         coords (get-in decision-maker-state [:decision-maker
                                              :coords])
         updated-contents (assoc contents :orientation new-orientation)]
