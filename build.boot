@@ -89,17 +89,52 @@
 
   (require 'user))
 
-(deftask refresh-db
-  "resets the database"
-  []
+(defn- get-datomic-uri
+  [{{uri :uri
+     auth? :requires-auth} :datomic}
+   {{akid :access-key-id
+     sk :secret-key} :aws}]
 
-  (let [datomic-uri "datomic:free://localhost:4334/wombats-dev"
-        _ (d/delete-database datomic-uri)
-        _ (d/create-database datomic-uri)
-        conn (d/connect datomic-uri)]
+  (if auth?
+    (str uri "?aws_access_key_id=" akid "&aws_secret_key=" sk)
+    uri))
+
+(defn- build-connection-string
+  []
+  (let [env (System/getProperty "APP_ENV")
+        env-settings (-> (str env ".edn")
+                         (clojure.java.io/resource)
+                         (clojure.java.io/file)
+                         (slurp)
+                         (clojure.edn/read-string))
+        config-settings (load-file
+                         (str (System/getProperty "user.home") "/.wombats/config.edn"))]
+    (get-datomic-uri env-settings config-settings)))
+
+(defn- refresh-db!
+  [uri]
+  (d/delete-database uri)
+  (d/create-database uri)
+  (let [conn (d/connect uri)]
     @(d/transact conn (load-file "resources/datomic/schema.edn"))
     @(d/transact conn (load-file "resources/datomic/roles.edn"))
     @(d/transact conn (load-file "resources/datomic/users.edn"))))
+
+(deftask refresh-dev-ddb
+  "Resets the dev dynamo db"
+  []
+  (System/setProperty "APP_ENV" "dev-ddb")
+
+  (-> (build-connection-string)
+      refresh-db!))
+
+(deftask refresh-db
+  "resets the database"
+  []
+  (System/setProperty "APP_ENV" "dev")
+
+  (-> (build-connection-string)
+      refresh-db!))
 
 (deftask build
   "Creates a new build"
