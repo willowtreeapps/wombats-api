@@ -261,7 +261,7 @@
                              (pull ?stats [*])
                              (pull ?user [:db/id
                                           :user/github-username
-                                          :user/access-token])
+                                          :user/github-access-token])
                              (pull ?wombat [*])
                        :in $ ?game-id
                        :where [?game :game/id ?game-id]

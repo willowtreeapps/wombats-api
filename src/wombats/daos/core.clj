@@ -14,6 +14,7 @@
    :get-users (user/get-users conn)
    :get-user-by-id (user/get-user-by-id conn)
    :get-user-by-email (user/get-user-by-email conn)
+   :get-user-by-github-id (user/get-user-by-github-id conn)
    :get-user-by-access-token (user/get-user-by-access-token conn)
    :remove-access-token (user/remove-access-token conn)
    :create-or-update-user (user/create-or-update-user conn)

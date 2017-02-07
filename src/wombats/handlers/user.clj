@@ -2,6 +2,7 @@
   (:require [io.pedestal.interceptor.helpers :as interceptor]
             [clojure.spec :as s]
             [wombats.daos.helpers :as dao]
+            [wombats.handlers.helpers :refer [handler-error]]
             [wombats.interceptors.authorization :refer [authorization-error]]
             [wombats.specs.utils :as sutils]))
 
@@ -128,16 +129,21 @@
    ::add-user-wombat
    (fn [{:keys [request response] :as context}]
      (let [add-user-wombat (dao/get-fn :add-user-wombat context)
+           get-user-by-id (dao/get-fn :get-user-by-id context)
            get-wombat (dao/get-fn :get-wombat-by-id context)
            wombat (:edn-params request)
            user-id (get-in request [:path-params :user-id])
            wombat-id (dao/gen-id)
-           new-wombat (merge wombat
-                             {:wombat/id wombat-id})]
+           new-wombat (merge wombat {:wombat/id wombat-id})
+           user (get-user-by-id user-id)]
+
+       (when-not user
+         (handler-error
+          (str "User '" user-id "' does not exist.")))
 
        (sutils/validate-input ::wombat-params wombat)
 
-       @(add-user-wombat user-id new-wombat)
+       @(add-user-wombat (:db/id user) new-wombat)
 
        (assoc context :response (assoc response
                                        :status 200
