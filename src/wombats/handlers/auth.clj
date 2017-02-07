@@ -2,7 +2,10 @@
   (:require [io.pedestal.interceptor.helpers :as interceptor]
             [org.httpkit.client :as http]
             [cheshire.core :refer [parse-string]]
+            [buddy.core.mac :as mac]
+            [buddy.core.codecs :as codecs]
             [wombats.interceptors.github :refer [get-github-settings]]
+            [wombats.interceptors.authorization :refer [get-hashing-secret]]
             [wombats.daos.helpers :as dao]))
 
 (def ^:private github-base "https://github.com/login/oauth/")
@@ -72,6 +75,13 @@
                                        :headers {"Location" github-redirect}
                                        :status 302
                                        :body nil))))))
+
+(defn- gen-user-access-token
+  "Generates an access token to be used by the wombats client"
+  [secret-key github-id]
+  (-> (str github-id)
+      (mac/hash {:key secret-key :alg :hmac+sha256})
+      (codecs/bytes->hex)))
 
 (def github-callback
   "Callback handler from GitHub OAuth request"

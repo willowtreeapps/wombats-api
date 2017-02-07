@@ -20,10 +20,9 @@
       (assoc component :service (bootstrap-service config
                                                    route-map
                                                    {:datomic datomic
-                                                    :github (get-in config [:settings
-                                                                            :github])
-                                                    :aws (get-in config [:settings
-                                                                         :aws])}))))
+                                                    :github (get-in config [:settings :github])
+                                                    :aws (get-in config [:settings :aws])
+                                                    :security (get-in config [:settings :security])}))))
   (stop [component]
     (if-not service
       component
