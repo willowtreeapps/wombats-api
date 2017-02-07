@@ -92,8 +92,6 @@
            web-client-redirect (remove-slash (get-in request [:headers "referer"]))
            failed-callback (redirect-home context web-client-redirect)]
 
-       (prn web-client-redirect)
-
        (if (= state signing-secret)
          (let [access-token @(get-access-token {:client_id client-id
                                                 :client_secret client-secret
