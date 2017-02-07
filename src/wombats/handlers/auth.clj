@@ -30,6 +30,13 @@
             {:headers {"Authorization" (str "token " access-token)
                        "Accept" "application/json"}}))
 
+(defn- remove-slash
+  "Removes the trailing slash from a url (if it exists)"
+  [url]
+  (if (.endsWith url "/")
+    (.substring url 0 (- (count url) 1))
+    url))
+
 (defn- parse-user-response
   "Parses the body if the request succeeded"
   [{:keys [body status]}]
@@ -80,10 +87,12 @@
    (fn [{:keys [request response] :as context}]
      (let [{:keys [client-id
                    client-secret
-                   signing-secret
-                   web-client-redirect]} (get-github-settings context)
+                   signing-secret]} (get-github-settings context)
            {:keys [code state]} (:query-params request)
+           web-client-redirect (remove-slash (get-in request [:headers "referer"]))
            failed-callback (redirect-home context web-client-redirect)]
+
+       (prn web-client-redirect)
 
        (if (= state signing-secret)
          (let [access-token @(get-access-token {:client_id client-id
@@ -119,7 +128,7 @@
    (fn [{:keys [request response] :as context}]
      (let [access-token (get-in request [:headers "authorization"])
            remove-access-token (dao/get-fn :remove-access-token context)
-           {web-client-redirect :web-client-redirect} (get-github-settings context)]
+           web-client-redirect (remove-slash (get-in request [:headers "referer"]))]
 
        (when access-token
          @(remove-access-token access-token))
