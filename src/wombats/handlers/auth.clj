@@ -1,5 +1,6 @@
 (ns wombats.handlers.auth
-  (:require [io.pedestal.interceptor.helpers :as interceptor]
+  (:require [clojure.string :refer [ends-with? join split]]
+            [io.pedestal.interceptor.helpers :as interceptor]
             [org.httpkit.client :as http]
             [cheshire.core :refer [parse-string]]
             [wombats.interceptors.github :refer [get-github-settings]]
@@ -31,11 +32,25 @@
                        "Accept" "application/json"}}))
 
 (defn- remove-slash
-  "Removes the trailing slash from a url (if it exists)"
-  [url]
-  (if (.endsWith url "/")
-    (.substring url 0 (- (count url) 1))
-    url))
+  "Removes the trailing slash from a string (if it exists)"
+  [string]
+  (if (ends-with? string "/")
+    (-> string
+        (split #"")
+        (drop-last)
+        (join))
+
+    string))
+
+(defn- get-referer
+  "Pulls out the referer from a request object"
+  [request]
+  (get-in request [:headers "referer"]))
+
+(defn- get-formatted-referer
+  "Formats the referer"
+  [request]
+  (remove-slash (get-referer request)))
 
 (defn- parse-user-response
   "Parses the body if the request succeeded"
@@ -89,7 +104,7 @@
                    client-secret
                    signing-secret]} (get-github-settings context)
            {:keys [code state]} (:query-params request)
-           web-client-redirect (remove-slash (get-in request [:headers "referer"]))
+           web-client-redirect (get-formatted-referer request)
            failed-callback (redirect-home context web-client-redirect)]
 
        (if (= state signing-secret)
@@ -126,7 +141,7 @@
    (fn [{:keys [request response] :as context}]
      (let [access-token (get-in request [:headers "authorization"])
            remove-access-token (dao/get-fn :remove-access-token context)
-           web-client-redirect (remove-slash (get-in request [:headers "referer"]))]
+           web-client-redirect (get-formatted-referer request)]
 
        (when access-token
          @(remove-access-token access-token))
