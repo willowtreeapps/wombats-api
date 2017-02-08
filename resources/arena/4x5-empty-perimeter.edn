@@ -1,0 +1,40 @@
+[[{:contents {:type :wood-barrier}
+   :meta []}
+  {:contents {:type :wood-barrier}
+   :meta []}
+  {:contents {:type :wood-barrier}
+   :meta []}
+  {:contents {:type :wood-barrier}
+   :meta []}]
+ [{:contents {:type :wood-barrier}
+   :meta []}
+  {:contents {:type :open}
+   :meta []}
+  {:contents {:type :open}
+   :meta []}
+  {:contents {:type :wood-barrier}
+   :meta []}]
+ [{:contents {:type :wood-barrier}
+   :meta []}
+  {:contents {:type :open}
+   :meta []}
+  {:contents {:type :open}
+   :meta []}
+  {:contents {:type :wood-barrier}
+   :meta []}]
+ [{:contents {:type :wood-barrier}
+   :meta []}
+  {:contents {:type :open}
+   :meta []}
+  {:contents {:type :open}
+   :meta []}
+  {:contents {:type :wood-barrier}
+   :meta []}]
+ [{:contents {:type :wood-barrier}
+   :meta []}
+  {:contents {:type :wood-barrier}
+   :meta []}
+  {:contents {:type :wood-barrier}
+   :meta []}
+  {:contents {:type :wood-barrier}
+   :meta []}]]

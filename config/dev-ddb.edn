@@ -1,0 +1,4 @@
+{:datomic {:uri "datomic:ddb://us-east-1/wombats/dev"
+           :requires-auth true}
+ :pedestal {:port 8888
+            :container-options {:ssl? false}}}

@@ -1,0 +1,459 @@
+[;; Role entites
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :role/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A roles public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :role/type
+  :db/valueType   :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A roles type (i.e. admin , user)"}
+
+ ;; User entities
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A user's public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/roles
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/many
+  :db/doc         "A user roles"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/handle
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A user's wombat handle"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/github-access-token
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A user's GitHub auth token."}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/access-token
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A user's wombat auth token."}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/github-username
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A user's GitHub username."}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/github-id
+  :db/unique      :db.unique/identity
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A user's GitHub id."}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/avatar-url
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A user's avatar url from their GitHub account."}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/wombats
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/many
+  :db/doc         "All the wombats that belong to a user"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/created-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Created by metadata"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/updated-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Updated by metadata"}
+
+ ;; Wombat entities
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :wombat/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A Wombats public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :wombat/owner
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A Wombats Owner"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :wombat/name
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A Wombats name"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :wombat/url
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The location of the wombat executable"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :wombat/created-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Created by metadata"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :wombat/updated-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Updated by metadata"}
+
+ ;; Arena entities
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An arena configurations public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/name
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An arena configurations name"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/width
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An arena configurations width"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/height
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An arena configurations height"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/shot-damage
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "How much damage does a shot cause in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/smoke-duraition
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "How long does smoke persist in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/food
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of the food elements in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/poison
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of poison elements in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/stone-walls
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of stone wall elements in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/wood-walls
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wood wall elements in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/zakano
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of Zakano elements in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/perimeter
+  :db/valueType   :db.type/boolean
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Should the arena contain a solid perimeter?"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/created-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Created by metadata"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/updated-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Updated by metadata"}
+
+ ;; Player Entities
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :player/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A players public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :player/user
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A players user reference"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :player/wombat
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A players wombat reference"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :player/color
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A players in game color"}
+
+ ;; Game Entities
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An games public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/status
+  :db/valueType   :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A games current status. ex: :pending-open, :closed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/start-time
+  :db/valueType   :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The time that the game will start"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/arena
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Arena being used for the game"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/name
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An games name"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/max-players
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Max number of players in a game"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/type
+  :db/valueType   :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Game type (i.e. free for all)"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/num-rounds
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of rounds in a game"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/round-intermission
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Length of round intermission"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/is-private
+  :db/valueType   :db.type/boolean
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Determines if a game is private or public"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/password
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Password for private games"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/frame
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Snapshot of the game at a given point in time"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/players
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/many
+  :db/doc         "Players enrolled in a game"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/stats
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/many
+  :db/doc        "Player / AI scores"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/created-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Created by metadata"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/updated-by
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Updated by metadata"}
+
+ ;; Frame Entities
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :frame/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A frames public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :frame/frame-number
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Frame number"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :frame/arena
+  :db/valueType   :db.type/bytes
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The arena representation"}
+
+ ;; Stat Entities
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A stats public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/player
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The player associated with the stats"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/game
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The game these stats are associated with"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/frame-number
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The frame where the stats were calculated"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/score
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Overall score"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/food-collected
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Amount of food collected"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/poison-collected
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Amount of poison collected"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wombats-destroyed
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wombats destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wombats-hit
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wombats hit"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/zakano-destroyed
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of zakano destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/zakano-hit
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of zakano hit"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wood-barriers-destroyed
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wood-barriers destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wood-barriers-hit
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wood-barriers hit"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/shots-fired
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of shots fired"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/shots-hit
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of shots that found target"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/number-of-moves
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of moves"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/number-of-smoke-deploys
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of smoke deploys"}]

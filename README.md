@@ -1,21 +1,37 @@
-## WillowTree Battlebots
+# Wombats
 
-Battlebots is multiplayer game inspired by [scalatron](https://scalatron.github.io/) written in [clojure](https://clojure.org/). 
+![Wombat](https://cloud.githubusercontent.com/assets/4649439/17083937/59e5a5f0-517d-11e6-92a2-976aee52d95c.png)
 
-### How it works
+[![CircleCI](https://circleci.com/gh/willowtreeapps/wombats-api.svg?style=svg)](https://circleci.com/gh/willowtreeapps/wombats-api)
 
-Each player writes their own bot in clojure (other language support may become available in the future). Players then register it in an upcoming game and battle against other bots. 
+### About Wombats
 
-### Setting up your development environment
+TODO: Mission Statement / Goals
 
-#### Requirements
+### Documentation
 
-1. [leiningen](http://leiningen.org/)
-1. [mongodb](https://docs.mongodb.com/)
+[Documentation Home](./docs/README.md)
 
-#### Getting Started
+### Development
 
-1. Run `lein run` in root directory (builds project and runs server)
-1. Run `lein figwheel` in root directory (compiles clojurescript and watches)
-1. Run `lein less auto` in root directory (watches styles)
-1. Run `mongod` start mongodb
+TODO: Basic into
+
+Want to contribute? [See how](./CONTRIBUTING.md) you can get involved.
+
+[Development Documentation](./docs/development/README.md)
+
+### Decision Log
+
+This is where all project decisions that affect the team will be logged.
+
+[Decision Log](./docs/decision-logs/README.md)
+
+### Liscense Information
+
+MIT License 
+
+Copyright (c) 2017 WillowTree, Inc.
+
+### Privacy Information
+
+TODO:

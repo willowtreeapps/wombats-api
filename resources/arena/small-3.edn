@@ -1,0 +1,220 @@
+[[{:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :steel-barrier
+   :cell-properties {}}
+  {:cell-type :steel-barrier
+   :cell-properties {}}
+  {:cell-type :steel-barrier
+   :cell-properties {}}
+  {:cell-type :steel-barrier
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}]
+ [{:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :poison
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :food
+   :cell-properties {}}
+  {:cell-type :food
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :poison
+   :cell-properties {}}
+  {:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}]
+ [{:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :wombat
+   :cell-properties {:hp 100
+                     :orientation :s
+                     :username "oconn"
+                     :color "#333333"}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :zakano
+   :cell-properties {:hp 100
+                     :orientation :n}}
+  {:cell-type :food
+   :cell-properties {}}
+  {:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}]
+ [{:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :food
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :wombat
+   :cell-properties {:hp 100
+                     :orientation :e
+                     :username "cp"
+                     :color "#444444"}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :poison
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}]
+ [{:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :zakano
+   :cell-properties {:hp 100
+                     :orientation :n}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :wombat
+   :cell-properties {:hp 100
+                     :orientaiton :n
+                     :username "emily"
+                     :color "#111111"}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :wombat
+   :cell-properties {:hp 100
+                     :orientation :s
+                     :username "jesse"
+                     :color "#222222"}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}]
+ [{:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :food
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :food
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}]
+ [{:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :zakano
+   :cell-properties {:hp 100
+                     :orientation :n}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :wombat
+   :cell-properties {:hp 100
+                     :orientation :w
+                     :username "gregg"
+                     :color "#555555"}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}]
+ [{:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :zakano
+   :cell-properties {:hp 100
+                     :orientation :n}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :zakano
+   :cell-properties {:hp 100
+                     :orientation :n}}
+  {:cell-type :poison
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}]
+ [{:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :poison
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}]
+ [{:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :wood-barrier
+   :cell-properties {:percent-decay 0}}
+  {:cell-type :steel-barrier
+   :cell-properties {}}
+  {:cell-type :steel-barrier
+   :cell-properties {}}
+  {:cell-type :steel-barrier
+   :cell-properties {}}
+  {:cell-type :steel-barrier
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}
+  {:cell-type :open
+   :cell-properties {}}]]
