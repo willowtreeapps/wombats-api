@@ -69,7 +69,8 @@
   (map (fn [[player-eid {:keys [wombat user]}]]
          (let [url (str "https://api.github.com/repos" (:wombat/url wombat))
                auth-headers {:headers {"Accept" "application/json"
-                                       "Authorization" (str "token " (:user/access-token user))}}
+                                       "Authorization" (str "token "
+                                                            (:user/github-access-token user))}}
                ch (async/chan 1)]
            (async/go
              (let [resp @(http/get url auth-headers)]

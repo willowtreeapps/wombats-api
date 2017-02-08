@@ -7,7 +7,8 @@
                                           get-entities-by-prop
                                           retract-entity-by-prop]]))
 
-(def public-user-fields [:user/id
+(def public-user-fields [:db/id
+                         :user/id
                          :user/github-username
                          :user/avatar-url])
 
@@ -40,17 +41,24 @@
   (fn [access-token]
     (get-entity-by-prop conn :user/access-token access-token)))
 
+(defn get-user-by-github-id
+  "Returns a user by a given github-id"
+  [conn]
+  (fn [github-id]
+    (get-entity-by-prop conn :user/github-id github-id)))
+
 (defn create-or-update-user
   "If a user does not exist in the system, create one. If it does, update values
   and attach the new access token"
   [conn]
-  (fn [{:keys [email login id avatar_url] :as user}
-      access-token
+  (fn [{:keys [login id avatar_url] :as user}
+      github-access-token
+      user-access-token
       current-user-id]
-    (let [update {:user/access-token access-token
+    (let [update {:user/github-access-token github-access-token
+                  :user/access-token user-access-token
                   :user/github-username login
                   :user/github-id id
-                  :user/email email
                   :user/avatar-url avatar_url}]
       (if-not current-user-id
         (d/transact-async conn [(merge update {:db/id (d/tempid :db.part/user)
@@ -130,22 +138,22 @@
 (defn add-user-wombat
   "Creates a new wombat for a particular user"
   [conn]
-  (fn [user-id {:keys [:wombat/name
-                      :wombat/url
-                      :wombat/id]}]
-    (let [wombat-id (d/tempid :db.part/user)
-          user-eid (get-user-entity-id conn user-id)]
+  (fn [user-eid
+      {:keys [:wombat/name
+              :wombat/url
+              :wombat/id]}]
+    (let [wombat-eid (d/tempid :db.part/user)]
 
       (ensure-wombat-name-availability conn name)
       (ensure-wombat-url-availability conn url)
 
-      (d/transact conn [{:db/id wombat-id
+      (d/transact conn [{:db/id wombat-eid
                          :wombat/owner user-eid
                          :wombat/name name
                          :wombat/url url
                          :wombat/id id}
                         {:db/id user-eid
-                         :user/wombats wombat-id}]))))
+                         :user/wombats wombat-eid}]))))
 
 (defn update-user-wombat
   "Update a wombat"

@@ -28,12 +28,14 @@
   (let [wombat-envs (select-keys env [:wombats-aws-access-key-id
                                       :wombats-aws-secret-key
                                       :wombats-github-client-id
-                                      :wombats-github-client-secret])
+                                      :wombats-github-client-secret
+                                      :wombats-signing-secret])
         file-name "/tmp/wombats-config.edn"
         formatted-config {:github (remove-nil {:client-id (:wombats-github-client-id wombat-envs)
                                                :client-secret (:wombats-github-client-secret wombat-envs)})
                           :aws (remove-nil {:access-key-id (:wombats-aws-access-key-id wombat-envs)
-                                            :secret-key (:wombats-aws-secret-key wombat-envs)})}]
+                                            :secret-key (:wombats-aws-secret-key wombat-envs)})
+                          :security (remove-nil {:signing-secret (:wombats-signing-secret wombat-envs)})}]
     (spit file-name (str formatted-config))
     (io/file file-name)))
 

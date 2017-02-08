@@ -2,7 +2,10 @@
   (:require [io.pedestal.interceptor.helpers :as interceptor]
             [org.httpkit.client :as http]
             [cheshire.core :refer [parse-string]]
+            [buddy.core.mac :as mac]
+            [buddy.core.codecs :as codecs]
             [wombats.interceptors.github :refer [get-github-settings]]
+            [wombats.interceptors.authorization :refer [get-hashing-secret]]
             [wombats.daos.helpers :as dao]))
 
 (def ^:private github-base "https://github.com/login/oauth/")
@@ -73,6 +76,13 @@
                                        :status 302
                                        :body nil))))))
 
+(defn- gen-user-access-token
+  "Generates an access token to be used by the wombats client"
+  [secret-key github-id]
+  (-> (str github-id)
+      (mac/hash {:key secret-key :alg :hmac+sha256})
+      (codecs/bytes->hex)))
+
 (def github-callback
   "Callback handler from GitHub OAuth request"
   (interceptor/before
@@ -84,24 +94,26 @@
                    web-client-redirect]} (get-github-settings context)
            {:keys [code state]} (:query-params request)
            failed-callback (redirect-home context web-client-redirect)]
-
        (if (= state signing-secret)
-         (let [access-token @(get-access-token {:client_id client-id
-                                                :client_secret client-secret
-                                                :code code})
+         (let [github-access-token @(get-access-token {:client_id client-id
+                                                       :client_secret client-secret
+                                                       :code code})
                ;; TODO BUG If the user does not have their email setup on GH this
                ;; step will fail
-               user (when access-token
-                      (parse-user-response @(get-github-user access-token)))
+               user (when github-access-token
+                      (parse-user-response @(get-github-user github-access-token)))
                create-or-update-user (dao/get-fn :create-or-update-user context)
-               get-user-by-email (dao/get-fn :get-user-by-email context)]
-           (if (and access-token user)
-             (let [user-update (select-keys user [:email :login :id :avatar_url])
-                   current-user (get-user-by-email (:email user-update))
+               get-user-by-github-id (dao/get-fn :get-user-by-github-id context)]
+           (if (and github-access-token user)
+             (let [user-update (select-keys user [:login :id :avatar_url])
+                   user-access-token (gen-user-access-token (get-hashing-secret context)
+                                                            (:id user-update))
+                   current-user (get-user-by-github-id (:id user-update))
                    updated-user @(create-or-update-user user-update
-                                                        access-token
+                                                        github-access-token
+                                                        user-access-token
                                                         (:user/id current-user))]
-               (redirect-home context web-client-redirect access-token))
+               (redirect-home context web-client-redirect user-access-token))
              failed-callback))
          failed-callback)))))
 

@@ -21,6 +21,9 @@
                             ;; Scheduler
                             [jarohen/chime "0.2.0"]
 
+                            ;; Token Support
+                            [buddy "1.3.0"]
+
                             ;; Environment configuration
                             [environ         "1.1.0"]
                             [levand/immuconf "0.1.0"]

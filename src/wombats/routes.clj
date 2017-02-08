@@ -6,6 +6,7 @@
             [wombats.interceptors.dao :refer [add-dao-functions]]
             [wombats.interceptors.current-user :refer [add-current-user]]
             [wombats.interceptors.github :refer [add-github-settings]]
+            [wombats.interceptors.authorization :refer [add-security-settings]]
             [wombats.interceptors.error-handler :refer [service-error-handler]]
             [wombats.handlers.swagger :as swagger]
             [wombats.handlers.static-pages :as static]
@@ -21,6 +22,7 @@
   [services]
   (let [datomic (get-in services [:datomic :database])
         github (:github services)
+        security (:security services)
         aws-credentials (:aws services)]
     [[["/"
        ^:interceptors [html-body]
@@ -71,7 +73,8 @@
 
         ["/auth"
          ["/github"
-          ^:interceptors [(add-github-settings github)]
+          ^:interceptors [(add-security-settings security)
+                          (add-github-settings github)]
           ["/signin"
            {:get auth/signin}]
           ["/signout"
