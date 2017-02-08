@@ -1,5 +1,6 @@
 (ns wombats.handlers.auth
-  (:require [io.pedestal.interceptor.helpers :as interceptor]
+  (:require [clojure.string :refer [ends-with? join split]]
+            [io.pedestal.interceptor.helpers :as interceptor]
             [org.httpkit.client :as http]
             [cheshire.core :refer [parse-string]]
             [buddy.core.mac :as mac]
@@ -32,6 +33,27 @@
   (http/get github-user-profile-url
             {:headers {"Authorization" (str "token " access-token)
                        "Accept" "application/json"}}))
+
+(defn- remove-slash
+  "Removes the trailing slash from a string (if it exists)"
+  [string]
+  (if (ends-with? string "/")
+    (-> string
+        (split #"")
+        (drop-last)
+        (join))
+
+    string))
+
+(defn- get-referer
+  "Pulls out the referer from a request object"
+  [request]
+  (get-in request [:headers "referer"]))
+
+(defn- get-formatted-referer
+  "Formats the referer"
+  [request]
+  (remove-slash (get-referer request)))
 
 (defn- parse-user-response
   "Parses the body if the request succeeded"
@@ -90,9 +112,9 @@
    (fn [{:keys [request response] :as context}]
      (let [{:keys [client-id
                    client-secret
-                   signing-secret
-                   web-client-redirect]} (get-github-settings context)
+                   signing-secret]} (get-github-settings context)
            {:keys [code state]} (:query-params request)
+           web-client-redirect (get-formatted-referer request)
            failed-callback (redirect-home context web-client-redirect)]
        (if (= state signing-secret)
          (let [github-access-token @(get-access-token {:client_id client-id
@@ -131,7 +153,7 @@
    (fn [{:keys [request response] :as context}]
      (let [access-token (get-in request [:headers "authorization"])
            remove-access-token (dao/get-fn :remove-access-token context)
-           {web-client-redirect :web-client-redirect} (get-github-settings context)]
+           web-client-redirect (get-formatted-referer request)]
 
        (when access-token
          @(remove-access-token access-token))

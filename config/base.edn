@@ -11,8 +11,7 @@
                                "http://localhost:3449"}}
  :github {:client-id #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_GITHUB_CLIENT_ID"
           :client-secret #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_GITHUB_CLIENT_SECRET"
-          :signing-secret #immuconf/default "shhhhh....."
-          :web-client-redirect #immuconf/override "Specify the location of the web client"}
+          :signing-secret #immuconf/default "shhhhh....."}
  :aws {:access-key-id #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_AWS_ACCESS_KEY_ID"
        :secret-key #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_AWS_SECRET_KEY"}
  :security {:signing-secret #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_SIGNING_SECRET"}}
