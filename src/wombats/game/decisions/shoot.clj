@@ -20,8 +20,8 @@
 (defn- get-shot-metadata
   [shooter]
   {:type :shot
-   :shooter-id (:uuid shooter)
-   :color (get shooter :color "#000000")
+   :owner-id (:uuid shooter)
+   :color (get shooter :color "black")
    :orientation (:orientation shooter)
    :decay 1})
 
