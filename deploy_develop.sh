@@ -1,3 +1,3 @@
 #!/bin/bash
 
-scp target/wombats.jar deploy@54.145.152.66:~
+scp target/wombats.jar deploy@dev.api.wombats.io:~
