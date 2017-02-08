@@ -157,7 +157,7 @@
   :db/doc         "How much damage does a shot cause in arena configuration"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :arena/smoke-duraition
+  :db/ident       :arena/smoke-duration
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
   :db/doc         "How long does smoke persist in arena configuration"}
@@ -445,6 +445,12 @@
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
   :db/doc         "Number of shots that found target"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/smoke-bombs-thrown
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of smoke bombs thrown"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :stats/number-of-moves
