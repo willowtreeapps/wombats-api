@@ -22,3 +22,9 @@ test:
   override:
     # Nothing to run here
     - echo 1
+
+deployment:
+  develop:
+    branch: develop
+    commands:
+      - ./deploy_develop.sh
