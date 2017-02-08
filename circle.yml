@@ -17,12 +17,13 @@ dependencies:
     - "~/.m2"
     - "~/.boot/cache/bin"
     - "~/.boot/cache/lib"
-
+compile:
+  override:
+    - boot build
 test:
   override:
     # Nothing to run here
     - echo 1
-
 deployment:
   develop:
     branch: develop
