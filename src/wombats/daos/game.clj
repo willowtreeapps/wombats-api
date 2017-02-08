@@ -219,6 +219,7 @@
                        :stats/wood-barriers-hit 0
                        :stats/shots-fired 0
                        :stats/shots-hit 0
+                       :stats/smoke-bombs-thrown 0
                        :stats/number-of-moves 0
                        :stats/number-of-smoke-deploys 0}
             stats-link-to-game-trx {:db/id game-eid

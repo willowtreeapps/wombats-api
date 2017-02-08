@@ -60,7 +60,7 @@
                              :arena/width width
                              :arena/height height
                              :arena/shot-damage shot-damage
-                             :arena/smoke-duraition smoke-duration
+                             :arena/smoke-duration smoke-duration
                              :arena/food food
                              :arena/poison poison
                              :arena/stone-walls stone-walls

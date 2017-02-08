@@ -8,7 +8,8 @@
             [wombats.arena.utils :as au]
             [wombats.game.decisions.turn :refer [turn]]
             [wombats.game.decisions.move :refer [move]]
-            [wombats.game.decisions.shoot :refer [shoot]])
+            [wombats.game.decisions.shoot :refer [shoot]]
+            [wombats.game.decisions.smoke :refer [smoke]])
 
   (:import [com.amazonaws.auth
             BasicAWSCredentials]
@@ -170,8 +171,8 @@
                                       ;;       to nil on error
                                       :saved-state (or response-state
                                                        (:saved-state decision-maker))
-                                      :error user-code-stacktrace}
-                                     response-command))]
+                                      :error user-code-stacktrace
+                                      :command response-command}))]
                    (merge decision-makers {uuid decision-maker-update})))))
 
      game-state
@@ -194,7 +195,8 @@
 (def ^:private command-map
   {:turn turn
    :move move
-   :shoot shoot})
+   :shoot shoot
+   :smoke smoke})
 
 (defn- get-command
   "Returns the request command handler or an identity function if none exist"

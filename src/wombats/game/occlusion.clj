@@ -35,11 +35,17 @@
   #{:wood-barrier
     :steel-barrier})
 
+(defn- contains-occluding-metadata
+  [metadata]
+  (let [types (map #(:type %) metadata)]
+    (contains? types :smoke)))
+
 (defn- is-non-transparent-cell?
   "Determines if a cell is transparent"
   [cell non-transparent-types]
-  ;; TODO add smoke check here
-  (contains? non-transparent-types (get-in cell [:contents :type])))
+
+  (or (contains? non-transparent-types (get-in cell [:contents :type]))
+      (contains-occluding-metadata (:meta cell))))
 
 (defn- get-non-transparent-set
   "Returns a set of coordinates that cause occlusion"
