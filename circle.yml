@@ -17,8 +17,19 @@ dependencies:
     - "~/.m2"
     - "~/.boot/cache/bin"
     - "~/.boot/cache/lib"
-
+compile:
+  override:
+    - boot build
 test:
   override:
     # Nothing to run here
     - echo 1
+deployment:
+  develop:
+    branch: develop
+    commands:
+      - ./deploy.sh deploy@dev.api.wombats.io
+  qa:
+    branch: master
+    commands:
+      - ./deploy.sh deploy@qa.api.wombats.io
