@@ -28,4 +28,8 @@ deployment:
   develop:
     branch: develop
     commands:
-      - ./deploy_develop.sh
+      - ./deploy.sh deploy@dev.api.wombats.io
+  qa:
+    branch: master
+    commands:
+      - ./deploy.sh deploy@qa.api.wombats.io
