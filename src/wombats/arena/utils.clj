@@ -100,7 +100,7 @@
     arena))
 
 (defn update-cell-metadata-with
-  "udpates a cells metadata with a given function"
+  "updates a cells metadata with a given function"
   [arena [x y] update-fn]
   (if (coords-inbounds? [x y] arena)
     (update-in arena [y x :meta] update-fn)

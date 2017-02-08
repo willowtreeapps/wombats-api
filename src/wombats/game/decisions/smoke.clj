@@ -14,7 +14,7 @@
   "determines the direction smoke should be thrown based off of the
   decision makers orientation and the specified throw direction"
   [decision-maker-orientation throw-direction]
-  (condp = throw-direction
+  (case throw-direction
     :forward decision-maker-orientation
     :right (mod (+ decision-maker-orientation 2) 8)
     :backward (mod (+ decision-maker-orientation 4) 8)
@@ -42,6 +42,7 @@
     (if throw-direction
       (gu/adjust-coords decision-maker-coords
                         throw-direction
+                        ;; TODO Pull from config smoke-radius + 1
                         arena-dimensions 2)
       decision-maker-coords)))
 
