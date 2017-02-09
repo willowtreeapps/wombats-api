@@ -14,12 +14,22 @@
   (= 50 (get-in game-state [:frame :frame/frame-number])))
 
 (defn- push-frame-to-clients
-  [game-state]
+  [{:keys [frame] :as game-state}]
 
   (game-sockets/broadcast-arena
    (:game-id game-state)
-   (get-in game-state [:frame :frame/arena]))
+   (:frame/arena frame))
 
+  game-state)
+
+(defn- push-frame-to-datomic
+  [{:keys [frame players] :as game-state} update-frame]
+  (update-frame frame players)
+  game-state)
+
+(defn- close-out-game
+  [{:keys [game-id] :as game-state} close-game]
+  (close-game game-id)
   game-state)
 
 (defn- add-player-scores
@@ -75,7 +85,10 @@
    (dissoc game-state :frame))
 
   ;; Pretty print everything
-  (clojure.pprint/pprint game-state)
+  #_(clojure.pprint/pprint game-state)
+
+  ;; Print frame number
+  (prn (get-in game-state [:frame :frame/frame-number]))
 
   ;; Print number of players
   #_(prn (str "Player Count: " (count (keys (:players game-state)))))
@@ -94,7 +107,7 @@
 
 (defn- game-loop
   "Game loop"
-  [game-state aws-credentials]
+  [game-state update-frame aws-credentials]
   (loop [current-game-state game-state]
     (if (game-over? current-game-state)
       current-game-state
@@ -103,18 +116,22 @@
           (p/source-decisions aws-credentials)
           (p/process-decisions)
           (f/finalize-frame)
-          (timeout-frame 1000)
+          (timeout-frame 500)
           (push-frame-to-clients)
           (push-stats-update-to-clients)
-          #_(frame-debugger 1000)
+          (push-frame-to-datomic update-frame)
           (recur)))))
 
 
 (defn initialize-game
   "Main entry point for the game engine"
-  [game-state aws-credentials]
+  [game-state
+   {update-frame :update-frame
+    close-game :close-game}
+   aws-credentials]
+
   (-> game-state
       (i/initialize-game)
-      (game-loop aws-credentials)
-      #_(frame-debugger 0)
-      (f/finalize-game)))
+      (game-loop update-frame aws-credentials)
+      (f/finalize-game)
+      (close-out-game close-game)))

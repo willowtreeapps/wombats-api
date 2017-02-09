@@ -45,11 +45,9 @@
 
 (defn finalize-frame
   [game-state]
-  ;; TODO #152
   (-> game-state
       (update-arena-data)))
 
 (defn finalize-game
   [game-state]
-  ;; TODO #152
   game-state)
