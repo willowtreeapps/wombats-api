@@ -23,8 +23,8 @@
   game-state)
 
 (defn- push-frame-to-datomic
-  [{:keys [frame] :as game-state} update-frame]
-  (update-frame frame)
+  [{:keys [frame players] :as game-state} update-frame]
+  (update-frame frame players)
   game-state)
 
 (defn- close-out-game
@@ -75,7 +75,7 @@
   [{:keys [frame] :as game-state} interval]
 
   ;; Pretty print the arena
-  (au/print-arena (:frame/arena frame))
+  #_(au/print-arena (:frame/arena frame))
 
   ;; Pretty print the full arena state
   #_(clojure.pprint/pprint (:frame/arena frame))
@@ -86,6 +86,9 @@
 
   ;; Pretty print everything
   #_(clojure.pprint/pprint game-state)
+
+  ;; Print frame number
+  (prn (get-in game-state [:frame :frame/frame-number]))
 
   ;; Print number of players
   #_(prn (str "Player Count: " (count (keys (:players game-state)))))
@@ -113,11 +116,10 @@
           (p/source-decisions aws-credentials)
           (p/process-decisions)
           (f/finalize-frame)
-          (timeout-frame 1000)
+          (timeout-frame 500)
           (push-frame-to-clients)
           (push-stats-update-to-clients)
           (push-frame-to-datomic update-frame)
-          #_(frame-debugger 1000)
           (recur)))))
 
 
@@ -131,6 +133,5 @@
   (-> game-state
       (i/initialize-game)
       (game-loop update-frame aws-credentials)
-      #_(frame-debugger 0)
       (f/finalize-game)
       (close-out-game close-game)))

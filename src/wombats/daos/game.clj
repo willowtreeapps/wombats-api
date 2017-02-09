@@ -220,8 +220,7 @@
                        :stats/shots-fired 0
                        :stats/shots-hit 0
                        :stats/smoke-bombs-thrown 0
-                       :stats/number-of-moves 0
-                       :stats/number-of-smoke-deploys 0}
+                       :stats/number-of-moves 0}
             stats-link-to-game-trx {:db/id game-eid
                                     :game/stats stats-tmpid}
             closed-trx {:db/id game-eid
@@ -294,14 +293,20 @@
   [conn]
   (fn [{:keys [:db/id
               :frame/arena
-              :frame/frame-number]}]
-    (d/transact-async conn [{:db/id id
-                             :frame/frame-number frame-number
-                             :frame/arena (nippy/freeze arena)}])))
+              :frame/frame-number]}
+      players]
+
+    (let [frame-trx {:db/id id
+                     :frame/frame-number frame-number
+                     :frame/arena (nippy/freeze arena)}
+          stats-trxs (vec (map (fn [[_ {stats :stats}]]
+                                 stats) players))]
+      (d/transact-async conn (conj stats-trxs frame-trx)))))
 
 (defn- close-game-state
   [conn]
   (fn [game-id]
+
     (d/transact-async conn [{:game/id game-id
                              :game/status :closed}])))
 

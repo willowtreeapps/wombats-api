@@ -480,10 +480,4 @@
   :db/ident       :stats/number-of-moves
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Number of moves"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/number-of-smoke-deploys
-  :db/valueType   :db.type/long
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Number of smoke deploys"}]
+  :db/doc         "Number of moves"}]
