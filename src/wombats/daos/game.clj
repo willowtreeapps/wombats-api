@@ -298,10 +298,11 @@
            game-eid :db/id} game
           game-state (get-game-state conn game-id)]
 
-      (initialize-game game-state aws-credentials)
-
-      (db-requirement-error
-       (str "Color '" "' is already in use"))
+      ;; We put this in a future so that it gets run on a separate thread
+      (future
+        (initialize-game game-state
+                         conn
+                         aws-credentials))
 
       (d/transact-async conn [{:db/id game-eid
                                :game/status :active}]))))
@@ -320,3 +321,18 @@
                        game-id
                        user-id))]
       player)))
+
+(defn update-frame-state
+  [conn]
+  (fn [{:keys [:db/id
+              :frame/arena
+              :frame/frame-number]}]
+    (d/transact-async conn [{:db/id id
+                             :frame/frame-number frame-number
+                             :frame/arena (nippy/freeze arena)}])))
+
+(defn close-game-state
+  [conn]
+  (fn [game-id]
+    (d/transact-async conn [{:game/id game-id
+                             :game/status :closed}])))
