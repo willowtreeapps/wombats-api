@@ -300,7 +300,8 @@
                      :frame/frame-number frame-number
                      :frame/arena (nippy/freeze arena)}
           stats-trxs (vec (map (fn [[_ {stats :stats}]]
-                                 stats) players))]
+                                 (assoc stats :stats/frame-number frame-number))
+                               players))]
       (d/transact-async conn (conj stats-trxs frame-trx)))))
 
 (defn- close-game-state
