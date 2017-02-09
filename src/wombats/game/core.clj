@@ -3,9 +3,7 @@
             [wombats.game.finalizers :as f]
             [wombats.game.processor :as p]
             [wombats.arena.utils :as au]
-            [wombats.sockets.game :as game-sockets]
-            [wombats.daos.game :refer [update-frame-state
-                                       close-game-state]]))
+            [wombats.sockets.game :as game-sockets]))
 
 (defn- game-over?
   "End game condition"
@@ -25,14 +23,13 @@
   game-state)
 
 (defn- push-frame-to-datomic
-  [{:keys [frame] :as game-state} datomic-conn]
-  ((update-frame-state datomic-conn) frame)
+  [{:keys [frame] :as game-state} update-frame]
+  (update-frame frame)
   game-state)
 
 (defn- close-out-game
-  [{:keys [game-id] :as game-state}
-   datomic-conn]
-  ((close-game-state datomic-conn) game-id)
+  [{:keys [game-id] :as game-state} close-game]
+  (close-game game-id)
   game-state)
 
 (defn- add-player-scores
@@ -107,7 +104,7 @@
 
 (defn- game-loop
   "Game loop"
-  [game-state datomic-conn aws-credentials]
+  [game-state update-frame aws-credentials]
   (loop [current-game-state game-state]
     (if (game-over? current-game-state)
       current-game-state
@@ -119,17 +116,21 @@
           (timeout-frame 1000)
           (push-frame-to-clients)
           (push-stats-update-to-clients)
-          (push-frame-to-datomic datomic-conn)
+          (push-frame-to-datomic update-frame)
           #_(frame-debugger 1000)
           (recur)))))
 
 
 (defn initialize-game
   "Main entry point for the game engine"
-  [game-state datomic-conn aws-credentials]
+  [game-state
+   {update-frame :update-frame
+    close-game :close-game}
+   aws-credentials]
+
   (-> game-state
       (i/initialize-game)
-      (game-loop datomic-conn aws-credentials)
+      (game-loop update-frame aws-credentials)
       #_(frame-debugger 0)
       (f/finalize-game)
-      (close-out-game datomic-conn)))
+      (close-out-game close-game)))
