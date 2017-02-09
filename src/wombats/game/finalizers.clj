@@ -1,5 +1,4 @@
-(ns wombats.game.finalizers
-  (:require [wombats.daos.game :refer [close-game-state]]))
+(ns wombats.game.finalizers)
 
 (defn- update-cell-metadata
   [{:keys [meta] :as cell}]
@@ -50,6 +49,5 @@
       (update-arena-data)))
 
 (defn finalize-game
-  [{:keys [game-id] :as game-state} datomic-conn]
-  ((close-game-state datomic-conn) game-id)
+  [game-state]
   game-state)
