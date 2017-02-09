@@ -70,7 +70,7 @@
      {:coords [x y]
       :item val})))
 
-(defn- wrap-coords
+(defn wrap-coords
   "Wraps out-of-bounds coordinates (zero-based) to opposite edge of m x n arena"
   [[x y] [m n]]
   {:pre [(integer? x) (integer? y) (pos? m) (pos? n)]

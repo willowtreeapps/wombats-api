@@ -112,7 +112,7 @@
   [(rand-int x)
    (rand-int y)])
 
-(defn- find-random-open-space
+(defn find-random-open-space
   "returns the coordinates for a random open space in a given arena"
   [arena]
   (let [arena-dimensions (get-arena-dimensions arena)]
