@@ -48,8 +48,12 @@
               :arena/food
               :arena/poison
               :arena/steel-walls
+              :arena/steel-wall-hp
               :arena/wood-walls
+              :arena/wood-wall-hp
               :arena/zakano
+              :arena/zakano-hp
+              :arena/wombat-hp
               :arena/perimeter]}]
 
     (ensure-name-availability conn name)
@@ -64,8 +68,12 @@
                              :arena/food food
                              :arena/poison poison
                              :arena/steel-walls steel-walls
+                             :arena/steel-wall-hp steel-wall-hp
                              :arena/wood-walls wood-walls
+                             :arena/wood-wall-hp wood-wall-hp
                              :arena/zakano zakano
+                             :arena/zakano-hp zakano-hp
+                             :arena/wombat-hp wombat-hp
                              :arena/perimeter perimeter}])))
 
 (defn update-arena

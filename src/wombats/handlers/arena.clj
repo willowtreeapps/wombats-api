@@ -13,8 +13,12 @@
           :food 10
           :poison 10
           :steel-walls 10
+          :steel-wall-hp 500
           :wood-walls 10
-          :zakano 4
+          :wood-wall-hp 30
+          :zakano 5
+          :zakano-hp 50
+          :wombat-hp 200
           :perimeter true})
 
 ;; Swagger Parameters
@@ -106,9 +110,13 @@
 (s/def :arean/smoke-duration #(instance? Long %))
 (s/def :arena/food #(instance? Long %))
 (s/def :arena/poison #(instance? Long %))
-(s/def :arena/stone-walls #(instance? Long %))
+(s/def :arena/steel-walls #(instance? Long %))
+(s/def :arena/steel-wall-hp #(instance? Long %))
 (s/def :arena/wood-walls #(instance? Long %))
+(s/def :arena/wood-wall-hp #(instance? Long %))
 (s/def :arena/zakano #(instance? Long %))
+(s/def :arena/zakano-hp #(instance? Long %))
+(s/def :arena/wombat-hp #(instance? Long %))
 (s/def :arena/perimeter boolean?)
 
 (s/def ::new-arena (s/keys :req [:arena/name
@@ -117,7 +125,14 @@
                                  :arena/shot-damage
                                  :arena/smoke-duration
                                  :arena/food
-                                 :arena/poison]))
+                                 :arena/poison
+                                 :arena/wombat-hp
+                                 :arena/zakano
+                                 :arena/zakano-hp
+                                 :arena/wood-walls
+                                 :arena/wood-wall-hp
+                                 :arena/steel-walls
+                                 :arena/steel-wall-hp]))
 
 (s/def ::update-arena (s/merge ::new-arena
                                (s/keys :req [:arena/id])))

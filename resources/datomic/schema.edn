@@ -181,16 +181,40 @@
   :db/doc         "Number of steel wall elements in arena configuration"}
 
  {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/steel-wall-hp
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "HP allocated to steel walls"}
+
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :arena/wood-walls
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
   :db/doc         "Number of wood wall elements in arena configuration"}
 
  {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/wood-wall-hp
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "HP allocated to wood walls"}
+
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :arena/zakano
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
   :db/doc         "Number of Zakano elements in arena configuration"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/zakano-hp
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "HP allocated to a Zakano"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :arena/wombat-hp
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "HP allocated to a Wombat"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :arena/perimeter
