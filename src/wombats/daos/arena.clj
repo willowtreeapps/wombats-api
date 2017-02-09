@@ -47,7 +47,7 @@
               :arena/smoke-duration
               :arena/food
               :arena/poison
-              :arena/stone-walls
+              :arena/steel-walls
               :arena/wood-walls
               :arena/zakano
               :arena/perimeter]}]
@@ -63,7 +63,7 @@
                              :arena/smoke-duration smoke-duration
                              :arena/food food
                              :arena/poison poison
-                             :arena/stone-walls stone-walls
+                             :arena/steel-walls steel-walls
                              :arena/wood-walls wood-walls
                              :arena/zakano zakano
                              :arena/perimeter perimeter}])))

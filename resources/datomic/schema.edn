@@ -175,10 +175,10 @@
   :db/doc         "Number of poison elements in arena configuration"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :arena/stone-walls
+  :db/ident       :arena/steel-walls
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Number of stone wall elements in arena configuration"}
+  :db/doc         "Number of steel wall elements in arena configuration"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :arena/wood-walls

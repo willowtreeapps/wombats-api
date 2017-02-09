@@ -6,14 +6,14 @@
 
 (def ^:private arena-body-sample
   #:arena{:name "Arena Name"
-          :width 50
-          :height 50
+          :width 20
+          :height 20
           :shot-damage 10
           :smoke-duration 3
           :food 10
           :poison 10
-          :stone-walls 50
-          :wood-walls 50
+          :steel-walls 10
+          :wood-walls 10
           :zakano 4
           :perimeter true})
 
