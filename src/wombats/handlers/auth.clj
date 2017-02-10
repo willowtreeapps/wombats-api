@@ -7,13 +7,11 @@
             [buddy.core.codecs :as codecs]
             [wombats.interceptors.github :refer [get-github-settings]]
             [wombats.interceptors.authorization :refer [get-hashing-secret]]
-            [wombats.daos.helpers :as dao]))
-
-(def ^:private github-base "https://github.com/login/oauth/")
-(def ^:private github-authorize-url (str github-base "authorize"))
-(def ^:private github-access-token-url (str github-base "access_token"))
-(def ^:private github-scopes "user:email")
-(def ^:private github-user-profile-url "https://api.github.com/user")
+            [wombats.daos.helpers :as dao]
+            [wombats.constants :refer [github-access-token-url
+                                       github-user-profile-url
+                                       github-authorize-url
+                                       github-scopes]]))
 
 ;; Helper Functions
 

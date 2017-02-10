@@ -13,6 +13,7 @@
   {;; User DAOS
    :get-users (user/get-users conn)
    :get-user-by-id (user/get-user-by-id conn)
+   :get-entire-user-by-id (user/get-entire-user-by-id conn)
    :get-user-by-email (user/get-user-by-email conn)
    :get-user-by-github-id (user/get-user-by-github-id conn)
    :get-user-by-access-token (user/get-user-by-access-token conn)
