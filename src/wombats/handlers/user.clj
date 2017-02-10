@@ -131,13 +131,13 @@
    ::add-user-wombat
    (fn [{:keys [request response] :as context}]
      (let [add-user-wombat (dao/get-fn :add-user-wombat context)
-           get-user-by-id (dao/get-fn :get-user-by-id context)
+           get-entire-user-by-id (dao/get-fn :get-entire-user-by-id context)
            get-wombat (dao/get-fn :get-wombat-by-id context)
            wombat (:edn-params request)
            user-id (get-in request [:path-params :user-id])
            wombat-id (dao/gen-id)
            new-wombat (merge wombat {:wombat/id wombat-id})
-           user (get-user-by-id user-id)]
+           user (get-entire-user-by-id user-id)]
 
        (when-not user
          (handler-error
@@ -145,11 +145,21 @@
 
        (sutils/validate-input ::wombat-params wombat)
 
-       @(add-user-wombat (:db/id user) new-wombat)
+       (let [url (str github-repo-api-base (:wombat/url new-wombat))
+             auth-headers {:headers {"Accept" "application/json"
+                                     "Authorization" (str "token "
+                                                          (:user/github-access-token user))}}
+             {status :status} @(http/get url auth-headers)]
 
-       (assoc context :response (assoc response
-                                       :status 200
-                                       :body (get-wombat wombat-id)))))))
+         (if (= status 200)
+           (do
+             @(add-user-wombat (:db/id user) new-wombat)
+             (assoc context :response (assoc response
+                                             :status 200
+                                             :body (get-wombat wombat-id))))
+           (handler-error
+            (str "Oh no!!! " (:wombat/name new-wombat) " is homeless! "
+                 "Check you url '" (:wombat/url new-wombat) "' and make sure you have code at that location."))))))))
 
 (defn- user-owns-wombat?
   "Determines if a user owns a wombat"
@@ -198,18 +208,33 @@
    (fn [{:keys [request response] :as context}]
      (let [update-wombat (dao/get-fn :update-user-wombat context)
            get-wombat (dao/get-fn :get-wombat-by-id context)
+           get-entire-user-by-id (dao/get-fn :get-entire-user-by-id context)
            {wombat-id :wombat-id
             user-id :user-id} (:path-params request)
            wombat (merge (:edn-params request)
-                         {:wombat/id wombat-id})]
+                         {:wombat/id wombat-id})
+           user (get-entire-user-by-id user-id)]
 
        (sutils/validate-input ::wombat-params wombat)
+
+       (when-not user
+         (handler-error (str "User '" user-id "' does not exist.")))
 
        (when-not (user-owns-wombat? user-id wombat-id context)
          (authorization-error "Cannot update this wombat"))
 
-       @(update-wombat wombat)
+       (let [url (str github-repo-api-base (:wombat/url wombat))
+             auth-headers {:headers {"Accept" "application/json"
+                                     "Authorization" (str "token "
+                                                          (:user/github-access-token user))}}
+             {status :status} @(http/get url auth-headers)]
 
-       (assoc context :response (assoc response
-                                       :status 200
-                                       :body (get-wombat wombat-id)))))))
+         (if (= status 200)
+           (do
+             @(update-wombat wombat)
+             (assoc context :response (assoc response
+                                             :status 200
+                                             :body (get-wombat wombat-id))))
+           (handler-error
+            (str "Oh no!!! " (:wombat/name wombat) " is homeless! "
+                 "Check you url '" (:wombat/url wombat) "' and make sure you have code at that location."))))))))

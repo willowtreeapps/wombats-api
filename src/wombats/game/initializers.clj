@@ -68,7 +68,7 @@
   "Returns a seq of channels that are responsible for fetching user code"
   [players]
   (map (fn [[player-eid {:keys [wombat user]}]]
-         (let [url (str "https://api.github.com/repos" (:wombat/url wombat))
+         (let [url (str github-repo-api-base (:wombat/url wombat))
                auth-headers {:headers {"Accept" "application/json"
                                        "Authorization" (str "token "
                                                             (:user/github-access-token user))}}
