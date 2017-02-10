@@ -68,7 +68,13 @@
 (defn get-games-by-eids
   [conn]
   (fn [game-eids]
-    (d/pull-many (d/db conn) '[* {:game/arena [:db/id *]}] game-eids)))
+    (d/pull-many
+     (d/db conn) '[*
+                   {:game/arena [:db/id *]}
+                   {:game/players [:db/id :player/color
+                                   {:player/user [:db/id :user/github-username]}
+                                   {:player/wombat [:db/id :wombat/name]}]}]
+     game-eids)))
 
 (defn get-game-by-id
   [conn]
