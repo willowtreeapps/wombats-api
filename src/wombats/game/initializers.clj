@@ -6,7 +6,8 @@
             [org.httpkit.client :as http]
             [wombats.arena.utils :as a-utils]
             [wombats.game.utils :as g-utils]
-            [wombats.game.zakano-code :refer [get-zakano-code]]))
+            [wombats.game.zakano-code :refer [get-zakano-code]]
+            [wombats.constants :refer [github-repo-api-base]]))
 
 (defn- add-players-to-game
   "Adds players to random cells in the arena"

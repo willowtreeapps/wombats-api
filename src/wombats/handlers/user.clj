@@ -1,10 +1,12 @@
 (ns wombats.handlers.user
   (:require [io.pedestal.interceptor.helpers :as interceptor]
+            [org.httpkit.client :as http]
             [clojure.spec :as s]
             [wombats.daos.helpers :as dao]
             [wombats.handlers.helpers :refer [handler-error]]
             [wombats.interceptors.authorization :refer [authorization-error]]
-            [wombats.specs.utils :as sutils]))
+            [wombats.specs.utils :as sutils]
+            [wombats.constants :refer [github-repo-api-base]]))
 
 (def ^:private wombat-body-sample
   #:wombat{:name "Teddy"
