@@ -11,16 +11,38 @@
             [io.pedestal.http.jetty.websockets :as ws]))
 
 (def ^:private game-rooms (atom {}))
-
 (def ^:private connections (atom {}))
+
+(defn- remove-chan-from-room
+  [game-id chan-id]
+  (swap! game-rooms update-in [game-id :players] dissoc chan-id))
+
+(defn- cleanup-closed-connections
+  []
+  (doseq [[chan-id {:keys [session]}] @connections]
+    (let [channel-open? (.isOpen session)]
+      (when-not channel-open?
+        ;; Remove channel from game rooms
+        (map (fn [game-id {players :players}]
+               (let [contains-connection? (chan-id players)]
+                 (when contains-connection?
+                   (remove-chan-from-room game-id chan-id))))
+             @game-rooms)
+        ;; Remove channel from connections
+        (swap! connections dissoc chan-id)))))
+
+(defn- cleanup-empty-games
+  []
+  (doseq [[game-id {:keys [players]}] @game-rooms]
+    (let [game-empty? (= (count players) 0)]
+      (when game-empty?
+        (swap! game-rooms dissoc game-id)))))
 
 (defn clean-connections
   "Removes all closed connections from state"
   [time]
-  (doseq [[chan-id {:keys [session]}] @connections]
-    (let [channel-open? (.isOpen session)]
-      (when-not channel-open?
-        (swap! connections dissoc chan-id)))))
+  (cleanup-closed-connections)
+  (cleanup-empty-games))
 
 (defn connection-clean-err
   "If the scheduler fails this will be called
@@ -52,6 +74,8 @@
 
   ;; Print connections
   (clojure.pprint/pprint @connections)
+
+  (clojure.pprint/pprint @game-rooms)
 
   ;; Remove all closed connections
   (clean-connections 0)
@@ -139,6 +163,12 @@
              [game-id :players chan-id]
              (assoc socket-user :color (:player/color player))))))
 
+(defn- leave-game
+  [_]
+  (fn [{:keys [chan-id] :as socket-user}
+      {:keys [game-id]}]
+    (remove-chan-from-room game-id chan-id)))
+
 (defn- broadcast-game-message
   [game-id formatted-message]
   (let [channel-ids (get-game-room-channel-ids game-id)]
@@ -190,10 +220,11 @@
           msg-payload (get msg :payload {})
           msg-fn (msg-type handler-map)]
 
-      ;; Log in dev mode
-      (println "\n---------- Start Client Message ----------")
-      (clojure.pprint/pprint msg)
-      (println "------------ End Client Message ----------\n\n")
+      (when-not (= msg-type :keep-alive)
+        ;; Log in dev mode
+        (println "\n---------- Start Client Message ----------")
+        (clojure.pprint/pprint msg)
+        (println "------------ End Client Message ----------\n\n"))
 
       (msg-fn socket-user msg-payload))))
 
@@ -202,6 +233,7 @@
   {:keep-alive keep-alive
    :handshake (handshake datomic)
    :join-game (join-game datomic)
+   :leave-game (leave-game datomic)
    :authenticate-user (authenticate-user datomic)
    :chat-message (chat-message datomic)})
 
