@@ -13,7 +13,7 @@
 (def ^:private game-rooms (atom {}))
 (def ^:private connections (atom {}))
 
-(defn- remove-chan-form-room
+(defn- remove-chan-from-room
   [game-id chan-id]
   (swap! game-rooms update-in [game-id :players] dissoc chan-id))
 
@@ -26,7 +26,7 @@
         (map (fn [game-id {players :players}]
                (let [contains-connection? (chan-id players)]
                  (when contains-connection?
-                   (remove-chan-form-room game-id chan-id))))
+                   (remove-chan-from-room game-id chan-id))))
              @game-rooms)
         ;; Remove channel from connections
         (swap! connections dissoc chan-id)))))
@@ -167,7 +167,7 @@
   [_]
   (fn [{:keys [chan-id] :as socket-user}
       {:keys [game-id]}]
-    (remove-chan-form-room game-id chan-id)))
+    (remove-chan-from-room game-id chan-id)))
 
 (defn- broadcast-game-message
   [game-id formatted-message]
@@ -220,10 +220,11 @@
           msg-payload (get msg :payload {})
           msg-fn (msg-type handler-map)]
 
-      ;; Log in dev mode
-      (println "\n---------- Start Client Message ----------")
-      (clojure.pprint/pprint msg)
-      (println "------------ End Client Message ----------\n\n")
+      (when-not (= msg-type :keep-alive)
+        ;; Log in dev mode
+        (println "\n---------- Start Client Message ----------")
+        (clojure.pprint/pprint msg)
+        (println "------------ End Client Message ----------\n\n"))
 
       (msg-fn socket-user msg-payload))))
 
