@@ -29,6 +29,12 @@
   (fn [user-id]
     (get-entity-by-prop conn :user/id user-id public-user-fields)))
 
+(defn get-entire-user-by-id
+  "Returns the entire user object by a given id"
+  [conn]
+  (fn [user-id]
+    (get-entity-by-prop conn :user/id user-id '[*])))
+
 (defn get-user-by-email
   "Returns a user by a given email"
   [conn]

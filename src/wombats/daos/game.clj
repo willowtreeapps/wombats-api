@@ -68,7 +68,13 @@
 (defn get-games-by-eids
   [conn]
   (fn [game-eids]
-    (d/pull-many (d/db conn) '[* {:game/arena [:db/id *]}] game-eids)))
+    (d/pull-many
+     (d/db conn) '[*
+                   {:game/arena [:db/id *]}
+                   {:game/players [:db/id :player/color
+                                   {:player/user [:db/id :user/github-username]}
+                                   {:player/wombat [:db/id :wombat/name]}]}]
+     game-eids)))
 
 (defn get-game-by-id
   [conn]
@@ -220,8 +226,7 @@
                        :stats/shots-fired 0
                        :stats/shots-hit 0
                        :stats/smoke-bombs-thrown 0
-                       :stats/number-of-moves 0
-                       :stats/number-of-smoke-deploys 0}
+                       :stats/number-of-moves 0}
             stats-link-to-game-trx {:db/id game-eid
                                     :game/stats stats-tmpid}
             closed-trx {:db/id game-eid
@@ -290,6 +295,28 @@
        :arena-config arena
        :players (format-player-map n-players)})))
 
+(defn- update-frame-state
+  [conn]
+  (fn [{:keys [:db/id
+              :frame/arena
+              :frame/frame-number]}
+      players]
+
+    (let [frame-trx {:db/id id
+                     :frame/frame-number frame-number
+                     :frame/arena (nippy/freeze arena)}
+          stats-trxs (vec (map (fn [[_ {stats :stats}]]
+                                 (assoc stats :stats/frame-number frame-number))
+                               players))]
+      (d/transact-async conn (conj stats-trxs frame-trx)))))
+
+(defn- close-game-state
+  [conn]
+  (fn [game-id]
+
+    (d/transact-async conn [{:game/id game-id
+                             :game/status :closed}])))
+
 (defn start-game
   "Transitions the game status to active"
   [conn aws-credentials]
@@ -298,10 +325,12 @@
            game-eid :db/id} game
           game-state (get-game-state conn game-id)]
 
-      (initialize-game game-state aws-credentials)
-
-      (db-requirement-error
-       (str "Color '" "' is already in use"))
+      ;; We put this in a future so that it gets run on a separate thread
+      (future
+        (initialize-game game-state
+                         {:update-frame (update-frame-state conn)
+                          :close-game (close-game-state conn)}
+                         aws-credentials))
 
       (d/transact-async conn [{:db/id game-eid
                                :game/status :active}]))))
