@@ -132,22 +132,34 @@
 
 ;; Broadcast functions
 
-(defn broadcast-arena
-  [game-id arena]
+(defn- broadcast-to-viewers
+  [game-id message]
   (let [channel-ids (get-game-room-channel-ids game-id)]
     (doseq [channel-id channel-ids]
       (send-message channel-id
-                    {:meta {:msg-type :frame-update}
-                     :payload arena}))))
+                    message))))
+
+(defn broadcast-arena
+  [game-id arena]
+  (broadcast-to-viewers game-id
+                        {:meta {:msg-type :frame-update}
+                         :payload arena}))
+
+(defn- broadcast-game-info
+  "Pulls out relevant info from game-state and sends it in join-game"
+  [game-id game]
+  (broadcast-to-viewers game-id
+                        {:meta {:msg-type :game-info}
+                         :payload {:start-time (:game/start-time game)
+                                   :max-players (:game/max-players game)
+                                   :name (:game/name game)
+                                   :status (:game/status game)}}))
 
 (defn broadcast-stats
   [game-id stats]
-  (let [viewers (get-game-room-channel-ids game-id)]
-
-    (doseq [chan-id viewers]
-      (send-message chan-id
-                    {:meta {:msg-type :stats-update}
-                     :payload (vec stats)}))))
+  (broadcast-to-viewers game-id                        
+                        {:meta {:msg-type :stats-update}
+                         :payload (vec stats)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Handlers
@@ -177,6 +189,7 @@
   (fn [{:keys [chan-id :user/id] :as socket-user}
       {:keys [game-id]}]
     (let [player ((:get-player-from-game datomic) game-id id)
+          game ((:get-game-by-id datomic) game-id)
           game-state ((:get-game-state-by-id datomic) game-id)
           arena (get-in game-state [:frame :frame/arena])]
 
@@ -185,8 +198,13 @@
              [game-id :players chan-id]
              (assoc socket-user :color (:player/color player)))
 
-      ;; Sends the initial frame to the frontend
-      (broadcast-arena game-id arena))))
+      ;; Sends the initial frame to the frontend (TODO: do we really need these separated though?)
+      (broadcast-arena game-id arena)
+
+      ;; TODO: Sends the players to the front end
+
+      ;; Sends the game info to the front end
+      (broadcast-game-info game-id game))))
 
 (defn- leave-game
   [_]
