@@ -157,11 +157,17 @@
   [datomic]
   (fn [{:keys [chan-id :user/id] :as socket-user}
       {:keys [game-id]}]
-    (let [player ((:get-player-from-game datomic) game-id id)]
+    (let [player ((:get-player-from-game datomic) game-id id)
+          game-state ((:get-game-state-by-id datomic) game-id)
+          arena (get-in game-state [:frame :frame/arena])]
+
       (swap! game-rooms
              assoc-in
              [game-id :players chan-id]
-             (assoc socket-user :color (:player/color player))))))
+             (assoc socket-user :color (:player/color player)))
+
+      ;; Sends the initial frame to the frontend
+      (broadcast-arena game-id arena))))
 
 (defn- leave-game
   [_]
