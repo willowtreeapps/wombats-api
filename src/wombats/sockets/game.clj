@@ -130,6 +130,25 @@
   [game-id chan-id]
   (:color (get-game-room-player game-id chan-id)))
 
+;; Broadcast functions
+
+(defn broadcast-arena
+  [game-id arena]
+  (let [channel-ids (get-game-room-channel-ids game-id)]
+    (doseq [channel-id channel-ids]
+      (send-message channel-id
+                    {:meta {:msg-type :frame-update}
+                     :payload arena}))))
+
+(defn broadcast-stats
+  [game-id stats]
+  (let [viewers (get-game-room-channel-ids game-id)]
+
+    (doseq [chan-id viewers]
+      (send-message chan-id
+                    {:meta {:msg-type :stats-update}
+                     :payload (vec stats)}))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Handlers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -195,25 +214,6 @@
                                :color (get-player-color game-id chan-id)
                                :timestamp (str (l/local-now))}]
         (broadcast-game-message game-id formatted-message)))))
-
-;; Broadcast functions
-
-(defn broadcast-arena
-  [game-id arena]
-  (let [channel-ids (get-game-room-channel-ids game-id)]
-    (doseq [channel-id channel-ids]
-      (send-message channel-id
-                    {:meta {:msg-type :frame-update}
-                     :payload arena}))))
-
-(defn broadcast-stats
-  [game-id stats]
-  (let [viewers (get-game-room-channel-ids game-id)]
-
-    (doseq [chan-id viewers]
-      (send-message chan-id
-                    {:meta {:msg-type :stats-update}
-                     :payload (vec stats)}))))
 
 (defn create-socket-handler-map
   "Allows for adding custom handlers that respond to namespaced messages
