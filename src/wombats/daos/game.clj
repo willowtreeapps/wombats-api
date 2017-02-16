@@ -3,12 +3,13 @@
             [taoensso.nippy :as nippy]
             [wombats.game.core :refer [initialize-game]]
             [wombats.game.utils :refer [decision-maker-state]]
-            [wombats.daos.helpers :refer [db-requirement-error
-                                          get-entity-by-prop
+            [wombats.daos.helpers :refer [get-entity-by-prop
                                           get-entity-id
                                           gen-id
                                           get-entities-by-prop
                                           retract-entity-by-prop]]
+            [wombats.handlers.helpers :refer [wombat-error
+                                              game-dao-errors]]
             [wombats.daos.user :refer [get-user-entity-id
                                        public-user-fields]]))
 
@@ -171,31 +172,26 @@
 
       ;; Check for game existence
       (when-not game
-        (db-requirement-error
-         (str "Game '" game-eid "' was not found")))
+        (wombat-error ((:not-found game-dao-errors) game-eid)))
 
       ;; Check to see if the game is accepting new players
       (when-not (open-for-enrollment? game)
-        (db-requirement-error
-         (str "Game '" game-eid "' is not accepting new players")))
+        (wombat-error ((:no-open-enrollment game-dao-errors))))
 
       ;; Check to see if the player is already in the game
       (when (player-in-game? conn user-eid game-eid)
-        (db-requirement-error
-         (str "User '" user-eid "' is already in game '" game-eid "'")))
+        (wombat-error ((:already-joined game-dao-errors) user-eid
+                                                         game-eid)))
 
       ;; Check for available color
       (when (color-taken? conn game-id color)
-        (db-requirement-error
-         (str "Color '" color "' is already in use")))
+        (wombat-error ((:color-in-use game-dao-errors) color)))
 
       (when-not user-eid
-        (db-requirement-error
-         (str "Cannot add player to game without a user-eid")))
+        (wombat-error ((:no-user game-dao-errors))))
 
       (when-not wombat-eid
-        (db-requirement-error
-         (str "Cannot add player to game without a wombat-eid")))
+        (wombat-error ((:no-wombat game-dao-errors))))
 
       ;; This next part builds up the transaction(s)
       ;; 1. Creates the player trx

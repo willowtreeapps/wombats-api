@@ -10,4 +10,4 @@
        (throw (ex-info "Invalid Input"
                        {:type :invalid-schema
                         :message err-msg
-                        :reason (:clojure.spec/problems reason)}))))))
+                        :details (:clojure.spec/problems reason)}))))))

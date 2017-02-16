@@ -1,10 +1,11 @@
 (ns wombats.daos.arena
   (:require [datomic.api :as d]
-            [wombats.daos.helpers :refer [db-requirement-error
-                                          get-entity-by-prop
+            [wombats.daos.helpers :refer [get-entity-by-prop
                                           get-entities-by-prop
                                           get-entity-id
-                                          retract-entity-by-prop]]))
+                                          retract-entity-by-prop]]
+            [wombats.handlers.helpers :refer [wombat-error
+                                              arena-dao-errors]]))
 
 (defn- get-arena-entity-id
   "Returns the entity id of an arena given the public arena id"
@@ -34,7 +35,7 @@
   [conn name]
   (let [existing-arena? ((get-arena-by-name conn) name)]
     (when existing-arena?
-      (db-requirement-error (str "Arena " name " already exists.")))))
+      (wombat-error ((:name-taken arena-dao-errors) name)))))
 
 (defn add-arena
   "Sends a new arena configuration to the transactor"
@@ -94,7 +95,7 @@
     (let [current-arena ((get-arena-by-id conn) id)]
 
       (when-not current-arena
-        (db-requirement-error (str "Arena '" id "' does not exist.")))
+        (wombat-error ((:does-not-exist arena-dao-errors) id)))
 
       (when-not (= (:arena/name current-arena) name)
         (ensure-name-availability conn name))
