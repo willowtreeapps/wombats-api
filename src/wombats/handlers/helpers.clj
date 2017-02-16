@@ -65,7 +65,7 @@
 (def arena-dao-errors
   {:name-taken
    #({:message (str "Arena " % " already exists.")
-                  :code 100000})
+      :code 100000})
    :does-not-exist
    #({:message "Arena does not exist"
       :details {:arena-id %}
