@@ -222,14 +222,14 @@
              [game-id :players chan-id]
              (assoc socket-user :color (:player/color player)))
 
-      ;; Sends the initial frame to the frontend
-      (broadcast-arena game-id arena)
+      ;; Sends the current game frame to the frontend
+      ((send-arena arena) chan-id)
 
       ;; TODO: Sends the players to the front end instead of fake data
 
 
       ;; Sends the game info to the front end
-      (broadcast-game-info game-id game))))
+      ((send-game-info game) chan-id))))
 
 (defn- leave-game
   [_]
