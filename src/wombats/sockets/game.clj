@@ -143,6 +143,12 @@
   (broadcast-to-viewers game-id
                         (send-arena arena)))
 
+(defn- send-chat-message
+  [game-id formatted-message]
+  (let [msg (m/chat-message game-id formatted-message)]
+    (fn [chan-id]
+      (send-message chan-id msg))))
+
 (defn- send-game-info
   "Pulls out relevant info from game-state and sends it in join-game"
   [game]
@@ -219,15 +225,6 @@
       {:keys [game-id]}]
     (remove-chan-from-room game-id chan-id)))
 
-(defn- broadcast-game-message
-  [game-id formatted-message]
-  (let [channel-ids (get-game-room-channel-ids game-id)]
-    (doseq [channel-id channel-ids]
-      (send-message channel-id
-                    {:meta {:msg-type :chat-message
-                            :game-id game-id}
-                     :payload formatted-message}))))
-
 (defn- chat-message
   [datomic]
   (fn [{:keys [chan-id user/github-username color] :as socket-user}
@@ -238,7 +235,8 @@
                                :message message
                                :color (get-player-color game-id chan-id)
                                :timestamp (str (l/local-now))}]
-        (broadcast-game-message game-id formatted-message)))))
+        (broadcast-to-viewers game-id
+                              (send-chat-message game-id formatted-message))))))
 
 (defn create-socket-handler-map
   "Allows for adding custom handlers that respond to namespaced messages
@@ -279,8 +277,7 @@
                                         :metadata {}})
 
       (send-message chan-id
-                    {:meta {:msg-type :handshake}
-                     :payload {:chan-id chan-id}}))))
+                    (m/handshake-message chan-id)))))
 
 (defn- socket-error
   "Called when there has been an error"

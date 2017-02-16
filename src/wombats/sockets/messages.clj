@@ -30,6 +30,14 @@
   (get-message :frame-update
                arena))
 
+(defn chat-message
+  [game-id formatted-message]
+  (let [msg (get-message :chat-message formatted-message)]
+    ;; Inserts :game-id into :meta
+    (assoc msg :meta (assoc (:meta msg)
+                            :game-id
+                            game-id))))
+
 (defn game-info-message
   "Pulls out relevant info from game-state and sends it in join-game"
   [game]
@@ -38,6 +46,11 @@
                 :max-players (:game/max-players game)
                 :name (:game/name game)
                 :status (:game/status game)}))
+
+(defn handshake-message
+  [chan-id]
+  (get-message :handshake
+               {:chan-id chan-id}))
 
 (defn stats-message
   [stats]
