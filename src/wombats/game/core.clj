@@ -1,6 +1,7 @@
 (ns wombats.game.core
   (:require [wombats.game.initializers :as i]
             [wombats.game.finalizers :as f]
+            [wombats.game.player-stats :refer [get-player-stats]]
             [wombats.game.processor :as p]
             [wombats.arena.utils :as au]
             [wombats.sockets.game :as game-sockets]))
@@ -36,7 +37,7 @@
   [game-state]
   (game-sockets/broadcast-stats
     (:game-id game-state)
-    (game-sockets/get-player-stats game-state))
+    (get-player-stats game-state))
   game-state)
 
 (defn frame-debugger
