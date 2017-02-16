@@ -124,7 +124,8 @@
 #_(s/def :game/players) ;; Add player specs
 
 (s/def :game/name string?)
-(s/def :game/max-players #(instance? Long %))
+(s/def :game/max-players #(and (instance? Long %)
+                               (not= 0 %)))
 (s/def :game/type #{:round})
 (s/def :game/num-rounds #(instance? Long %))
 (s/def :game/round-intermission #(instance? Long %))
