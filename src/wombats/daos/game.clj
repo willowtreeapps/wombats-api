@@ -251,49 +251,50 @@
                                   :state decision-maker-state}) players)]
     (reduce #(assoc %1 (gen-id) %2) {} formatted-players)))
 
-(defn- get-game-state
-  [conn game-id]
-  (let [[frame
-         arena] (first
-                 (d/q '[:find (pull ?frame [*])
-                              (pull ?arena [*])
-                        :in $ ?game-id
-                        :where [?game :game/id ?game-id]
-                               [?game :game/frame ?frame]
-                               [?game :game/arena ?arena]]
-                      (d/db conn)
-                      game-id))
-        players (d/q '[:find (pull ?players [*])
-                             (pull ?stats [*])
-                             (pull ?user [:db/id
-                                          :user/github-username
-                                          :user/github-access-token])
-                             (pull ?wombat [*])
-                       :in $ ?game-id
-                       :where [?game :game/id ?game-id]
-                              [?game :game/players ?players]
-                              [?game :game/stats ?stats]
-                              [?players :player/user ?user]
-                              [?players :player/wombat ?wombat]]
-                     (d/db conn)
-                     game-id)]
+(defn get-game-state-by-id
+  [conn]
+  (fn [game-id]
+    (let [[frame
+           arena] (first
+                   (d/q '[:find (pull ?frame [*])
+                                (pull ?arena [*])
+                          :in $ ?game-id
+                          :where [?game :game/id ?game-id]
+                                 [?game :game/frame ?frame]
+                                 [?game :game/arena ?arena]]
+                        (d/db conn)
+                        game-id))
+          players (d/q '[:find (pull ?players [*])
+                               (pull ?stats [*])
+                               (pull ?user [:db/id
+                                            :user/github-username
+                                            :user/github-access-token])
+                               (pull ?wombat [*])
+                         :in $ ?game-id
+                         :where [?game :game/id ?game-id]
+                                [?game :game/players ?players]
+                                [?game :game/stats ?stats]
+                                [?players :player/user ?user]
+                                [?players :player/wombat ?wombat]]
+                       (d/db conn)
+                       game-id)]
 
-    ;; TODO The datomic query pulls 2 of each player. The following will filter
-    ;;      out the duplicates.
-    (let [n-players (vec
-                     (vals
-                      (reduce (fn [player-acc player]
-                                (let [id (:db/id (first player))
-                                      existing-ids (set (vals player-acc))]
-                                  (if (contains? existing-ids id)
-                                    player-acc
-                                    (assoc player-acc id player))))
-                              {} players)))]
+      ;; TODO The datomic query pulls 2 of each player. The following will filter
+      ;;      out the duplicates.
+      (let [n-players (vec
+                       (vals
+                        (reduce (fn [player-acc player]
+                                  (let [id (:db/id (first player))
+                                        existing-ids (set (vals player-acc))]
+                                    (if (contains? existing-ids id)
+                                      player-acc
+                                      (assoc player-acc id player))))
+                                {} players)))]
 
-      {:game-id game-id
-       :frame (update frame :frame/arena nippy/thaw)
-       :arena-config arena
-       :players (format-player-map n-players)})))
+        {:game-id game-id
+         :frame (update frame :frame/arena nippy/thaw)
+         :arena-config arena
+         :players (format-player-map n-players)}))))
 
 (defn- update-frame-state
   [conn]
@@ -323,7 +324,7 @@
   (fn [game]
     (let [{game-id :game/id
            game-eid :db/id} game
-          game-state (get-game-state conn game-id)]
+          game-state ((get-game-state-by-id conn) game-id)]
 
       ;; We put this in a future so that it gets run on a separate thread
       (future

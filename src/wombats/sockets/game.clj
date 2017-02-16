@@ -8,7 +8,8 @@
             [clj-time.format :as f]
             [clj-time.periodic :as p]
             [chime :refer [chime-at]]
-            [io.pedestal.http.jetty.websockets :as ws]))
+            [io.pedestal.http.jetty.websockets :as ws]
+            [wombats.game.player-stats :refer [get-player-stats]]))
 
 (def ^:private game-rooms (atom {}))
 (def ^:private connections (atom {}))
@@ -130,6 +131,61 @@
   [game-id chan-id]
   (:color (get-game-room-player game-id chan-id)))
 
+;; Broadcast helper functions
+
+(defn- broadcast-to-viewers
+  [game-id send-fn]
+  (let [channel-ids (get-game-room-channel-ids game-id)]
+    (doseq [channel-id channel-ids]
+      (send-fn channel-id))))
+
+(defn- get-message
+  [msg-type payload]
+  {:meta {:msg-type msg-type}
+   :payload payload})
+
+;; Broadcast/send functions
+
+(defn- send-arena
+  [arena]
+  (fn [chan-id]
+    (send-message chan-id
+                  (get-message :frame-update
+                               arena))))
+
+(defn broadcast-arena
+  [game-id arena]
+  (broadcast-to-viewers game-id
+                        (send-arena arena)))
+
+(defn- send-game-info
+  "Pulls out relevant info from game-state and sends it in join-game"
+  [game]
+  (fn [chan-id]
+    (send-message chan-id
+                  (get-message :game-info
+                               {:start-time (:game/start-time game)
+                                :max-players (:game/max-players game)
+                                :name (:game/name game)
+                                :status (:game/status game)}))))
+
+(defn- broadcast-game-info
+  [game-id game]
+  (broadcast-to-viewers game-id
+                        (send-game-info game)))
+
+(defn- send-stats
+  [stats]
+  (fn [chan-id]
+    (send-message chan-id
+                  (get-message :stats-update
+                               (vec stats)))))
+
+(defn broadcast-stats
+  [game-id stats]
+  (broadcast-to-viewers game-id
+                        (send-stats stats)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Handlers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -157,11 +213,25 @@
   [datomic]
   (fn [{:keys [chan-id :user/id] :as socket-user}
       {:keys [game-id]}]
-    (let [player ((:get-player-from-game datomic) game-id id)]
+    (let [player ((:get-player-from-game datomic) game-id id)
+          game ((:get-game-by-id datomic) game-id)
+          game-state ((:get-game-state-by-id datomic) game-id)
+          arena (get-in game-state [:frame :frame/arena])]
+
       (swap! game-rooms
              assoc-in
              [game-id :players chan-id]
-             (assoc socket-user :color (:player/color player))))))
+             (assoc socket-user :color (:player/color player)))
+
+      ;; Sends the current game frame to the frontend
+      ((send-arena arena) chan-id)
+
+      ;; Sends the stats (player info)
+      ((send-stats (get-player-stats game-state)) chan-id)
+
+
+      ;; Sends the game info to the front end
+      ((send-game-info game) chan-id))))
 
 (defn- leave-game
   [_]
@@ -189,25 +259,6 @@
                                :color (get-player-color game-id chan-id)
                                :timestamp (str (l/local-now))}]
         (broadcast-game-message game-id formatted-message)))))
-
-;; Broadcast functions
-
-(defn broadcast-arena
-  [game-id arena]
-  (let [channel-ids (get-game-room-channel-ids game-id)]
-    (doseq [channel-id channel-ids]
-      (send-message channel-id
-                    {:meta {:msg-type :frame-update}
-                     :payload arena}))))
-
-(defn broadcast-stats
-  [game-id stats]
-  (let [viewers (get-game-room-channel-ids game-id)]
-
-    (doseq [chan-id viewers]
-      (send-message chan-id
-                    {:meta {:msg-type :stats-update}
-                     :payload (vec stats)}))))
 
 (defn create-socket-handler-map
   "Allows for adding custom handlers that respond to namespaced messages

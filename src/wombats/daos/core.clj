@@ -40,6 +40,7 @@
    :get-game-eids-by-player (game/get-game-eids-by-player conn)
    :get-games-by-eids (game/get-games-by-eids conn)
    :get-game-by-id (game/get-game-by-id conn)
+   :get-game-state-by-id (game/get-game-state-by-id conn)
    :get-player-from-game (game/get-player-from-game conn)
    :add-game (game/add-game conn)
    :retract-game (game/retract-game conn)
