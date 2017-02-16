@@ -9,7 +9,8 @@
             [clj-time.periodic :as p]
             [chime :refer [chime-at]]
             [io.pedestal.http.jetty.websockets :as ws]
-            [wombats.game.player-stats :refer [get-player-stats]]))
+            [wombats.game.player-stats :refer [get-player-stats]]
+            [wombats.sockets.messages :as m]))
 
 (def ^:private game-rooms (atom {}))
 (def ^:private connections (atom {}))
@@ -85,22 +86,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn parse-message
-  "Attempts to parse the clent message as EDN"
-  [raw-message]
-  (try
-    (edn/read-string raw-message)
-    (catch Exception e (prn (str "Invalid client message: " raw-message)))))
-
-(defn format-message
-  "Converts the msg into a string before sending it"
-  [msg] (prn-str msg))
 
 (defn send-message
   [chan-id message]
   (let [chan (get-in @connections [chan-id :chan])]
     (when chan
-      (put! chan (format-message message)))))
+      (put! chan (m/format-message message)))))
 
 (defn- get-socket-user
   [chan-id]
@@ -139,19 +130,13 @@
     (doseq [channel-id channel-ids]
       (send-fn channel-id))))
 
-(defn- get-message
-  [msg-type payload]
-  {:meta {:msg-type msg-type}
-   :payload payload})
-
 ;; Broadcast/send functions
 
 (defn- send-arena
   [arena]
-  (fn [chan-id]
-    (send-message chan-id
-                  (get-message :frame-update
-                               arena))))
+  (let [msg (m/arena-message arena)]
+    (fn [chan-id]
+      (send-message chan-id msg))))
 
 (defn broadcast-arena
   [game-id arena]
@@ -161,13 +146,9 @@
 (defn- send-game-info
   "Pulls out relevant info from game-state and sends it in join-game"
   [game]
-  (fn [chan-id]
-    (send-message chan-id
-                  (get-message :game-info
-                               {:start-time (:game/start-time game)
-                                :max-players (:game/max-players game)
-                                :name (:game/name game)
-                                :status (:game/status game)}))))
+  (let [msg (m/game-info-message game)]
+    (fn [chan-id]
+      (send-message chan-id msg))))
 
 (defn- broadcast-game-info
   [game-id game]
@@ -176,10 +157,9 @@
 
 (defn- send-stats
   [stats]
-  (fn [chan-id]
-    (send-message chan-id
-                  (get-message :stats-update
-                               (vec stats)))))
+  (let [msg (m/stats-message stats)]
+    (fn [chan-id]
+      (send-message chan-id msg))))
 
 (defn broadcast-stats
   [game-id stats]
@@ -265,7 +245,7 @@
   emitted from the ws channel"
   [handler-map]
   (fn [raw-msg]
-    (let [msg (parse-message raw-msg)
+    (let [msg (m/parse-message raw-msg)
           {:keys [chan-id msg-type]} (:meta msg)
           socket-user (get-socket-user chan-id)
           msg-payload (get msg :payload {})
