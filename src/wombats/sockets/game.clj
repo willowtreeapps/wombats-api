@@ -130,36 +130,60 @@
   [game-id chan-id]
   (:color (get-game-room-player game-id chan-id)))
 
-;; Broadcast functions
+;; Broadcast helper functions
 
 (defn- broadcast-to-viewers
-  [game-id message]
+  [game-id send-fn]
   (let [channel-ids (get-game-room-channel-ids game-id)]
     (doseq [channel-id channel-ids]
-      (send-message channel-id
-                    message))))
+      (send-fn channel-id))))
+
+(defn- get-message
+  [msg-type payload]
+  {:meta {:msg-type msg-type}
+   :payload payload})
+
+;; Broadcast/send functions
+
+(defn- send-arena
+  [arena]
+  (fn [chan-id]
+    (send-message chan-id
+                  (get-message :frame-update
+                               arena))))
 
 (defn broadcast-arena
   [game-id arena]
   (broadcast-to-viewers game-id
-                        {:meta {:msg-type :frame-update}
-                         :payload arena}))
+                        (send-arena arena)))
+
+(defn- send-game-info
+  "Pulls out relevant info from game-state and sends it in join-game"
+  [game]
+  (fn [chan-id]
+    (send-message chan-id
+                  (get-message :game-info
+                               {:start-time (:game/start-time game)
+                                :max-players (:game/max-players game)
+                                :name (:game/name game)
+                                :status (:game/status game)}))))
 
 (defn- broadcast-game-info
-  "Pulls out relevant info from game-state and sends it in join-game"
   [game-id game]
   (broadcast-to-viewers game-id
-                        {:meta {:msg-type :game-info}
-                         :payload {:start-time (:game/start-time game)
-                                   :max-players (:game/max-players game)
-                                   :name (:game/name game)
-                                   :status (:game/status game)}}))
+                        (send-game-info game)))
+
+(defn- send-stats
+  [stats]
+  (fn [chan-id]
+    (send-message chan-id
+                  (get-message :stats-update
+                               (vec stats)))))
 
 (defn broadcast-stats
   [game-id stats]
-  (broadcast-to-viewers game-id                        
-                        {:meta {:msg-type :stats-update}
-                         :payload (vec stats)}))
+  (broadcast-to-viewers game-id  
+                        (send-stats stats)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Handlers
@@ -198,10 +222,11 @@
              [game-id :players chan-id]
              (assoc socket-user :color (:player/color player)))
 
-      ;; Sends the initial frame to the frontend (TODO: do we really need these separated though?)
+      ;; Sends the initial frame to the frontend
       (broadcast-arena game-id arena)
 
-      ;; TODO: Sends the players to the front end
+      ;; TODO: Sends the players to the front end instead of fake data
+
 
       ;; Sends the game info to the front end
       (broadcast-game-info game-id game))))
