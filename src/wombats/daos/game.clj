@@ -30,10 +30,16 @@
 ;; ↓   ↑
 ;; 2 → ↑
 
-(defn get-all-games
+(defn get-games-by-eids
   [conn]
-  (fn []
-    (get-entities-by-prop conn :game/id)))
+  (fn [game-eids]
+    (d/pull-many
+     (d/db conn) '[*
+                   {:game/arena [:db/id *]}
+                   {:game/players [:db/id :player/color
+                                   {:player/user [:db/id :user/github-username]}
+                                   {:player/wombat [:db/id :wombat/name]}]}]
+     game-eids)))
 
 (defn get-game-eids-by-status
   [conn]
@@ -66,16 +72,20 @@
                                 user-ids))]
       game-eids)))
 
-(defn get-games-by-eids
+(defn get-all-game-eids
   [conn]
-  (fn [game-eids]
-    (d/pull-many
-     (d/db conn) '[*
-                   {:game/arena [:db/id *]}
-                   {:game/players [:db/id :player/color
-                                   {:player/user [:db/id :user/github-username]}
-                                   {:player/wombat [:db/id :wombat/name]}]}]
-     game-eids)))
+  (fn []
+    (apply concat
+           (d/q '[:find ?games
+                  :in $
+                  :where [?games :game/id]]
+                (d/db conn)))))
+
+(defn get-all-games
+  [conn]
+  (fn []
+    ((get-games-by-eids conn)
+     ((get-all-game-eids conn)))))
 
 (defn get-game-by-id
   [conn]
