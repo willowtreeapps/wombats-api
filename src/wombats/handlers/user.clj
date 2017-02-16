@@ -3,7 +3,8 @@
             [org.httpkit.client :as http]
             [clojure.spec :as s]
             [wombats.daos.helpers :as dao]
-            [wombats.handlers.helpers :refer [handler-error]]
+            [wombats.handlers.helpers :refer [wombat-error
+                                              user-handler-errors]]
             [wombats.interceptors.authorization :refer [authorization-error]]
             [wombats.specs.utils :as sutils]
             [wombats.constants :refer [github-repo-api-base]]))
@@ -140,8 +141,7 @@
            user (get-entire-user-by-id user-id)]
 
        (when-not user
-         (handler-error
-          (str "User '" user-id "' does not exist.")))
+         (wombat-error ((:no-user user-handler-errors) user-id)))
 
        (sutils/validate-input ::wombat-params wombat)
 
@@ -157,9 +157,8 @@
              (assoc context :response (assoc response
                                              :status 200
                                              :body (get-wombat wombat-id))))
-           (handler-error
-            (str "Oh no!!! " (:wombat/name new-wombat) " is homeless! "
-                 "Check you url '" (:wombat/url new-wombat) "' and make sure you have code at that location."))))))))
+           (wombat-error ((:homeless-wombat user-handler-errors) (:wombat/name new-wombat)
+                                                                 (:wombat/url new-wombat)))))))))
 
 (defn- user-owns-wombat?
   "Determines if a user owns a wombat"
@@ -218,7 +217,7 @@
        (sutils/validate-input ::wombat-params wombat)
 
        (when-not user
-         (handler-error (str "User '" user-id "' does not exist.")))
+         (wombat-error ((:no-user user-handler-errors) user-id)))
 
        (when-not (user-owns-wombat? user-id wombat-id context)
          (authorization-error "Cannot update this wombat"))
@@ -235,6 +234,5 @@
              (assoc context :response (assoc response
                                              :status 200
                                              :body (get-wombat wombat-id))))
-           (handler-error
-            (str "Oh no!!! " (:wombat/name wombat) " is homeless! "
-                 "Check you url '" (:wombat/url wombat) "' and make sure you have code at that location."))))))))
+           (wombat-error ((:homeless-wombat user-handler-errors) (:wombat/name wombat)
+                                                                 (:wombat/url wombat)))))))))
