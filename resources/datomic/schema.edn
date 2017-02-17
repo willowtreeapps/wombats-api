@@ -1,18 +1,4 @@
-[;; Role entites
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :role/id
-  :db/valueType   :db.type/string
-  :db/unique      :db.unique/identity
-  :db/cardinality :db.cardinality/one
-  :db/doc         "A roles public id"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :role/type
-  :db/valueType   :db.type/keyword
-  :db/cardinality :db.cardinality/one
-  :db/doc         "A roles type (i.e. admin , user)"}
-
- ;; User entities
+[;; User entities
  {:db/id          #db/id [:db.part/db]
   :db/ident       :user/id
   :db/valueType   :db.type/string
@@ -48,6 +34,7 @@
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :user/github-username
+  :db/unique      :db.unique/identity
   :db/valueType   :db.type/string
   :db/cardinality :db.cardinality/one
   :db/doc         "A user's GitHub username."}

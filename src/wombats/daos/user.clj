@@ -8,10 +8,13 @@
             [wombats.handlers.helpers :refer [wombat-error
                                               user-dao-errors]]))
 
-(def public-user-fields [:db/id
-                         :user/id
-                         :user/github-username
-                         :user/avatar-url])
+(def public-user-fields '[:db/id
+                          :user/id
+                          :user/github-username
+                          :user/avatar-url
+                          {:user/roles [*]}])
+
+(def all-user-fields '[* {:user/roles [*]}])
 
 (defn get-user-entity-id
   "Returns the entity id of a user given the public user id"
@@ -34,7 +37,7 @@
   "Returns the entire user object by a given id"
   [conn]
   (fn [user-id]
-    (get-entity-by-prop conn :user/id user-id '[*])))
+    (get-entity-by-prop conn :user/id user-id all-user-fields)))
 
 (defn get-user-by-email
   "Returns a user by a given email"
@@ -46,13 +49,13 @@
   "Returns a user by a given access token"
   [conn]
   (fn [access-token]
-    (get-entity-by-prop conn :user/access-token access-token)))
+    (get-entity-by-prop conn :user/access-token access-token all-user-fields)))
 
 (defn get-user-by-github-id
   "Returns a user by a given github-id"
   [conn]
   (fn [github-id]
-    (get-entity-by-prop conn :user/github-id github-id)))
+    (get-entity-by-prop conn :user/github-id github-id all-user-fields)))
 
 (defn create-or-update-user
   "If a user does not exist in the system, create one. If it does, update values

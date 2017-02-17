@@ -1,1 +1,24 @@
-[]
+[{:db/id #db/id [:db.part/user]
+  :user/roles [:user.roles/user
+               :user.roles/coordinator
+               :user.roles/contributor
+               :user.roles/admin]
+  :user/github-username "oconn"}
+ {:db/id #db/id [:db.part/user]
+  :user/roles [:user.roles/user
+               :user.roles/coordinator
+               :user.roles/contributor
+               :user.roles/admin]
+  :user/github-username "emilyseibert"}
+ {:db/id #db/id [:db.part/user]
+  :user/roles [:user.roles/user
+               :user.roles/coordinator
+               :user.roles/contributor
+               :user.roles/admin]
+  :user/github-username "dehli"}
+ {:db/id #db/id [:db.part/user]
+  :user/roles [:user.roles/user
+               :user.roles/coordinator
+               :user.roles/contributor
+               :user.roles/admin]
+  :user/github-username "morganedmonds"}]

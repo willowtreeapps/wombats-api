@@ -114,14 +114,29 @@
                          (str (System/getProperty "user.home") "/.wombats/config.edn"))]
     (get-datomic-uri env-settings config-settings)))
 
+(defn- add-schema
+  "Initializes the DB with the proper schema"
+  [conn]
+  (d/transact conn (load-file "resources/datomic/schema.edn")))
+
+(defn- add-roles
+  "Adds Wombat roles to the DB"
+  [conn]
+  (d/transact conn (load-file "resources/datomic/roles.edn")))
+
+(defn- seed-users
+  "Seeds the DB with users (mainly to support seeding with roles)"
+  [conn]
+  (d/transact conn (load-file "resources/datomic/users.edn")))
+
 (defn- refresh-db!
   [uri]
   (d/delete-database uri)
   (d/create-database uri)
   (let [conn (d/connect uri)]
-    @(d/transact conn (load-file "resources/datomic/schema.edn"))
-    @(d/transact conn (load-file "resources/datomic/roles.edn"))
-    @(d/transact conn (load-file "resources/datomic/users.edn"))))
+    @(add-schema conn)
+    @(add-roles conn)
+    @(seed-users conn)))
 
 (deftask refresh-dev-ddb
   "Resets the dev dynamo db"
