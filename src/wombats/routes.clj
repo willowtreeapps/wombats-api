@@ -6,7 +6,8 @@
             [wombats.interceptors.dao :refer [add-dao-functions]]
             [wombats.interceptors.current-user :refer [add-current-user]]
             [wombats.interceptors.github :refer [add-github-settings]]
-            [wombats.interceptors.authorization :refer [add-security-settings]]
+            [wombats.interceptors.authorization :refer [add-security-settings
+                                                        authorize]]
             [wombats.interceptors.error-handler :refer [service-error-handler]]
             [wombats.handlers.swagger :as swagger]
             [wombats.handlers.static-pages :as static]
@@ -42,10 +43,15 @@
          {:get user/get-user-self}]
 
         ["/users"
-         {:get user/get-users}
+         {:get [:get-users
+                user/get-users
+                ^:interceptors [(authorize #{:user.roles/admin})]]}
          ["/:user-id"
-          {:get user/get-user-by-id}
+          {:get [:get-user
+                 user/get-user-by-id
+                 ^:interceptors [(authorize #{:user.roles/admin})]]}
           ["/wombats"
+           ^:interceptors [(authorize #{:user.roles/user})]
            {:get user/get-user-wombats
             :post user/add-user-wombat}
            ["/:wombat-id"
@@ -53,6 +59,7 @@
              :put user/update-wombat}]]]]
 
         ["/arenas"
+         ^:interceptors [(authorize #{:user.roles/admin})]
          {:get arena/get-arenas
           :post arena/add-arena}
          ["/:arena-id"
@@ -61,9 +68,14 @@
            :delete arena/delete-arena}]]
 
         ["/games"
-         {:get game/get-games
-          :post game/add-game}
+         {:get [:get-games
+                game/get-games
+                ^:interceptors [(authorize #{:user.roles/user})]]
+          :post [:add-game
+                 game/add-game
+                 ^:interceptors [(authorize #{:user.roles/admin})]]}
          ["/:game-id"
+          ^:interceptors [(authorize #{:user.roles/user})]
           {:get game/get-game-by-id
            :delete game/delete-game}
           ["/join"

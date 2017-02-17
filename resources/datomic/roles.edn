@@ -1,6 +1,4 @@
-[{:db/id     #db/id [:db.part/user]
-  :role/type :user}
- {:db/id     #db/id [:db.part/user]
-  :role/type :admin}
- {:db/id     #db/id [:db.part/user]
-  :role/type :event-coordinator}]
+[[:db/add (d/tempid :db.part/user) :db/ident :user.roles/user]
+ [:db/add (d/tempid :db.part/user) :db/ident :user.roles/admin]
+ [:db/add (d/tempid :db.part/user) :db/ident :user.roles/contributor]
+ [:db/add (d/tempid :db.part/user) :db/ident :user.roles/coordinator]]
