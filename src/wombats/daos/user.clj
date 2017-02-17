@@ -1,11 +1,12 @@
 (ns wombats.daos.user
   (:require [datomic.api :as d]
             [wombats.daos.helpers :refer [gen-id
-                                          db-requirement-error
                                           get-entity-id
                                           get-entity-by-prop
                                           get-entities-by-prop
-                                          retract-entity-by-prop]]))
+                                          retract-entity-by-prop]]
+            [wombats.handlers.helpers :refer [wombat-error
+                                              user-dao-errors]]))
 
 (def public-user-fields [:db/id
                          :user/id
@@ -130,16 +131,14 @@
   [conn wombat-name]
   (let [wombat ((get-wombat-by-name conn) wombat-name)]
     (when wombat
-      (db-requirement-error
-       (str "Wombat with name '" wombat-name "' is already in use")))))
+      (wombat-error ((:wombat-name-taken user-dao-errors) wombat-name)))))
 
 (defn- ensure-wombat-url-availability
   "Ensure that a wombat does not exist with the given name"
   [conn wombat-url]
   (let [wombat ((get-wombat-by-url conn) wombat-url)]
     (when wombat
-      (db-requirement-error
-       (str "Wombat source code was already registered. If you own the source code, change the file name and try again.")))))
+      (wombat-error ((:wombat-source-taken user-dao-errors))))))
 
 (defn add-user-wombat
   "Creates a new wombat for a particular user"

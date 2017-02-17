@@ -68,13 +68,3 @@
            @(d/transact-async conn [[:db.fn/retractEntity entity-id]])
            msg)
          msg)))))
-
-(defn db-requirement-error
-  "Throws an error that will be caught by the exception interceptor."
-  ([message]
-   (db-requirement-error message {}))
-  ([message data]
-   (throw (ex-info "Datomic Requirement Error"
-                   {:type :db-requirement-error
-                    :message message
-                    :reason data}))))

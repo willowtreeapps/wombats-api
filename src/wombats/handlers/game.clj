@@ -3,7 +3,8 @@
             [clojure.spec :as s]
             [clj-time.local :as l]
             [wombats.interceptors.current-user :refer [get-current-user]]
-            [wombats.handlers.helpers :refer [handler-error]]
+            [wombats.handlers.helpers :refer [wombat-error
+                                              game-handler-errors]]
             [wombats.daos.helpers :as dao]
             [wombats.specs.utils :as sutils]
             [wombats.arena.core :refer [generate-arena]]))
@@ -123,7 +124,8 @@
 #_(s/def :game/players) ;; Add player specs
 
 (s/def :game/name string?)
-(s/def :game/max-players #(instance? Long %))
+(s/def :game/max-players #(and (instance? Long %)
+                               (not= 0 %)))
 (s/def :game/type #{:round})
 (s/def :game/num-rounds #(instance? Long %))
 (s/def :game/round-intermission #(instance? Long %))
@@ -167,8 +169,7 @@
            arena-config (get-arena arena-id)]
 
        (when-not arena-config
-         (handler-error
-          (str "Arena '" arena-id "' was not found.")))
+         (wombat-error ((:arena-not-found game-handler-errors) arena-id)))
 
        (sutils/validate-input ::new-game-input game)
 
@@ -232,11 +233,13 @@
              {wombat-eid :db/id} wombat]
 
          (when-not wombat
-           (handler-error (str "Wombat '" wombat-eid "' cound not be found.")))
+           (wombat-error ((:wombat-not-found game-handler-errors) wombat-id
+                                                                  wombat-eid)))
 
          (when-not (= (:wombat/owner wombat)
                       {:db/id user-eid})
-           (handler-error (str "Wombat '" wombat-eid "' does not belong to requesting user.")))
+           (wombat-error ((:cannot-use-wombat game-handler-errors) user-eid
+                                                                   wombat-eid)))
 
          @(add-player-to-game game-id user-eid wombat-eid color)
 
@@ -269,13 +272,11 @@
            game (get-game-by-id game-id)]
 
        (when-not game
-         (handler-error
-          (str "Game '" game-id  "' does not exist.")))
+         (wombat-error ((:game-not-found game-handler-errors) game-id)))
 
        (when-not (game-can-be-started? game)
-         (handler-error
-          (str "Game '" game-id "' is not in a state that can be started")
-          {:current-state (:game/status game)}))
+         (wombat-error ((:invalid-game-start-state game-handler-errors) game-id
+                                                                        (:game/status game))))
 
        @(start-game-fn game)
 
