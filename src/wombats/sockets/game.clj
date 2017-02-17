@@ -125,52 +125,22 @@
 ;; Broadcast helper functions
 
 (defn- broadcast-to-viewers
-  [game-id send-fn]
+  [game-id message]
   (let [channel-ids (get-game-room-channel-ids game-id)]
     (doseq [channel-id channel-ids]
-      (send-fn channel-id))))
+      (send-message channel-id message))))
 
 ;; Broadcast/send functions
-
-(defn- send-arena
-  [arena]
-  (let [msg (m/arena-message arena)]
-    (fn [chan-id]
-      (send-message chan-id msg))))
 
 (defn broadcast-arena
   [game-id arena]
   (broadcast-to-viewers game-id
-                        (send-arena arena)))
-
-(defn- send-chat-message
-  [game-id formatted-message]
-  (let [msg (m/chat-message game-id formatted-message)]
-    (fn [chan-id]
-      (send-message chan-id msg))))
-
-(defn- send-game-info
-  "Pulls out relevant info from game-state and sends it in join-game"
-  [game]
-  (let [msg (m/game-info-message game)]
-    (fn [chan-id]
-      (send-message chan-id msg))))
-
-(defn- broadcast-game-info
-  [game-id game]
-  (broadcast-to-viewers game-id
-                        (send-game-info game)))
-
-(defn- send-stats
-  [stats]
-  (let [msg (m/stats-message stats)]
-    (fn [chan-id]
-      (send-message chan-id msg))))
+                        (m/arena-message arena)))
 
 (defn broadcast-stats
   [game-id stats]
   (broadcast-to-viewers game-id
-                        (send-stats stats)))
+                        (m/stats-message stats)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Handlers
@@ -210,14 +180,16 @@
              (assoc socket-user :color (:player/color player)))
 
       ;; Sends the current game frame to the frontend
-      ((send-arena arena) chan-id)
+      (send-message chan-id
+                    (m/arena-message arena))
 
       ;; Sends the stats (player info)
-      ((send-stats (get-player-stats game-state)) chan-id)
-
+      (send-message chan-id
+                    (m/stats-message (get-player-stats game-state)))
 
       ;; Sends the game info to the front end
-      ((send-game-info game) chan-id))))
+      (send-message chan-id
+                    (m/game-info-message game)))))
 
 (defn- leave-game
   [_]
@@ -236,7 +208,7 @@
                                :color (get-player-color game-id chan-id)
                                :timestamp (str (l/local-now))}]
         (broadcast-to-viewers game-id
-                              (send-chat-message game-id formatted-message))))))
+                              (m/chat-message game-id formatted-message))))))
 
 (defn create-socket-handler-map
   "Allows for adding custom handlers that respond to namespaced messages
