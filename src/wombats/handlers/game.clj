@@ -4,8 +4,7 @@
             [clj-time.local :as l]
             [wombats.constants :refer [max-players]]
             [wombats.interceptors.current-user :refer [get-current-user]]
-            [wombats.handlers.helpers :refer [wombat-error
-                                              game-handler-errors]]
+            [wombats.handlers.helpers :refer [wombat-error]]
             [wombats.daos.helpers :as dao]
             [wombats.specs.utils :as sutils]
             [wombats.arena.core :refer [generate-arena]]))
@@ -171,7 +170,8 @@
            arena-config (get-arena arena-id)]
 
        (when-not arena-config
-         (wombat-error ((:arena-not-found game-handler-errors) arena-id)))
+         (wombat-error {:code 000000
+                        :details {:arena-id arena-id}}))
 
        (sutils/validate-input ::new-game-input game)
 
@@ -235,13 +235,15 @@
              {wombat-eid :db/id} wombat]
 
          (when-not wombat
-           (wombat-error ((:wombat-not-found game-handler-errors) wombat-id
-                                                                  wombat-eid)))
+           (wombat-error {:code 000001
+                          :details {:wombat-id wombat-id
+                                    :wombat-eid wombat-eid}}))
 
          (when-not (= (:wombat/owner wombat)
                       {:db/id user-eid})
-           (wombat-error ((:cannot-use-wombat game-handler-errors) user-eid
-                                                                   wombat-eid)))
+           (wombat-error {:code 000002
+                          :details {:user-eid user-eid
+                                    :wombat-eid wombat-eid}}))
 
          @(add-player-to-game game-id user-eid wombat-eid color)
 
@@ -274,11 +276,13 @@
            game (get-game-by-id game-id)]
 
        (when-not game
-         (wombat-error ((:game-not-found game-handler-errors) game-id)))
+         (wombat-error {:code 000003
+                        :details {:game-id game-id}}))
 
        (when-not (game-can-be-started? game)
-         (wombat-error ((:invalid-game-start-state game-handler-errors) game-id
-                                                                        (:game/status game))))
+         (wombat-error {:code 000004
+                        :details {:game-id game-id
+                                  :game-state (:game/status game)}}))
 
        @(start-game-fn game)
 

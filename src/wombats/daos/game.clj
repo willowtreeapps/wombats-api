@@ -8,8 +8,7 @@
                                           gen-id
                                           get-entities-by-prop
                                           retract-entity-by-prop]]
-            [wombats.handlers.helpers :refer [wombat-error
-                                              game-dao-errors]]
+            [wombats.handlers.helpers :refer [wombat-error]]
             [wombats.daos.user :refer [get-user-entity-id
                                        public-user-fields]]))
 
@@ -182,26 +181,31 @@
 
       ;; Check for game existence
       (when-not game
-        (wombat-error ((:not-found game-dao-errors) game-eid)))
+        (wombat-error {:code 101000
+                       :details {:game-id game-id}}))
 
       ;; Check to see if the game is accepting new players
       (when-not (open-for-enrollment? game)
-        (wombat-error ((:no-open-enrollment game-dao-errors))))
+        (wombat-error {:code 101001}))
 
       ;; Check to see if the player is already in the game
       (when (player-in-game? conn user-eid game-eid)
-        (wombat-error ((:already-joined game-dao-errors) user-eid
-                                                         game-eid)))
+        (wombat-error {:code 101002
+                       :details {:user-eid user-eid
+                                 :game-eid game-eid}}))
 
       ;; Check for available color
       (when (color-taken? conn game-id color)
-        (wombat-error ((:color-in-use game-dao-errors) color)))
+        (wombat-error {:code 101003
+                       :params [color]}))
 
       (when-not user-eid
-        (wombat-error ((:no-user game-dao-errors))))
+        (wombat-error {:code 101004
+                       :details {:user-eid user-eid}}))
 
       (when-not wombat-eid
-        (wombat-error ((:no-wombat game-dao-errors))))
+        (wombat-error {:code 101005
+                       :details {:wombat-eid wombat-eid}}))
 
       ;; This next part builds up the transaction(s)
       ;; 1. Creates the player trx

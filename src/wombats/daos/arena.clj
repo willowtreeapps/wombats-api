@@ -4,8 +4,7 @@
                                           get-entities-by-prop
                                           get-entity-id
                                           retract-entity-by-prop]]
-            [wombats.handlers.helpers :refer [wombat-error
-                                              arena-dao-errors]]))
+            [wombats.handlers.helpers :refer [wombat-error]]))
 
 (defn- get-arena-entity-id
   "Returns the entity id of an arena given the public arena id"
@@ -33,85 +32,36 @@
 (defn- ensure-name-availability
   "Ensure the name we want to set for an arena is available"
   [conn name]
-  (let [existing-arena? ((get-arena-by-name conn) name)]
-    (when existing-arena?
-      (wombat-error ((:name-taken arena-dao-errors) name)))))
+  (let [existing-arena ((get-arena-by-name conn) name)]
+    (when existing-arena
+      (wombat-error {:code 100000
+                     :params [name]}))))
 
 (defn add-arena
   "Sends a new arena configuration to the transactor"
   [conn]
-  (fn [{:keys [:arena/name
-              :arena/id
-              :arena/width
-              :arena/height
-              :arena/shot-damage
-              :arena/smoke-duration
-              :arena/food
-              :arena/poison
-              :arena/steel-walls
-              :arena/steel-wall-hp
-              :arena/wood-walls
-              :arena/wood-wall-hp
-              :arena/zakano
-              :arena/zakano-hp
-              :arena/wombat-hp
-              :arena/perimeter]}]
+  (fn [arena-config]
 
-    (ensure-name-availability conn name)
+    (ensure-name-availability conn (:arena/name arena-config))
 
-    (d/transact-async conn [{:db/id (d/tempid :db.part/user)
-                             :arena/id id
-                             :arena/name name
-                             :arena/width width
-                             :arena/height height
-                             :arena/shot-damage shot-damage
-                             :arena/smoke-duration smoke-duration
-                             :arena/food food
-                             :arena/poison poison
-                             :arena/steel-walls steel-walls
-                             :arena/steel-wall-hp steel-wall-hp
-                             :arena/wood-walls wood-walls
-                             :arena/wood-wall-hp wood-wall-hp
-                             :arena/zakano zakano
-                             :arena/zakano-hp zakano-hp
-                             :arena/wombat-hp wombat-hp
-                             :arena/perimeter perimeter}])))
+    (d/transact-async conn [(merge {:db/id (d/tempid :db.part/user)}
+                                   arena-config)])))
 
 (defn update-arena
   [conn]
-  (fn [{:keys [:arena/name
-              :arena/id
-              :arena/width
-              :arena/height
-              :arena/shot-damage
-              :arena/smoke-duration
-              :arena/food
-              :arena/poison
-              :arena/stone-walls
-              :arena/wood-walls
-              :arena/zakano
-              :arena/perimeter]}]
+  (fn [{:keys [:arena/id
+              :arena/name] :as arena-config}]
 
     (let [current-arena ((get-arena-by-id conn) id)]
 
       (when-not current-arena
-        (wombat-error ((:does-not-exist arena-dao-errors) id)))
+        (wombat-error {:code 100001
+                       :details {:arena-id id}}))
 
       (when-not (= (:arena/name current-arena) name)
         (ensure-name-availability conn name))
 
-      (d/transact-async conn [{:db/id (:db/id current-arena)
-                               :arena/name name
-                               :arena/width width
-                               :arena/height height
-                               :arena/shot-damage shot-damage
-                               :arena/smoke-duration smoke-duration
-                               :arena/food food
-                               :arena/poison poison
-                               :arena/stone-walls stone-walls
-                               :arena/wood-walls wood-walls
-                               :arena/zakano zakano
-                               :arena/perimeter perimeter}]))))
+      (d/transact-async conn [arena-config]))))
 
 (defn retract-arena
   "Retracts an arena configuration"
