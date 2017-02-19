@@ -1,5 +1,6 @@
 (ns wombats.game.initializers
   (:require [base64-clj.core :as b64]
+            [clj-time.core :as t]
             [cheshire.core :as cheshire]
             [taoensso.nippy :as nippy]
             [clojure.core.async :as async]
@@ -126,6 +127,15 @@
                                                   (assoc-in zakano-state [:state :code] code)))
                                          {} zakano)))))
 
+(defn- is-start-of-round?
+  [game-state]
+  (nil? (get-in game-state [:frame :frame/round-start-time] nil)))
+
+(defn- sleep-round
+  [game-state]
+  (when (> (get-in game-state [:frame :frame/round-number]) 1)
+    (Thread/sleep (get-in game-state [:game-config :game/round-intermission]))))
+
 (defn initialize-game
   [game-state]
   (-> game-state
@@ -140,3 +150,13 @@
   (-> game-state
       (update-in [:frame :frame/frame-number] inc)
       (update :initiative-order update-initiative-order)))
+
+(defn initialize-round
+  [game-state]
+  (if (is-start-of-round? game-state)
+    (do
+      (sleep-round game-state)
+      (-> game-state
+          (update-in [:frame :frame/round-number] inc)
+          (assoc-in [:frame :frame/round-start-time] (format "#inst \"%s\"" (t/now)))))
+    game-state))

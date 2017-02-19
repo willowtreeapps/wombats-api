@@ -94,34 +94,18 @@
 (defn add-game
   "Adds a new game entity to Datomic"
   [conn]
-  (fn [{:keys [:game/id
-              :game/name
-              :game/max-players
-              :game/type
-              :game/is-private
-              :game/password
-              :game/num-rounds
-              :game/start-time
-              :game/round-intermission]} arena-eid game-arena]
+  (fn [game arena-eid game-arena]
 
     (let [frame-tmp-id (d/tempid :db.part/user)
           frame-trx {:db/id frame-tmp-id
                      :frame/frame-number 0
+                     :frame/round-number 0
                      :frame/id (gen-id)
                      :frame/arena (nippy/freeze game-arena)}
-          game-trx {:db/id (d/tempid :db.part/user)
-                    :game/id id
-                    :game/frame frame-tmp-id
-                    :game/name name
-                    :game/max-players max-players
-                    :game/type type
-                    :game/is-private is-private
-                    :game/password (or password "")
-                    :game/num-rounds (or num-rounds 1)
-                    :game/start-time (read-string (str "#inst \"" start-time "\""))
-                    :game/round-intermission (or round-intermission 0)
-                    :game/arena arena-eid
-                    :game/status :pending-open}]
+          game-trx (merge game
+                          {:db/id (d/tempid :db.part/user)
+                           :game/frame frame-tmp-id
+                           :game/arena arena-eid})]
       (d/transact-async conn [frame-trx
                               game-trx]))))
 
@@ -265,9 +249,11 @@
   [conn]
   (fn [game-id]
     (let [[frame
-           arena] (first
+           arena
+           game] (first
                    (d/q '[:find (pull ?frame [*])
                                 (pull ?arena [*])
+                                (pull ?game [*])
                           :in $ ?game-id
                           :where [?game :game/id ?game-id]
                                  [?game :game/frame ?frame]
@@ -304,28 +290,27 @@
         {:game-id game-id
          :frame (update frame :frame/arena nippy/thaw)
          :arena-config arena
+         :game-config game
          :players (format-player-map n-players)}))))
 
 (defn- update-frame-state
   [conn]
-  (fn [{:keys [:db/id
-              :frame/arena
-              :frame/frame-number]}
+  (fn [frame
       players]
 
-    (let [frame-trx {:db/id id
-                     :frame/frame-number frame-number
-                     :frame/arena (nippy/freeze arena)}
-          stats-trxs (vec (map (fn [[_ {stats :stats}]]
-                                 (assoc stats :stats/frame-number frame-number))
-                               players))]
-      (d/transact-async conn (conj stats-trxs frame-trx)))))
+    #_(let [frame-trx frame
+            stats-trxs (vec (map (fn [[_ {stats :stats}]]
+                                   (assoc stats
+                                          :stats/frame-number
+                                          (:frame/frame-number frame)))
+                                 players))]
+        (d/transact-async conn (conj stats-trxs frame-trx)))))
 
 (defn- close-game-state
   [conn]
   (fn [game-id]
 
-    (d/transact-async conn [{:game/id game-id
+    #_(d/transact-async conn [{:game/id game-id
                              :game/status :closed}])))
 
 (defn start-game
@@ -343,7 +328,7 @@
                           :close-game (close-game-state conn)}
                          aws-credentials))
 
-      (d/transact-async conn [{:db/id game-eid
+      #_(d/transact-async conn [{:db/id game-eid
                                :game/status :active}]))))
 
 (defn get-player-from-game
