@@ -210,7 +210,7 @@
              game-record (get-game game-id)]
 
          (scheduler/schedule-game game-record 
-                                  #(start-game-fn game-record))
+                                  start-game-fn)
 
          (assoc context :response (assoc response
                                          :status 201

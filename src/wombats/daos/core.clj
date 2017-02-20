@@ -2,7 +2,8 @@
   (:require [datomic.api :as d]
             [wombats.daos.user :as user]
             [wombats.daos.arena :as arena]
-            [wombats.daos.game :as game]))
+            [wombats.daos.game :as game]
+            [wombats.scheduler.core :as scheduler]))
 
 (defn init-dao-map
   "Creates a map of all the data accessors that can be used inside of handlers / socket connections.
@@ -10,6 +11,11 @@
   access to these functions."
   [{:keys [conn] :as datomic}
    aws-credentials]
+
+  ;; Go through all the pending games, and schedule them
+  (scheduler/schedule-pending-games (game/get-all-pending-games conn)
+                                    (game/start-game conn aws-credentials))
+
   {;; User DAOS
    :get-users (user/get-users conn)
    :get-user-by-id (user/get-user-by-id conn)
@@ -36,6 +42,7 @@
    :retract-arena (arena/retract-arena conn)
    ;; Game Management DAOS
    :get-all-games (game/get-all-games conn)
+   :get-all-pending-games (game/get-all-pending-games conn)
    :get-game-eids-by-status (game/get-game-eids-by-status conn)
    :get-game-eids-by-player (game/get-game-eids-by-player conn)
    :get-games-by-eids (game/get-games-by-eids conn)

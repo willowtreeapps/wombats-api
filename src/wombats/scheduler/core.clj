@@ -10,11 +10,11 @@
 
     (if (t/after? (t/now) start-time)
       ;; Start time has already passed
-      (start-game-fn)
+      (start-game-fn game)
       ;; Set interval to start game in the future
       (chime-at [(-> start-time)]
                 (fn [time]
-                  (start-game-fn))
+                  (start-game-fn game))
 
                 ;; TODO: Proper logging
                 {:on-finished
@@ -24,3 +24,9 @@
                  :error-handler 
                  (fn [e]
                    (prn "Error starting game."))}))))
+
+(defn schedule-pending-games
+  [get-games-fn start-game-fn]
+  (let [games (get-games-fn)]
+    (doseq [game games]
+      (schedule-game game start-game-fn))))
