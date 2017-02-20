@@ -14,4 +14,13 @@
       ;; Set interval to start game in the future
       (chime-at [(-> start-time)]
                 (fn [time]
-                  (start-game-fn))))))
+                  (start-game-fn))
+
+                ;; TODO: Proper logging
+                {:on-finished
+                 (fn [] 
+                   (prn "Started game."))
+                 
+                 :error-handler 
+                 (fn [e]
+                   (prn "Error starting game."))}))))
