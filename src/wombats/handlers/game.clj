@@ -1,23 +1,24 @@
 (ns wombats.handlers.game
   (:require [io.pedestal.interceptor.helpers :as interceptor]
             [clojure.spec :as s]
-            [clj-time.local :as l]
             [wombats.constants :refer [max-players]]
+            [clj-time.core :as t]
             [wombats.interceptors.current-user :refer [get-current-user]]
-            [wombats.handlers.helpers :refer [wombat-error
-                                              game-handler-errors]]
+            [wombats.handlers.helpers :refer [wombat-error]]
             [wombats.daos.helpers :as dao]
             [wombats.specs.utils :as sutils]
             [wombats.arena.core :refer [generate-arena]]))
 
 (def ^:private game-body-sample
   #:game{:name "New Game"
-         :max-players 10
+         :max-players 8
          :type :round
          :round-intermission (* 1000 60 20)
+         :round-length (* 1000 60)
          :num-rounds 3
          :is-private false
-         :start-time (str (l/local-now))})
+         :password ""
+         :start-time (str (t/now))})
 
 (def ^:private join-game-body-sample
   #:player{:wombat-id ""
@@ -128,21 +129,29 @@
 (s/def :game/max-players #(and (instance? Long %)
                                (not= 0 %)
                                (<= % max-players)))
+(s/def :game/status #{:pending-open
+                      :pending-closed
+                      :active
+                      :active-intermission
+                      :closed})
+
 (s/def :game/type #{:round})
 (s/def :game/num-rounds #(instance? Long %))
 (s/def :game/round-intermission #(instance? Long %))
+(s/def :game/round-length #(instance? Long %))
 (s/def :game/is-private boolean?)
 (s/def :game/password string?)
-(s/def :game/start-time string?)
+(s/def :game/start-time inst?)
 
 (s/def ::new-game-input (s/keys :req [:game/name
                                       :game/max-players
                                       :game/type
                                       :game/is-private
-                                      :game/start-time]
-                                :opt [:game/password
+                                      :game/start-time
+                                      :game/password
                                       :game/num-rounds
-                                      :game/round-intermission]))
+                                      :game/round-intermission
+                                      :game/round-length]))
 
 (s/def :player/wombat-id string?)
 (s/def :player/color string?)
@@ -159,6 +168,18 @@
                         game-body-params]
            :responses {:200 {:description "add-game response"}}}}})
 
+(defn- set-game-defaults
+  [{:keys [:game/password
+           :game/num-rounds
+           :game/round-intermission
+           :game/start-time] :as game}]
+  (merge game
+         {:game/password (or password "")
+          :game/num-rounds (or num-rounds 1)
+          :game/round-intermission (or round-intermission 0)
+          :game/status :pending-open
+          :game/start-time (read-string (str "#inst \"" start-time "\""))}))
+
 (def add-game
   (interceptor/before
    ::add-game
@@ -167,11 +188,12 @@
            get-game (dao/get-fn :get-game-by-id context)
            get-arena (dao/get-fn :get-arena-by-id context)
            arena-id (get-in request [:query-params :arena-id])
-           game (:edn-params request)
+           game (set-game-defaults (:edn-params request))
            arena-config (get-arena arena-id)]
 
        (when-not arena-config
-         (wombat-error ((:arena-not-found game-handler-errors) arena-id)))
+         (wombat-error {:code 000000
+                        :details {:arena-id arena-id}}))
 
        (sutils/validate-input ::new-game-input game)
 
@@ -235,13 +257,15 @@
              {wombat-eid :db/id} wombat]
 
          (when-not wombat
-           (wombat-error ((:wombat-not-found game-handler-errors) wombat-id
-                                                                  wombat-eid)))
+           (wombat-error {:code 000001
+                          :details {:wombat-id wombat-id
+                                    :wombat-eid wombat-eid}}))
 
          (when-not (= (:wombat/owner wombat)
                       {:db/id user-eid})
-           (wombat-error ((:cannot-use-wombat game-handler-errors) user-eid
-                                                                   wombat-eid)))
+           (wombat-error {:code 000002
+                          :details {:user-eid user-eid
+                                    :wombat-eid wombat-eid}}))
 
          @(add-player-to-game game-id user-eid wombat-eid color)
 
@@ -274,13 +298,15 @@
            game (get-game-by-id game-id)]
 
        (when-not game
-         (wombat-error ((:game-not-found game-handler-errors) game-id)))
+         (wombat-error {:code 000003
+                        :details {:game-id game-id}}))
 
        (when-not (game-can-be-started? game)
-         (wombat-error ((:invalid-game-start-state game-handler-errors) game-id
-                                                                        (:game/status game))))
+         (wombat-error {:code 000004
+                        :details {:game-id game-id
+                                  :game-state (:game/status game)}}))
 
-       @(start-game-fn game)
+       (start-game-fn game)
 
        (assoc context :response (assoc response
                                        :status 200

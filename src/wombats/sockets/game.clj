@@ -5,7 +5,6 @@
             [clojure.edn :as edn]
             [clj-time.core :as t]
             [clj-time.local :as l]
-            [clj-time.format :as f]
             [clj-time.periodic :as p]
             [chime :refer [chime-at]]
             [io.pedestal.http.jetty.websockets :as ws]

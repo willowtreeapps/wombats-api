@@ -1,4 +1,6 @@
-(ns wombats.game.finalizers)
+(ns wombats.game.finalizers
+  (:require [clj-time.core :as t]
+            [clj-time.coerce :as c]))
 
 (defn- update-cell-metadata
   [{:keys [meta] :as cell}]
@@ -43,11 +45,36 @@
                   (get-in game-state [:frame :frame/arena])))]
     (assoc-in game-state [:frame :frame/arena] updated-arena)))
 
+(defn- round-type-game?
+  [game-state]
+  (= :round (get-in game-state [:game-config :game/type])))
+
+(defn- end-of-round?
+  [{:keys [game-config frame]}]
+  (let [{round-length :game/round-length} game-config
+        {round-start-time :frame/round-start-time} frame
+        end-time (t/plus (c/from-date (read-string round-start-time))
+                         (t/millis round-length))]
+    (t/after? (t/now)
+              end-time)))
+
 (defn finalize-frame
   [game-state]
   (-> game-state
       (update-arena-data)))
 
+(defn finalize-round
+  [game-state]
+  (if (and (round-type-game? game-state)
+           (end-of-round? game-state))
+    (-> game-state
+        (update :frame dissoc :frame/round-start-time)
+        (update-in [:frame :frame/round-number] inc))
+    game-state))
+
 (defn finalize-game
   [game-state]
-  game-state)
+  (-> game-state
+      (assoc-in [:game-config :game/end-time] (->> (t/now)
+                                                   (format "#inst \"%s\"")
+                                                   (read-string)))))
