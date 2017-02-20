@@ -188,6 +188,7 @@
      (let [add-game (dao/get-fn :add-game context)
            get-game (dao/get-fn :get-game-by-id context)
            get-arena (dao/get-fn :get-arena-by-id context)
+           start-game-fn (dao/get-fn :start-game context)
            arena-id (get-in request [:query-params :arena-id])
            game (set-game-defaults (:edn-params request))
            arena-config (get-arena arena-id)]
@@ -206,7 +207,8 @@
                            game-arena)
              game-record (get-game game-id)]
 
-         (scheduler/schedule-game game-record)
+         (scheduler/schedule-game game-record 
+                                  #(start-game-fn game-record))
 
          (assoc context :response (assoc response
                                          :status 201
