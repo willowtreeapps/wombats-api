@@ -6,3 +6,5 @@
 (defonce github-scopes "user:email")
 (defonce github-user-profile-url "https://api.github.com/user")
 (defonce github-repo-api-base "https://api.github.com/repos/")
+
+(defonce max-players 8)
