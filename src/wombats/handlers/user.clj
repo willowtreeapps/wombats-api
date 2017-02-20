@@ -3,8 +3,7 @@
             [org.httpkit.client :as http]
             [clojure.spec :as s]
             [wombats.daos.helpers :as dao]
-            [wombats.handlers.helpers :refer [wombat-error
-                                              user-handler-errors]]
+            [wombats.handlers.helpers :refer [wombat-error]]
             [wombats.interceptors.authorization :refer [authorization-error]]
             [wombats.specs.utils :as sutils]
             [wombats.constants :refer [github-repo-api-base]]))
@@ -141,7 +140,8 @@
            user (get-entire-user-by-id user-id)]
 
        (when-not user
-         (wombat-error ((:no-user user-handler-errors) user-id)))
+         (wombat-error {:code 001000
+                        :details {:user-id user-id}}))
 
        (sutils/validate-input ::wombat-params wombat)
 
@@ -157,8 +157,9 @@
              (assoc context :response (assoc response
                                              :status 200
                                              :body (get-wombat wombat-id))))
-           (wombat-error ((:homeless-wombat user-handler-errors) (:wombat/name new-wombat)
-                                                                 (:wombat/url new-wombat)))))))))
+           (wombat-error {:code 001001
+                          :params [(:wombat/name new-wombat)
+                                   (:wombat/url new-wombat)]})))))))
 
 (defn- user-owns-wombat?
   "Determines if a user owns a wombat"
@@ -217,7 +218,8 @@
        (sutils/validate-input ::wombat-params wombat)
 
        (when-not user
-         (wombat-error ((:no-user user-handler-errors) user-id)))
+         (wombat-error {:code 001000
+                        :details {:user-id user-id}}))
 
        (when-not (user-owns-wombat? user-id wombat-id context)
          (authorization-error "Cannot update this wombat"))
@@ -234,5 +236,6 @@
              (assoc context :response (assoc response
                                              :status 200
                                              :body (get-wombat wombat-id))))
-           (wombat-error ((:homeless-wombat user-handler-errors) (:wombat/name wombat)
-                                                                 (:wombat/url wombat)))))))))
+           (wombat-error {:code 001001
+                          :params [(:wombat/name wombat)
+                                   (:wombat/url wombat)]})))))))

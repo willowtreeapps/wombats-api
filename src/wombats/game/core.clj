@@ -6,13 +6,16 @@
             [wombats.arena.utils :as au]
             [wombats.sockets.game :as game-sockets]))
 
+(defn- is-end-of-game-type-round?
+  [{:keys [game-config frame]}]
+  (> (:frame/round-number frame)
+     (:game/num-rounds game-config)))
+
 (defn- game-over?
   "End game condition"
   [game-state]
-  ;; TODO For now we're only calculating a fix number of rounds
-  ;; This will have to be updated with the base condition for
-  ;; each game type
-  (= 50 (get-in game-state [:frame :frame/frame-number])))
+  (case (get-in game-state [:game-config :game/type])
+    :round (is-end-of-game-type-round? game-state)))
 
 (defn- push-frame-to-clients
   [{:keys [frame] :as game-state}]
@@ -26,11 +29,6 @@
 (defn- push-frame-to-datomic
   [{:keys [frame players] :as game-state} update-frame]
   (update-frame frame players)
-  game-state)
-
-(defn- close-out-game
-  [{:keys [game-id] :as game-state} close-game]
-  (close-game game-id)
   game-state)
 
 (defn- push-stats-update-to-clients
@@ -56,10 +54,10 @@
    (dissoc game-state :frame))
 
   ;; Pretty print everything
-  #_(clojure.pprint/pprint game-state)
+  (clojure.pprint/pprint game-state)
 
   ;; Print frame number
-  (prn (get-in game-state [:frame :frame/frame-number]))
+  #_(prn (get-in game-state [:frame :frame/frame-number]))
 
   ;; Print number of players
   #_(prn (str "Player Count: " (count (keys (:players game-state)))))
@@ -83,6 +81,7 @@
     (if (game-over? current-game-state)
       current-game-state
       (-> current-game-state
+          (i/initialize-round)
           (i/initialize-frame)
           (p/source-decisions aws-credentials)
           (p/process-decisions)
@@ -91,8 +90,8 @@
           (push-frame-to-clients)
           (push-stats-update-to-clients)
           (push-frame-to-datomic update-frame)
+          (f/finalize-round)
           (recur)))))
-
 
 (defn initialize-game
   "Main entry point for the game engine"
@@ -105,4 +104,4 @@
       (i/initialize-game)
       (game-loop update-frame aws-credentials)
       (f/finalize-game)
-      (close-out-game close-game)))
+      (close-game)))

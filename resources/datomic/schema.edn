@@ -268,6 +268,12 @@
   :db/doc         "The time that the game will start"}
 
  {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/end-time
+  :db/valueType   :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The time that the game has ended"}
+
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :game/arena
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
@@ -301,7 +307,13 @@
   :db/ident       :game/round-intermission
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Length of round intermission"}
+  :db/doc         "Length of round intermission in ms"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :game/round-length
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Length of round in ms"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :game/is-private
@@ -358,6 +370,18 @@
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
   :db/doc         "Frame number"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :frame/round-number
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Round number"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :frame/round-start-time
+  :db/valueType   :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The time that the current round has started"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :frame/arena

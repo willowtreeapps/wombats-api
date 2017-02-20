@@ -5,8 +5,7 @@
                                           get-entity-by-prop
                                           get-entities-by-prop
                                           retract-entity-by-prop]]
-            [wombats.handlers.helpers :refer [wombat-error
-                                              user-dao-errors]]))
+            [wombats.handlers.helpers :refer [wombat-error]]))
 
 (def public-user-fields '[:db/id
                           :user/id
@@ -134,14 +133,17 @@
   [conn wombat-name]
   (let [wombat ((get-wombat-by-name conn) wombat-name)]
     (when wombat
-      (wombat-error ((:wombat-name-taken user-dao-errors) wombat-name)))))
+      (wombat-error {:code 102000
+                     :params [wombat-name]}))))
 
 (defn- ensure-wombat-url-availability
   "Ensure that a wombat does not exist with the given name"
   [conn wombat-url]
   (let [wombat ((get-wombat-by-url conn) wombat-url)]
     (when wombat
-      (wombat-error ((:wombat-source-taken user-dao-errors))))))
+      (wombat-error {:code 102001
+                     :params [(:wombat/name wombat)
+                              wombat-url]}))))
 
 (defn add-user-wombat
   "Creates a new wombat for a particular user"
