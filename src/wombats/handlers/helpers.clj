@@ -10,7 +10,7 @@
          details {}
          params []}}]
 
-  (let [message (get errors code "Opps, looks like something went wrong.")]
+  (let [message (get errors code "Oops, looks like something went wrong.")]
     (throw (ex-info "Wombat Error" {:type :wombat-error
                                     :message (->> params
                                                   (into [message])

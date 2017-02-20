@@ -31,11 +31,6 @@
   (update-frame frame players)
   game-state)
 
-(defn- close-out-game
-  [{:keys [game-id] :as game-state} close-game]
-  (close-game game-id)
-  game-state)
-
 (defn- push-stats-update-to-clients
   [game-state]
   (game-sockets/broadcast-stats
@@ -109,4 +104,4 @@
       (i/initialize-game)
       (game-loop update-frame aws-credentials)
       (f/finalize-game)
-      (close-out-game close-game)))
+      (close-game)))

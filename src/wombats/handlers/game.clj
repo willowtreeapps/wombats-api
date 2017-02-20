@@ -11,7 +11,7 @@
 
 (def ^:private game-body-sample
   #:game{:name "New Game"
-         :max-players 10
+         :max-players 8
          :type :round
          :round-intermission (* 1000 60 20)
          :round-length (* 1000 60)

@@ -115,8 +115,8 @@
   "Sources a bot to run as the zakano"
   [game-state]
   (let [;; TODO put zakano in db, maybe allow for selecting specific zakano?
-        ;;url "https://api.github.com/repos/willowtreeapps/wombats-bots/contents/zakano.clj"
-        ;;response @(http/get url)
+        ;; url "https://api.github.com/repos/willowtreeapps/wombats-bots/contents/zakano.clj"
+        ;; response @(http/get url)
         ;; code (parse-github-code response)
         code {:code (nippy/freeze (get-zakano-code))
               :path "zakano.clj"}]
@@ -156,7 +156,5 @@
   (if (is-start-of-round? game-state)
     (do
       (sleep-round game-state)
-      (-> game-state
-          (update-in [:frame :frame/round-number] inc)
-          (assoc-in [:frame :frame/round-start-time] (format "#inst \"%s\"" (t/now)))))
+      (assoc-in game-state [:frame :frame/round-start-time] (format "#inst \"%s\"" (t/now))))
     game-state))

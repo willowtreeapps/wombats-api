@@ -50,7 +50,7 @@
   (= :round (get-in game-state [:game-config :game/type])))
 
 (defn- end-of-round?
-  [{:keys [game-config frame] :as game-state}]
+  [{:keys [game-config frame]}]
   (let [{round-length :game/round-length} game-config
         {round-start-time :frame/round-start-time} frame
         end-time (t/plus (c/from-date (read-string round-start-time))
@@ -67,9 +67,14 @@
   [game-state]
   (if (and (round-type-game? game-state)
            (end-of-round? game-state))
-    (assoc-in game-state [:frame :frame/round-start-time] nil)
+    (-> game-state
+        (update :frame dissoc :frame/round-start-time)
+        (update-in [:frame :frame/round-number] inc))
     game-state))
 
 (defn finalize-game
   [game-state]
-  game-state)
+  (-> game-state
+      (assoc-in [:game-config :game/end-time] (->> (t/now)
+                                                   (format "#inst \"%s\"")
+                                                   (read-string)))))

@@ -298,20 +298,26 @@
   (fn [frame
       players]
 
-    #_(let [frame-trx frame
-            stats-trxs (vec (map (fn [[_ {stats :stats}]]
-                                   (assoc stats
-                                          :stats/frame-number
-                                          (:frame/frame-number frame)))
-                                 players))]
-        (d/transact-async conn (conj stats-trxs frame-trx)))))
+    (let [frame-trx (cond-> frame
+                      true
+                      (update :frame/arena nippy/freeze)
+
+                      (not (nil? (:frame/round-start-time frame)))
+                      (update :frame/round-start-time read-string))
+          stats-trxs (vec (map (fn [[_ {stats :stats}]]
+                                 (assoc stats
+                                        :stats/frame-number
+                                        (:frame/frame-number frame)))
+                               players))]
+      (d/transact-async conn (conj stats-trxs frame-trx)))))
 
 (defn- close-game-state
   [conn]
-  (fn [game-id]
+  (fn [{:keys [game-id game-config]}]
 
-    #_(d/transact-async conn [{:game/id game-id
-                             :game/status :closed}])))
+    (d/transact-async conn [{:game/id game-id
+                             :game/status :closed
+                             :game/end-time (:game/end-time game-config)}])))
 
 (defn start-game
   "Transitions the game status to active"
@@ -328,7 +334,7 @@
                           :close-game (close-game-state conn)}
                          aws-credentials))
 
-      #_(d/transact-async conn [{:db/id game-eid
+      (d/transact-async conn [{:db/id game-eid
                                :game/status :active}]))))
 
 (defn get-player-from-game
