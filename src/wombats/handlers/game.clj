@@ -2,6 +2,7 @@
   (:require [io.pedestal.interceptor.helpers :as interceptor]
             [clojure.spec :as s]
             [clj-time.local :as l]
+            [wombats.constants :refer [max-players]]
             [wombats.interceptors.current-user :refer [get-current-user]]
             [wombats.handlers.helpers :refer [wombat-error
                                               game-handler-errors]]
@@ -125,7 +126,8 @@
 
 (s/def :game/name string?)
 (s/def :game/max-players #(and (instance? Long %)
-                               (not= 0 %)))
+                               (not= 0 %)
+                               (<= % max-players)))
 (s/def :game/type #{:round})
 (s/def :game/num-rounds #(instance? Long %))
 (s/def :game/round-intermission #(instance? Long %))
