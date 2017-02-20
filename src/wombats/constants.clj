@@ -21,6 +21,7 @@
    000002 "You do not have permissions to use this wombat."
    000003 "Game could not be found."
    000004 "Game is not able to be started in its current state"
+   000005 "Invalid password."
    001000 "User does not exist."
    001001 "Oh no!!! %s is homeless! Check your url '%s' and make sure code exists at that location."
    100000 "Arena '%s' already exists."

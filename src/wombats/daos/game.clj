@@ -159,14 +159,9 @@
 
 (defn add-player-to-game
   [conn]
-  (fn [game-id user-eid wombat-eid color]
-    (let [game ((get-game-by-id conn) game-id)
-          game-eid (:db/id game)]
-
-      ;; Check for game existence
-      (when-not game
-        (wombat-error {:code 101000
-                       :details {:game-id game-id}}))
+  (fn [game user-eid wombat-eid color]
+    (let [{game-id :game/id
+           game-eid :db/id} game]
 
       ;; Check to see if the game is accepting new players
       (when-not (open-for-enrollment? game)
