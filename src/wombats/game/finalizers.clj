@@ -60,24 +60,39 @@
        (format "#inst \"%s\"")
        (read-string)))
 
-
 (defn finalize-round
-  [game-state]
+  [game-state close-round]
+  ;; Add intermission to current time 
   (let [intermission (get-in game-state [:game-config :game/round-intermission])
-        new-start-time (t/plus (t/now) (t/millis intermission))]
-    (-> game-state
-        ;; Add intermission to current time 
-        (assoc-in [:frame :frame/round-start-time] (format-date new-start-time))
-        (update-in [:frame :frame/round-number] inc)
-        (assoc-in [:game-config :game/status] :active-intermission))))
+        new-start-time (t/plus (t/now) (t/millis intermission))
+        updated-game-state (-> game-state
+                               (assoc-in [:frame :frame/round-start-time] (format-date new-start-time))
+                               (update-in [:frame :frame/round-number] inc)
+                               (assoc-in [:game-config :game/status] :active-intermission))]
+    (close-round updated-game-state)
+    updated-game-state))
+
+(defn- is-end-of-game-type-round?
+  [{:keys [game-config frame]}]
+  (> (:frame/round-number frame)
+     (:game/num-rounds game-config)))
+
+(defn- game-over?
+  "End game condition"
+  [game-state]
+  (case (get-in game-state [:game-config :game/type])
+    :round (is-end-of-game-type-round? game-state)))
 
 (defn finalize-game
   [game-state close-game]
-  (let [updated-game-state (-> game-state
-                               ;; Decrement the round-number so it stores the last processed round
-                               (update-in [:frame :frame/round-number] dec)
-                               (update :frame dissoc :frame/round-start-time)
-                               (assoc-in [:game-config :game/end-time] (format-date (t/now)))
-                               (assoc-in [:game-config :game/status] :closed))]
-    (close-game updated-game-state)
-    updated-game-state))
+  (if (game-over? game-state)
+    (let [updated-game-state (-> game-state
+                                 ;; Decrement the round-number so it stores the last processed round
+                                 (update-in [:frame :frame/round-number] dec)
+                                 (update :frame dissoc :frame/round-start-time)
+                                 (assoc-in [:game-config :game/end-time] (format-date (t/now)))
+                                 (assoc-in [:game-config :game/status] :closed))]
+      
+      (close-game updated-game-state)
+      updated-game-state)
+    game-state))

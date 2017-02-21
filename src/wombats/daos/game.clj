@@ -307,6 +307,15 @@
                                players))]
       (d/transact-async conn (conj stats-trxs frame-trx)))))
 
+(defn- close-round
+  [conn]
+  (fn [{:keys [frame game-config]}]
+    
+    (let [frame-trx (-> frame (update :frame/arena nippy/freeze))
+          game-trx game-config]
+
+      (d/transact-async conn [frame-trx game-trx]))))
+
 (defn- close-game-state
   [conn]
   (fn [{:keys [game-id game-config]}]
@@ -322,10 +331,15 @@
     (let [game-state ((get-game-state-by-id conn) game-id)
           {game-eid :db/id} game-state]
       
+      (when (= 0 (count (:players game-state)))
+        (wombat-error {:code 101006
+                       :details {:game-id game-id}}))
+      
       ;; We put this in a future so that it gets run on a separate thread
       (future
         (initialize-round game-state
                          {:update-frame (update-frame-state conn)
+                          :close-round (close-round conn)
                           :close-game (close-game-state conn)
                           :round-start-fn (start-game conn aws-credentials)}
                          aws-credentials))

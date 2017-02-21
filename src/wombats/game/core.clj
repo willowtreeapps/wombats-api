@@ -9,17 +9,6 @@
             [wombats.scheduler.core :as scheduler]
             [wombats.sockets.game :as game-sockets]))
 
-(defn- is-end-of-game-type-round?
-  [{:keys [game-config frame]}]
-  (> (:frame/round-number frame)
-     (:game/num-rounds game-config)))
-
-(defn- game-over?
-  "End game condition"
-  [game-state]
-  (case (get-in game-state [:game-config :game/type])
-    :round (is-end-of-game-type-round? game-state)))
-
 (defn- round-over?
   [{:keys [game-config frame]}]
   (let [{round-length :game/round-length} game-config
@@ -110,17 +99,17 @@
 
 (defn- game-loop
   "Game loop"
-  [game-state update-frame close-game aws-credentials]
+  [game-state update-frame close-round close-game aws-credentials]
   (loop [current-game-state game-state]
     (let [round-is-over? (round-over? current-game-state)]       
 
       (cond-> current-game-state
         ;; Check if the round is over
         round-is-over?
-        (f/finalize-round)
+        (f/finalize-round close-round)
 
         ;; Check if the game is over
-        (game-over? current-game-state)
+        true
         (f/finalize-game close-game)
 
         ;; Process the frame if the round isn't over
@@ -138,12 +127,14 @@
         start-time (get-in game-state [:frame :frame/round-start-time])]
     (when (= game-status :active-intermission)
       (scheduler/schedule-game game-id start-time round-start-fn)))
+  (clojure.pprint/pprint (get-in game-state [:game-config]))
   game-state)
 
 (defn initialize-round
   "Main entry point for the game engine"
   [game-state
    {update-frame   :update-frame
+    close-round    :close-round
     close-game     :close-game
     round-start-fn :round-start-fn}
    aws-credentials]
@@ -151,6 +142,7 @@
   (-> game-state
       (i/initialize-round)
       (game-loop update-frame
+                 close-round
                  close-game
                  aws-credentials)
       (schedule-next-round round-start-fn)
