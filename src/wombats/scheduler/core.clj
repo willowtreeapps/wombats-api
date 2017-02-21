@@ -5,28 +5,28 @@
 
 (defn schedule-game
   "Takes in a game, and adds a hook to start the game at start"
-  [game start-game-fn]
-  (let [start-time (c/from-date (:game/start-time game))]
+  [game-id start-time start-round-fn]
+  (if (t/after? (t/now) (c/from-date start-time))
+    ;; Start time has already passed
+    (start-round-fn game-id)
+    ;; Set interval to start game in the future
+    (chime-at [(-> start-time)]
+              (fn [time]
+                (start-round-fn game-id))
 
-    (if (t/after? (t/now) start-time)
-      ;; Start time has already passed
-      (start-game-fn game)
-      ;; Set interval to start game in the future
-      (chime-at [(-> start-time)]
-                (fn [time]
-                  (start-game-fn game))
-
-                ;; TODO: Proper logging
-                {:on-finished
-                 (fn [] 
-                   (prn "Started game."))
-                 
-                 :error-handler 
-                 (fn [e]
-                   (prn "Error starting game."))}))))
+              ;; TODO: Proper logging
+              {:on-finished
+               (fn [] 
+                 (prn "Started game."))
+               
+               :error-handler 
+               (fn [e]
+                 (prn "Error starting game."))})))
 
 (defn schedule-pending-games
-  [get-games-fn start-game-fn]
+  [get-games-fn start-round-fn]
   (let [games (get-games-fn)]
     (doseq [game games]
-      (schedule-game game start-game-fn))))
+      (schedule-game (:game/id game) 
+                     (:game/start-time game)
+                     start-round-fn))))

@@ -136,9 +136,22 @@
   (when (> (get-in game-state [:frame :frame/round-number]) 1)
     (Thread/sleep (get-in game-state [:game-config :game/round-intermission]))))
 
-(defn initialize-game
+(defn- set-round-start-time
+  [game-state]
+  (assoc-in game-state [:frame :frame/round-start-time] (->> (t/now)
+                                                             (format "#inst \"%s\"")
+                                                             (read-string))))
+
+(defn- set-round-status
+  [game-state]
+  (assoc-in game-state [:game-config :game/status] :active))
+
+
+(defn initialize-round
   [game-state]
   (-> game-state
+      (set-round-start-time)
+      (set-round-status)
       (add-players-to-game)
       (set-initiative-order)
       (set-zakano-state)
@@ -151,7 +164,7 @@
       (update-in [:frame :frame/frame-number] inc)
       (update :initiative-order update-initiative-order)))
 
-(defn initialize-round
+#_(defn initialize-round
   [game-state]
   (if (is-start-of-round? game-state)
     (do

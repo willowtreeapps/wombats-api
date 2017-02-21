@@ -49,32 +49,35 @@
   [game-state]
   (= :round (get-in game-state [:game-config :game/type])))
 
-(defn- end-of-round?
-  [{:keys [game-config frame]}]
-  (let [{round-length :game/round-length} game-config
-        {round-start-time :frame/round-start-time} frame
-        end-time (t/plus (c/from-date (read-string round-start-time))
-                         (t/millis round-length))]
-    (t/after? (t/now)
-              end-time)))
-
 (defn finalize-frame
   [game-state]
   (-> game-state
       (update-arena-data)))
 
+(defn- format-date
+  [date]
+  (->> date
+       (format "#inst \"%s\"")
+       (read-string)))
+
+
 (defn finalize-round
   [game-state]
-  (if (and (round-type-game? game-state)
-           (end-of-round? game-state))
+  (let [intermission (get-in game-state [:game-config :game/round-intermission])
+        new-start-time (t/plus (t/now) (t/millis intermission))]
     (-> game-state
-        (update :frame dissoc :frame/round-start-time)
-        (update-in [:frame :frame/round-number] inc))
-    game-state))
+        ;; Add intermission to current time 
+        (assoc-in [:frame :frame/round-start-time] (format-date new-start-time))
+        (update-in [:frame :frame/round-number] inc)
+        (assoc-in [:game-config :game/status] :active-intermission))))
 
 (defn finalize-game
-  [game-state]
-  (-> game-state
-      (assoc-in [:game-config :game/end-time] (->> (t/now)
-                                                   (format "#inst \"%s\"")
-                                                   (read-string)))))
+  [game-state close-game]
+  (let [updated-game-state (-> game-state
+                               ;; Decrement the round-number so it stores the last processed round
+                               (update-in [:frame :frame/round-number] dec)
+                               (update :frame dissoc :frame/round-start-time)
+                               (assoc-in [:game-config :game/end-time] (format-date (t/now)))
+                               (assoc-in [:game-config :game/status] :closed))]
+    (close-game updated-game-state)
+    updated-game-state))

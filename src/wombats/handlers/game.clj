@@ -209,7 +209,8 @@
                            game-arena)
              game-record (get-game game-id)]
 
-         (scheduler/schedule-game game-record 
+         (scheduler/schedule-game game-id
+                                  (:game/start-time game-record)
                                   start-game-fn)
 
          (assoc context :response (assoc response
