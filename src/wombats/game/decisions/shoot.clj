@@ -77,7 +77,7 @@
                    ;; TODO Apply damage & update score
                    player))
 
-      ;; ;; If the shooter hit something, update their stats
+      ;; If the shooter hit something, update their stats
       (and contains-hp? wombat-shooter?)
       (update-in [:players (:uuid shooter) :stats]
                  (fn [stats]

@@ -163,11 +163,3 @@
   (-> game-state
       (update-in [:frame :frame/frame-number] inc)
       (update :initiative-order update-initiative-order)))
-
-#_(defn initialize-round
-  [game-state]
-  (if (is-start-of-round? game-state)
-    (do
-      (sleep-round game-state)
-      (assoc-in game-state [:frame :frame/round-start-time] (format "#inst \"%s\"" (t/now))))
-    game-state))

@@ -10,9 +10,9 @@
       component
       (let [conn (get-in datomic [:database :conn])
             aws-credentials (get-in config [:settings :aws])]
-        ;; ;; Go through all the pending games, and schedule them
-        (assoc component 
-               :scheduler 
+        ;; Go through all the pending games, and schedule them
+        (assoc component
+               :scheduler
                (scheduler/schedule-pending-games (game/get-all-pending-games conn)
                                                  (game/start-game conn aws-credentials))))))
   (stop [component]
