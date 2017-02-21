@@ -7,7 +7,8 @@
             [wombats.handlers.helpers :refer [wombat-error]]
             [wombats.daos.helpers :as dao]
             [wombats.specs.utils :as sutils]
-            [wombats.arena.core :refer [generate-arena]]))
+            [wombats.arena.core :refer [generate-arena]]
+            [wombats.scheduler.core :as scheduler]))
 
 (def ^:private game-body-sample
   #:game{:name "New Game"
@@ -189,6 +190,7 @@
      (let [add-game (dao/get-fn :add-game context)
            get-game (dao/get-fn :get-game-by-id context)
            get-arena (dao/get-fn :get-arena-by-id context)
+           start-game-fn (dao/get-fn :start-game context)
            arena-id (get-in request [:query-params :arena-id])
            game (set-game-defaults (:edn-params request))
            arena-config (get-arena arena-id)]
@@ -206,6 +208,9 @@
                            (:db/id arena-config)
                            game-arena)
              game-record (get-game game-id)]
+
+         (scheduler/schedule-game game-record 
+                                  start-game-fn)
 
          (assoc context :response (assoc response
                                          :status 201

@@ -86,6 +86,12 @@
     ((get-games-by-eids conn)
      ((get-all-game-eids conn)))))
 
+(defn get-all-pending-games
+  [conn]
+  (fn []
+    ((get-games-by-eids conn)
+     ((get-game-eids-by-status conn) [:pending-open :pending-closed]))))
+
 (defn get-game-by-id
   [conn]
   (fn [game-id]
