@@ -1,21 +1,22 @@
 (ns wombats.game.core
-  (:require [wombats.game.initializers :as i]
+  (:require [clj-time.coerce :as c] 
+            [clj-time.core :as t]
+            [wombats.game.initializers :as i]
             [wombats.game.finalizers :as f]
             [wombats.game.player-stats :refer [get-player-stats]]
             [wombats.game.processor :as p]
             [wombats.arena.utils :as au]
+            [wombats.scheduler.core :as scheduler]
             [wombats.sockets.game :as game-sockets]))
 
-(defn- is-end-of-game-type-round?
+(defn- round-over?
   [{:keys [game-config frame]}]
-  (> (:frame/round-number frame)
-     (:game/num-rounds game-config)))
-
-(defn- game-over?
-  "End game condition"
-  [game-state]
-  (case (get-in game-state [:game-config :game/type])
-    :round (is-end-of-game-type-round? game-state)))
+  (let [{round-length :game/round-length} game-config
+        {round-start-time :frame/round-start-time} frame
+        end-time (t/plus (c/from-date round-start-time)
+                         (t/millis round-length))]
+    (t/after? (t/now)
+              end-time)))
 
 (defn- push-frame-to-clients
   [{:keys [frame] :as game-state}]
@@ -54,13 +55,22 @@
    (dissoc game-state :frame))
 
   ;; Pretty print everything
-  (clojure.pprint/pprint game-state)
+  #_(clojure.pprint/pprint game-state)
 
   ;; Print frame number
-  #_(prn (get-in game-state [:frame :frame/frame-number]))
+  (prn (format "Round Number: %d" 
+               (get-in game-state [:frame :frame/round-number])))
+
+  ;; Print frame number
+  (prn (format "Frame Number: %d" 
+               (get-in game-state [:frame :frame/frame-number])))
 
   ;; Print number of players
   #_(prn (str "Player Count: " (count (keys (:players game-state)))))
+
+  ;; Print game status
+  (prn (format "Game Status: %s" 
+               (get-in game-state [:game-config :game/status])))
 
   ;; Sleep before next frame
   (Thread/sleep interval)
@@ -74,34 +84,65 @@
   (Thread/sleep time)
   game-state)
 
+(defn- frame-processor
+  [game-state update-frame aws-credentials]
+  (-> game-state
+      (i/initialize-frame)
+      (p/source-decisions aws-credentials)
+      (p/process-decisions)
+      (f/finalize-frame)
+      ;; TODO: Remove this timeout
+      (timeout-frame 500)
+      (push-frame-to-clients)
+      (push-stats-update-to-clients)
+      (push-frame-to-datomic update-frame)))
+
 (defn- game-loop
   "Game loop"
-  [game-state update-frame aws-credentials]
+  [game-state update-frame close-round close-game aws-credentials]
   (loop [current-game-state game-state]
-    (if (game-over? current-game-state)
-      current-game-state
-      (-> current-game-state
-          (i/initialize-round)
-          (i/initialize-frame)
-          (p/source-decisions aws-credentials)
-          (p/process-decisions)
-          (f/finalize-frame)
-          (timeout-frame 500)
-          (push-frame-to-clients)
-          (push-stats-update-to-clients)
-          (push-frame-to-datomic update-frame)
-          (f/finalize-round)
-          (recur)))))
+    (let [round-is-over? (round-over? current-game-state)]       
 
-(defn initialize-game
+      (cond-> current-game-state
+        ;; Check if the round is over
+        round-is-over?
+        (f/finalize-round close-round)
+
+        ;; Check if the game is over
+        true
+        (f/finalize-game close-game)
+
+        ;; Process the frame if the round isn't over
+        (not round-is-over?)
+        (frame-processor update-frame aws-credentials)
+        
+        ;; Recur if the round isn't over
+        (not round-is-over?)
+        (recur)))))
+
+(defn- schedule-next-round
+  [game-state round-start-fn]
+  (let [{game-status :game/status
+         game-id :game/id} (:game-config game-state)
+        start-time (get-in game-state [:frame :frame/round-start-time])]
+    (when (= game-status :active-intermission)
+      (scheduler/schedule-game game-id start-time round-start-fn)))
+  (clojure.pprint/pprint (get-in game-state [:game-config]))
+  game-state)
+
+(defn initialize-round
   "Main entry point for the game engine"
   [game-state
-   {update-frame :update-frame
-    close-game :close-game}
+   {update-frame   :update-frame
+    close-round    :close-round
+    close-game     :close-game
+    round-start-fn :round-start-fn}
    aws-credentials]
 
   (-> game-state
-      (i/initialize-game)
-      (game-loop update-frame aws-credentials)
-      (f/finalize-game)
-      (close-game)))
+      (i/initialize-round)
+      (game-loop update-frame
+                 close-round
+                 close-game
+                 aws-credentials)
+      (schedule-next-round round-start-fn)))

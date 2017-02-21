@@ -20,7 +20,7 @@
    000001 "Wombat cound not be found."
    000002 "You do not have permissions to use this wombat."
    000003 "Game could not be found."
-   000004 "Game is not able to be started in its current state"
+   000004 "Game is not able to be started in its current state."
    000005 "Invalid password."
    001000 "User does not exist."
    001001 "Oh no!!! %s is homeless! Check your url '%s' and make sure code exists at that location."
@@ -32,5 +32,6 @@
    101003 "Color '%s' is already in use."
    101004 "User could not be found."
    101005 "Wombat could not be found."
+   101006 "Game cannot be started with no Wombats!"
    102000 "Wombat with the name '%s' already exists."
    102001 "Wombat source code with that pathname has already registered. If you own the source code, change the file name and try again."})

@@ -1,7 +1,7 @@
 (ns wombats.daos.game
   (:require [datomic.api :as d]
             [taoensso.nippy :as nippy]
-            [wombats.game.core :refer [initialize-game]]
+            [wombats.game.core :refer [initialize-round]]
             [wombats.game.utils :refer [decision-maker-state]]
             [wombats.daos.helpers :refer [get-entity-by-prop
                                           get-entity-id
@@ -299,18 +299,22 @@
   (fn [frame
       players]
 
-    (let [frame-trx (cond-> frame
-                      true
-                      (update :frame/arena nippy/freeze)
-
-                      (not (nil? (:frame/round-start-time frame)))
-                      (update :frame/round-start-time read-string))
+    (let [frame-trx (-> frame (update :frame/arena nippy/freeze))
           stats-trxs (vec (map (fn [[_ {stats :stats}]]
                                  (assoc stats
                                         :stats/frame-number
                                         (:frame/frame-number frame)))
                                players))]
       (d/transact-async conn (conj stats-trxs frame-trx)))))
+
+(defn- close-round
+  [conn]
+  (fn [{:keys [frame game-config]}]
+    
+    (let [frame-trx (-> frame (update :frame/arena nippy/freeze))
+          game-trx game-config]
+
+      (d/transact-async conn [frame-trx game-trx]))))
 
 (defn- close-game-state
   [conn]
@@ -322,17 +326,22 @@
 
 (defn start-game
   "Transitions the game status to active"
-  [conn aws-credentials]
-  (fn [game]
-    (let [{game-id :game/id
-           game-eid :db/id} game
-          game-state ((get-game-state-by-id conn) game-id)]
-
+  [conn aws-credentials]  
+  (fn [game-id]    
+    (let [game-state ((get-game-state-by-id conn) game-id)
+          {game-eid :db/id} game-state]
+      
+      (when (= 0 (count (:players game-state)))
+        (wombat-error {:code 101006
+                       :details {:game-id game-id}}))
+      
       ;; We put this in a future so that it gets run on a separate thread
       (future
-        (initialize-game game-state
+        (initialize-round game-state
                          {:update-frame (update-frame-state conn)
-                          :close-game (close-game-state conn)}
+                          :close-round (close-round conn)
+                          :close-game (close-game-state conn)
+                          :round-start-fn (start-game conn aws-credentials)}
                          aws-credentials))
 
       (d/transact-async conn [{:db/id game-eid
