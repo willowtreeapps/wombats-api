@@ -5,7 +5,8 @@
             [wombats.components.configuration :as config-component]
             [wombats.components.datomic :as datomic-component]
             [wombats.components.service :as service-component]
-            [wombats.components.pedestal :as pedestal-component])
+            [wombats.components.pedestal :as pedestal-component]
+            [wombats.components.scheduler :as scheduler-component])
   (:gen-class))
 
 (defn system []
@@ -20,7 +21,11 @@
              (service-component/new-service {:new-api-router routes/new-api-router
                                              :new-ws-router routes/new-ws-router})
              [:config :datomic])
-
+   
+   :scheduler (component/using
+               (scheduler-component/new-scheduler)
+               [:config :datomic :service])
+   
    :pedestal (component/using
               (pedestal-component/new-pedestal)
               [:config :service])))

@@ -92,7 +92,7 @@
       (p/process-decisions)
       (f/finalize-frame)
       ;; TODO: Remove this timeout
-      #_(timeout-frame 500)
+      (timeout-frame 500)
       (push-frame-to-clients)
       (push-stats-update-to-clients)
       (push-frame-to-datomic update-frame)))
@@ -145,5 +145,4 @@
                  close-round
                  close-game
                  aws-credentials)
-      (schedule-next-round round-start-fn)
-      (frame-debugger 0)))
+      (schedule-next-round round-start-fn)))

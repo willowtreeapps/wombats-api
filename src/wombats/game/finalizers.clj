@@ -1,6 +1,7 @@
 (ns wombats.game.finalizers
   (:require [clj-time.core :as t]
-            [clj-time.coerce :as c]))
+            [clj-time.coerce :as c]
+            [wombats.arena.core :refer [generate-arena]]))
 
 (defn- update-cell-metadata
   [{:keys [meta] :as cell}]
@@ -68,7 +69,8 @@
         updated-game-state (-> game-state
                                (assoc-in [:frame :frame/round-start-time] (format-date new-start-time))
                                (update-in [:frame :frame/round-number] inc)
-                               (assoc-in [:game-config :game/status] :active-intermission))]
+                               (assoc-in [:game-config :game/status] :active-intermission)
+                               (assoc-in [:frame :frame/arena] (generate-arena (:arena-config game-state))))]
     (close-round updated-game-state)
     updated-game-state))
 
