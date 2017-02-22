@@ -10,13 +10,16 @@
             [wombats.sockets.game :as game-sockets]))
 
 (defn- round-over?
-  [{:keys [game-config frame]}]
+  [{:keys [game-config frame initiative-order]}]
   (let [{round-length :game/round-length} game-config
         {round-start-time :frame/round-start-time} frame
         end-time (t/plus (c/from-date round-start-time)
                          (t/millis round-length))]
-    (t/after? (t/now)
-              end-time)))
+    ;; Check to see if all players / ai are dead, or the
+    ;; max time limit has elapsed
+    (or (empty? initiative-order)
+     (t/after? (t/now)
+               end-time))))
 
 (defn- push-frame-to-datomic
   [{:keys [frame players] :as game-state} update-frame]
