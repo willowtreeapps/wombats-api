@@ -3,6 +3,7 @@
             [taoensso.nippy :as nippy]
             [wombats.game.core :refer [initialize-round]]
             [wombats.game.utils :refer [decision-maker-state]]
+            [wombats.sockets.game :as game-sockets]
             [wombats.daos.helpers :refer [get-entity-by-prop
                                           get-entity-id
                                           gen-id
@@ -103,6 +104,65 @@
   [conn]
   (fn [game-id]
     (get-entity-by-prop conn :game/id game-id game-projection)))
+
+(defn- format-player-map
+  "Formats the player map attached to game-state"
+  [players]
+  (let [formatted-players (map (fn [[player stats user wombat]]
+                                 {:player player
+                                  :stats stats
+                                  :user user
+                                  :wombat wombat
+                                  :state decision-maker-state}) players)]
+    (reduce #(assoc %1 (gen-id) %2) {} formatted-players)))
+
+(defn get-game-state-by-id
+  [conn]
+  (fn [game-id]
+    (let [[frame
+           arena
+           game] (first
+                   (d/q '[:find (pull ?frame [*])
+                                (pull ?arena [*])
+                                (pull ?game [*])
+                          :in $ ?game-id
+                          :where [?game :game/id ?game-id]
+                                 [?game :game/frame ?frame]
+                                 [?game :game/arena ?arena]]
+                        (d/db conn)
+                        game-id))
+          players (d/q '[:find (pull ?players [*])
+                               (pull ?stats [*])
+                               (pull ?user [:db/id
+                                            :user/github-username
+                                            :user/github-access-token])
+                               (pull ?wombat [*])
+                         :in $ ?game-id
+                         :where [?game :game/id ?game-id]
+                                [?game :game/players ?players]
+                                [?game :game/stats ?stats]
+                                [?players :player/user ?user]
+                                [?players :player/wombat ?wombat]]
+                       (d/db conn)
+                       game-id)]
+
+      ;; TODO The datomic query pulls 2 of each player. The following will filter
+      ;;      out the duplicates.
+      (let [n-players (vec
+                       (vals
+                        (reduce (fn [player-acc player]
+                                  (let [id (:db/id (first player))
+                                        existing-ids (set (vals player-acc))]
+                                    (if (contains? existing-ids id)
+                                      player-acc
+                                      (assoc player-acc id player))))
+                                {} players)))]
+
+        {:game-id game-id
+         :frame (update frame :frame/arena nippy/thaw)
+         :arena-config arena
+         :game-config game
+         :players (format-player-map n-players)}))))
 
 (defn add-game
   "Adds a new game entity to Datomic"
@@ -240,66 +300,12 @@
                   true (conj stats-link-to-game-trx)
                   (game-full? game 1) (conj closed-trx))]
 
-        (d/transact-async conn trx)))))
+        (future
+          (d/transact conn trx)
 
-(defn- format-player-map
-  "Formats the player map attached to game-state"
-  [players]
-  (let [formatted-players (map (fn [[player stats user wombat]]
-                                 {:player player
-                                  :stats stats
-                                  :user user
-                                  :wombat wombat
-                                  :state decision-maker-state}) players)]
-    (reduce #(assoc %1 (gen-id) %2) {} formatted-players)))
-
-(defn get-game-state-by-id
-  [conn]
-  (fn [game-id]
-    (let [[frame
-           arena
-           game] (first
-                   (d/q '[:find (pull ?frame [*])
-                                (pull ?arena [*])
-                                (pull ?game [*])
-                          :in $ ?game-id
-                          :where [?game :game/id ?game-id]
-                                 [?game :game/frame ?frame]
-                                 [?game :game/arena ?arena]]
-                        (d/db conn)
-                        game-id))
-          players (d/q '[:find (pull ?players [*])
-                               (pull ?stats [*])
-                               (pull ?user [:db/id
-                                            :user/github-username
-                                            :user/github-access-token])
-                               (pull ?wombat [*])
-                         :in $ ?game-id
-                         :where [?game :game/id ?game-id]
-                                [?game :game/players ?players]
-                                [?game :game/stats ?stats]
-                                [?players :player/user ?user]
-                                [?players :player/wombat ?wombat]]
-                       (d/db conn)
-                       game-id)]
-
-      ;; TODO The datomic query pulls 2 of each player. The following will filter
-      ;;      out the duplicates.
-      (let [n-players (vec
-                       (vals
-                        (reduce (fn [player-acc player]
-                                  (let [id (:db/id (first player))
-                                        existing-ids (set (vals player-acc))]
-                                    (if (contains? existing-ids id)
-                                      player-acc
-                                      (assoc player-acc id player))))
-                                {} players)))]
-
-        {:game-id game-id
-         :frame (update frame :frame/arena nippy/thaw)
-         :arena-config arena
-         :game-config game
-         :players (format-player-map n-players)}))))
+          (let [game-state ((get-game-state-by-id conn) game-id)]
+            (game-sockets/broadcast-game-info game-state)
+            (game-sockets/broadcast-stats game-state)))))))
 
 (defn- update-frame-state
   [conn]
@@ -351,7 +357,7 @@
                           :round-start-fn (start-game conn aws-credentials)}
                          aws-credentials))
 
-      (d/transact-async conn [{:db/id game-eid
+      (d/transact-async conn [{:game/id game-id
                                :game/status :active}]))))
 
 (defn get-player-from-game
