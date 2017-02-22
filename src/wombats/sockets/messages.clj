@@ -1,5 +1,6 @@
 (ns wombats.sockets.messages
-  (:require [clojure.edn :as edn]))
+  (:require [clojure.edn :as edn]
+            [wombats.game.player-stats :refer [get-player-stats]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions
@@ -114,14 +115,10 @@
                 :player-count (count (:players game-state))
                 :name (:game/name game-config)
                 :status (:game/status game-config)
-                :game-winner (get-game-winner game-state)}))
+                :game-winner (get-game-winner game-state)
+                :stats (vec (get-player-stats game-state))}))
 
 (defn handshake-message
   [chan-id]
   (get-message :handshake
                {:chan-id chan-id}))
-
-(defn stats-message
-  [stats]
-  (get-message :stats-update
-               (vec stats)))

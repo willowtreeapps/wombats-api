@@ -304,8 +304,7 @@
           (d/transact conn trx)
 
           (let [game-state ((get-game-state-by-id conn) game-id)]
-            (game-sockets/broadcast-game-info game-state)
-            (game-sockets/broadcast-stats game-state)))))))
+            (game-sockets/broadcast-game-info game-state)))))))
 
 (defn- update-frame-state
   [conn]
