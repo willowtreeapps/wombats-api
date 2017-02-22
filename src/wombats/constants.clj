@@ -9,6 +9,8 @@
 
 (defonce max-players 8)
 
+(defonce min-lambda-runtime 2000)
+
 ;; Error Codes
 ;; Format: a-bb-ccc
 ;; a: File type: 0 handlers

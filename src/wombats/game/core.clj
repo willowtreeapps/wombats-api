@@ -62,12 +62,6 @@
   ;; Return game-state
   game-state)
 
-(defn- timeout-frame
-  "Pause the frame to allow the client to catch up"
-  [game-state time]
-  (Thread/sleep time)
-  game-state)
-
 (defn- frame-processor
   [game-state update-frame aws-credentials]
   (-> game-state
@@ -75,8 +69,6 @@
       (p/source-decisions aws-credentials)
       (p/process-decisions)
       (f/finalize-frame)
-      ;; TODO: Remove this timeout
-      (timeout-frame 500)
       (game-sockets/broadcast-arena)
       (game-sockets/broadcast-stats)
       (push-frame-to-datomic update-frame)))
