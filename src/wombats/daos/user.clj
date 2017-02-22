@@ -71,7 +71,8 @@
                   :user/avatar-url avatar_url}]
       (if-not current-user-id
         (d/transact-async conn [(merge update {:db/id (d/tempid :db.part/user)
-                                               :user/id (gen-id)})])
+                                               :user/id (gen-id)
+                                               :user/roles [:user.roles/user]})])
         (d/transact-async conn [(merge update {:user/id current-user-id})])))))
 
 (defn remove-access-token
