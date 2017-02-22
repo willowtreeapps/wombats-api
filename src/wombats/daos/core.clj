@@ -10,6 +10,7 @@
   access to these functions."
   [{:keys [conn] :as datomic}
    aws-credentials]
+
   {;; User DAOS
    :get-users (user/get-users conn)
    :get-user-by-id (user/get-user-by-id conn)
@@ -36,6 +37,7 @@
    :retract-arena (arena/retract-arena conn)
    ;; Game Management DAOS
    :get-all-games (game/get-all-games conn)
+   :get-all-pending-games (game/get-all-pending-games conn)
    :get-game-eids-by-status (game/get-game-eids-by-status conn)
    :get-game-eids-by-player (game/get-game-eids-by-player conn)
    :get-games-by-eids (game/get-games-by-eids conn)

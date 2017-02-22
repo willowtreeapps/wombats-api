@@ -7,7 +7,8 @@
             [wombats.handlers.helpers :refer [wombat-error]]
             [wombats.daos.helpers :as dao]
             [wombats.specs.utils :as sutils]
-            [wombats.arena.core :refer [generate-arena]]))
+            [wombats.arena.core :refer [generate-arena]]
+            [wombats.scheduler.core :as scheduler]))
 
 (def ^:private game-body-sample
   #:game{:name "New Game"
@@ -21,8 +22,9 @@
          :start-time (str (t/now))})
 
 (def ^:private join-game-body-sample
-  #:player{:wombat-id ""
-           :color "#000000"})
+  (merge #:player{:wombat-id ""
+                  :color "#000000"}
+         #:game{:password ""}))
 
 ;; Swagger Parameters
 (def ^:private game-id-path-param
@@ -157,7 +159,8 @@
 (s/def :player/color string?)
 
 (s/def ::join-game-input (s/keys :req [:player/wombat-id
-                                       :player/color]))
+                                       :player/color]
+                                 :opt [:game/password]))
 
 (def ^:swagger-spec add-game-spec
   {"/api/v1/games"
@@ -187,6 +190,7 @@
      (let [add-game (dao/get-fn :add-game context)
            get-game (dao/get-fn :get-game-by-id context)
            get-arena (dao/get-fn :get-arena-by-id context)
+           start-game-fn (dao/get-fn :start-game context)
            arena-id (get-in request [:query-params :arena-id])
            game (set-game-defaults (:edn-params request))
            arena-config (get-arena arena-id)]
@@ -204,6 +208,10 @@
                            (:db/id arena-config)
                            game-arena)
              game-record (get-game game-id)]
+
+         (scheduler/schedule-game game-id
+                                  (:game/start-time game-record)
+                                  start-game-fn)
 
          (assoc context :response (assoc response
                                          :status 201
@@ -237,6 +245,15 @@
                        join-game-body-params]
           :responses {:200 {:description "join-game response"}}}}})
 
+(defn- password-match?
+  "Determines if a given password matches the password for the requested game."
+  [{game-password :game/password
+    is-private :game/is-private}
+   {user-password-attempt :game/password}]
+  (if is-private
+    (= game-password user-password-attempt)
+    true))
+
 (def join-game
   (interceptor/before
    ::join-game
@@ -254,7 +271,15 @@
               color :player/color} join-params
              user-eid (:db/id current-user)
              wombat (get-wombat-by-id wombat-id)
-             {wombat-eid :db/id} wombat]
+             {wombat-eid :db/id} wombat
+             game (get-game-by-id game-id)]
+
+         (when-not (password-match? game join-params)
+           (wombat-error {:code 000005}))
+
+         (when-not game
+           (wombat-error {:code 000003
+                          :details {:game-id game-id}}))
 
          (when-not wombat
            (wombat-error {:code 000001
@@ -267,7 +292,7 @@
                           :details {:user-eid user-eid
                                     :wombat-eid wombat-eid}}))
 
-         @(add-player-to-game game-id user-eid wombat-eid color)
+         @(add-player-to-game game user-eid wombat-eid color)
 
          (assoc context :response (assoc response
                                          :status 200

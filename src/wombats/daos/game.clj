@@ -1,8 +1,9 @@
 (ns wombats.daos.game
   (:require [datomic.api :as d]
             [taoensso.nippy :as nippy]
-            [wombats.game.core :refer [initialize-game]]
+            [wombats.game.core :refer [initialize-round]]
             [wombats.game.utils :refer [decision-maker-state]]
+            [wombats.sockets.game :as game-sockets]
             [wombats.daos.helpers :refer [get-entity-by-prop
                                           get-entity-id
                                           gen-id
@@ -28,6 +29,13 @@
 ;; 1 → 3 → 4
 ;; ↓   ↑
 ;; 2 → ↑
+
+(def game-projection
+  '[*
+    {:game/players [*
+                    {:player/user [:user/github-username]}
+                    {:player/wombat [*]}]}
+    {:game/stats [*]}])
 
 (defn get-games-by-eids
   [conn]
@@ -86,10 +94,75 @@
     ((get-games-by-eids conn)
      ((get-all-game-eids conn)))))
 
+(defn get-all-pending-games
+  [conn]
+  (fn []
+    ((get-games-by-eids conn)
+     ((get-game-eids-by-status conn) [:pending-open :pending-closed]))))
+
 (defn get-game-by-id
   [conn]
   (fn [game-id]
-    (get-entity-by-prop conn :game/id game-id)))
+    (get-entity-by-prop conn :game/id game-id game-projection)))
+
+(defn- format-player-map
+  "Formats the player map attached to game-state"
+  [players]
+  (let [formatted-players (map (fn [[player stats user wombat]]
+                                 {:player player
+                                  :stats stats
+                                  :user user
+                                  :wombat wombat
+                                  :state decision-maker-state}) players)]
+    (reduce #(assoc %1 (gen-id) %2) {} formatted-players)))
+
+(defn get-game-state-by-id
+  [conn]
+  (fn [game-id]
+    (let [[frame
+           arena
+           game] (first
+                   (d/q '[:find (pull ?frame [*])
+                                (pull ?arena [*])
+                                (pull ?game [*])
+                          :in $ ?game-id
+                          :where [?game :game/id ?game-id]
+                                 [?game :game/frame ?frame]
+                                 [?game :game/arena ?arena]]
+                        (d/db conn)
+                        game-id))
+          players (d/q '[:find (pull ?players [*])
+                               (pull ?stats [*])
+                               (pull ?user [:db/id
+                                            :user/github-username
+                                            :user/github-access-token])
+                               (pull ?wombat [*])
+                         :in $ ?game-id
+                         :where [?game :game/id ?game-id]
+                                [?game :game/players ?players]
+                                [?game :game/stats ?stats]
+                                [?players :player/user ?user]
+                                [?players :player/wombat ?wombat]]
+                       (d/db conn)
+                       game-id)]
+
+      ;; TODO The datomic query pulls 2 of each player. The following will filter
+      ;;      out the duplicates.
+      (let [n-players (vec
+                       (vals
+                        (reduce (fn [player-acc player]
+                                  (let [id (:db/id (first player))
+                                        existing-ids (set (vals player-acc))]
+                                    (if (contains? existing-ids id)
+                                      player-acc
+                                      (assoc player-acc id player))))
+                                {} players)))]
+
+        {:game-id game-id
+         :frame (update frame :frame/arena nippy/thaw)
+         :arena-config arena
+         :game-config game
+         :players (format-player-map n-players)}))))
 
 (defn add-game
   "Adds a new game entity to Datomic"
@@ -99,7 +172,7 @@
     (let [frame-tmp-id (d/tempid :db.part/user)
           frame-trx {:db/id frame-tmp-id
                      :frame/frame-number 0
-                     :frame/round-number 0
+                     :frame/round-number 1
                      :frame/id (gen-id)
                      :frame/arena (nippy/freeze game-arena)}
           game-trx (merge game
@@ -159,14 +232,9 @@
 
 (defn add-player-to-game
   [conn]
-  (fn [game-id user-eid wombat-eid color]
-    (let [game ((get-game-by-id conn) game-id)
-          game-eid (:db/id game)]
-
-      ;; Check for game existence
-      (when-not game
-        (wombat-error {:code 101000
-                       :details {:game-id game-id}}))
+  (fn [game user-eid wombat-eid color]
+    (let [{game-id :game/id
+           game-eid :db/id} game]
 
       ;; Check to see if the game is accepting new players
       (when-not (open-for-enrollment? game)
@@ -232,84 +300,34 @@
                   true (conj stats-link-to-game-trx)
                   (game-full? game 1) (conj closed-trx))]
 
-        (d/transact-async conn trx)))))
+        (future
+          (d/transact conn trx)
 
-(defn- format-player-map
-  "Formats the player map attached to game-state"
-  [players]
-  (let [formatted-players (map (fn [[player stats user wombat]]
-                                 {:player player
-                                  :stats stats
-                                  :user user
-                                  :wombat wombat
-                                  :state decision-maker-state}) players)]
-    (reduce #(assoc %1 (gen-id) %2) {} formatted-players)))
-
-(defn get-game-state-by-id
-  [conn]
-  (fn [game-id]
-    (let [[frame
-           arena
-           game] (first
-                   (d/q '[:find (pull ?frame [*])
-                                (pull ?arena [*])
-                                (pull ?game [*])
-                          :in $ ?game-id
-                          :where [?game :game/id ?game-id]
-                                 [?game :game/frame ?frame]
-                                 [?game :game/arena ?arena]]
-                        (d/db conn)
-                        game-id))
-          players (d/q '[:find (pull ?players [*])
-                               (pull ?stats [*])
-                               (pull ?user [:db/id
-                                            :user/github-username
-                                            :user/github-access-token])
-                               (pull ?wombat [*])
-                         :in $ ?game-id
-                         :where [?game :game/id ?game-id]
-                                [?game :game/players ?players]
-                                [?game :game/stats ?stats]
-                                [?players :player/user ?user]
-                                [?players :player/wombat ?wombat]]
-                       (d/db conn)
-                       game-id)]
-
-      ;; TODO The datomic query pulls 2 of each player. The following will filter
-      ;;      out the duplicates.
-      (let [n-players (vec
-                       (vals
-                        (reduce (fn [player-acc player]
-                                  (let [id (:db/id (first player))
-                                        existing-ids (set (vals player-acc))]
-                                    (if (contains? existing-ids id)
-                                      player-acc
-                                      (assoc player-acc id player))))
-                                {} players)))]
-
-        {:game-id game-id
-         :frame (update frame :frame/arena nippy/thaw)
-         :arena-config arena
-         :game-config game
-         :players (format-player-map n-players)}))))
+          (let [game-state ((get-game-state-by-id conn) game-id)]
+            (game-sockets/broadcast-game-info game-state)
+            (game-sockets/broadcast-stats game-state)))))))
 
 (defn- update-frame-state
   [conn]
   (fn [frame
       players]
 
-    (let [frame-trx (cond-> frame
-                      true
-                      (update :frame/arena nippy/freeze)
-
-                      (not (nil? (:frame/round-start-time frame)))
-                      (update :frame/round-start-time read-string))
+    (let [frame-trx (-> frame (update :frame/arena nippy/freeze))
           stats-trxs (vec (map (fn [[_ {stats :stats}]]
                                  (assoc stats
                                         :stats/frame-number
                                         (:frame/frame-number frame)))
                                players))]
       (d/transact-async conn (conj stats-trxs frame-trx)))))
+
+(defn- close-round
+  [conn]
+  (fn [{:keys [frame game-config]}]
+
+    (let [frame-trx (-> frame (update :frame/arena nippy/freeze))
+          game-trx game-config]
+
+      (d/transact-async conn [frame-trx game-trx]))))
 
 (defn- close-game-state
   [conn]
@@ -322,19 +340,24 @@
 (defn start-game
   "Transitions the game status to active"
   [conn aws-credentials]
-  (fn [game]
-    (let [{game-id :game/id
-           game-eid :db/id} game
-          game-state ((get-game-state-by-id conn) game-id)]
+  (fn [game-id]
+    (let [game-state ((get-game-state-by-id conn) game-id)
+          {game-eid :db/id} game-state]
+
+      (when (= 0 (count (:players game-state)))
+        (wombat-error {:code 101006
+                       :details {:game-id game-id}}))
 
       ;; We put this in a future so that it gets run on a separate thread
       (future
-        (initialize-game game-state
+        (initialize-round game-state
                          {:update-frame (update-frame-state conn)
-                          :close-game (close-game-state conn)}
+                          :close-round (close-round conn)
+                          :close-game (close-game-state conn)
+                          :round-start-fn (start-game conn aws-credentials)}
                          aws-credentials))
 
-      (d/transact-async conn [{:db/id game-eid
+      (d/transact-async conn [{:game/id game-id
                                :game/status :active}]))))
 
 (defn get-player-from-game

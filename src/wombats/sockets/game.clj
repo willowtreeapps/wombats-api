@@ -132,14 +132,22 @@
 ;; Broadcast/send functions
 
 (defn broadcast-arena
-  [game-id arena]
+  [{:keys [game-id frame] :as game-state}]
   (broadcast-to-viewers game-id
-                        (m/arena-message arena)))
+                        (m/arena-message (:frame/arena frame)))
+  game-state)
 
 (defn broadcast-stats
-  [game-id stats]
+  [{:keys [game-id] :as game-state}]
   (broadcast-to-viewers game-id
-                        (m/stats-message stats)))
+                        (m/stats-message (get-player-stats game-state)))
+  game-state)
+
+(defn broadcast-game-info
+  [game-state]
+  (broadcast-to-viewers (get-in game-state [:game-config :game/id])
+                        (m/game-info-message game-state))
+  game-state)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Handlers
@@ -169,7 +177,6 @@
   (fn [{:keys [chan-id :user/id] :as socket-user}
       {:keys [game-id]}]
     (let [player ((:get-player-from-game datomic) game-id id)
-          game ((:get-game-by-id datomic) game-id)
           game-state ((:get-game-state-by-id datomic) game-id)
           arena (get-in game-state [:frame :frame/arena])]
 
@@ -188,7 +195,7 @@
 
       ;; Sends the game info to the front end
       (send-message chan-id
-                    (m/game-info-message game)))))
+                    (m/game-info-message game-state)))))
 
 (defn- leave-game
   [_]
