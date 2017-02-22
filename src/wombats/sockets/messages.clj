@@ -38,14 +38,83 @@
                             :game-id
                             game-id))))
 
+(defn- pre-game-start?
+  [{:keys [:game/status]}]
+  (contains? #{:pending-closed :pending-open} status))
+
+(defn- post-game?
+  [{:keys [:game/status]}]
+  (contains? #{:closed} status))
+
+(defn- get-start-time
+  [{:keys [game-config frame] :as game-state}]
+  (if (pre-game-start? game-config)
+    (:game/start-time game-config)
+    (:frame/round-start-time frame)))
+
+(defn- get-round-number
+  [{:keys [game-config frame] :as game-state}]
+  (if (pre-game-start? game-config)
+    1
+    (:frame/round-number frame)))
+
+(defn- format-winners
+  [players]
+  (map (fn [player]
+         {:username (get-in player [:user :user/github-username])
+          :wombat-name (get-in player [:wombat :wombat/name])
+          :wombat-color (get-in player [:player :player/color])
+          :score (get-in player [:stats :stats/score])}) players))
+
+(defn- filter-winners
+  [sorted-stats]
+  (reduce (fn [winners player]
+               (if (empty? winners)
+                 (conj winners player)
+                 (if (= (-> winners
+                            (first)
+                            (get-in [:stats :stats/score]))
+                        (get-in player [:stats :stats/score]))
+                   (conj winners player)
+                   winners)))
+             [] sorted-stats))
+
+(defn- sort-by-stats
+  [players]
+  (sort-by (fn [player]
+             (get-in player [:stats :stats/score]))
+           >
+           (into [] players)))
+
+(defn- format-players
+  [player-map]
+  (map (fn [[_ player]]
+         player) player-map))
+
+(defn- get-game-winner
+  [{:keys [game-config players] :as game-state}]
+
+  (if (post-game? game-config)
+    (-> players
+        (format-players)
+        (sort-by-stats)
+        (filter-winners)
+        (format-winners)
+        (vec))
+    nil))
+
 (defn game-info-message
   "Pulls out relevant info from game-state and sends it in join-game"
-  [game]
+  [{:keys [game-config] :as game-state}]
+
   (get-message :game-info
-               {:start-time (:game/start-time game)
-                :max-players (:game/max-players game)
-                :name (:game/name game)
-                :status (:game/status game)}))
+               {:round-start-time (get-start-time game-state)
+                :round-number (get-round-number game-state)
+                :max-players (:game/max-players game-config)
+                :player-count (count (:players game-state))
+                :name (:game/name game-config)
+                :status (:game/status game-config)
+                :game-winner (get-game-winner game-state)}))
 
 (defn handshake-message
   [chan-id]

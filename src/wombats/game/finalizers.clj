@@ -63,7 +63,7 @@
 
 (defn finalize-round
   [game-state close-round]
-  ;; Add intermission to current time 
+  ;; Add intermission to current time
   (let [intermission (get-in game-state [:game-config :game/round-intermission])
         new-start-time (t/plus (t/now) (t/millis intermission))
         updated-game-state (-> game-state
@@ -92,9 +92,10 @@
                                  ;; Decrement the round-number so it stores the last processed round
                                  (update-in [:frame :frame/round-number] dec)
                                  (update :frame dissoc :frame/round-start-time)
+                                 (update :frame dissoc :frame/arena)
                                  (assoc-in [:game-config :game/end-time] (format-date (t/now)))
                                  (assoc-in [:game-config :game/status] :closed))]
-      
+
       (close-game updated-game-state)
       updated-game-state)
     game-state))

@@ -19,7 +19,7 @@
    [:frame :frame/arena]
    (fn [arena]
      (reduce
-      (fn [new-arena [player-uuid {:keys [player stats]}]]
+      (fn [new-arena [player-uuid {:keys [player]}]]
         (let [formatted-player (-> (:wombat a-utils/arena-items)
                                    (merge {:uuid player-uuid
                                            :color (:player/color player)

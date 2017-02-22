@@ -35,12 +35,12 @@
 (defn- remove-slash
   "Removes the trailing slash from a string (if it exists)"
   [string]
-  (if (ends-with? string "/")
+  (if (and string
+           (ends-with? string "/"))
     (-> string
         (split #"")
         (drop-last)
         (join))
-
     string))
 
 (defn- get-referer

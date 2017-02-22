@@ -29,6 +29,13 @@
 ;; ↓   ↑
 ;; 2 → ↑
 
+(def game-projection
+  '[*
+    {:game/players [*
+                    {:player/user [:user/github-username]}
+                    {:player/wombat [*]}]}
+    {:game/stats [*]}])
+
 (defn get-games-by-eids
   [conn]
   (fn [game-eids]
@@ -95,7 +102,7 @@
 (defn get-game-by-id
   [conn]
   (fn [game-id]
-    (get-entity-by-prop conn :game/id game-id)))
+    (get-entity-by-prop conn :game/id game-id game-projection)))
 
 (defn add-game
   "Adds a new game entity to Datomic"
@@ -105,7 +112,7 @@
     (let [frame-tmp-id (d/tempid :db.part/user)
           frame-trx {:db/id frame-tmp-id
                      :frame/frame-number 0
-                     :frame/round-number 0
+                     :frame/round-number 1
                      :frame/id (gen-id)
                      :frame/arena (nippy/freeze game-arena)}
           game-trx (merge game
@@ -310,7 +317,7 @@
 (defn- close-round
   [conn]
   (fn [{:keys [frame game-config]}]
-    
+
     (let [frame-trx (-> frame (update :frame/arena nippy/freeze))
           game-trx game-config]
 
@@ -326,15 +333,15 @@
 
 (defn start-game
   "Transitions the game status to active"
-  [conn aws-credentials]  
-  (fn [game-id]    
+  [conn aws-credentials]
+  (fn [game-id]
     (let [game-state ((get-game-state-by-id conn) game-id)
           {game-eid :db/id} game-state]
-      
+
       (when (= 0 (count (:players game-state)))
         (wombat-error {:code 101006
                        :details {:game-id game-id}}))
-      
+
       ;; We put this in a future so that it gets run on a separate thread
       (future
         (initialize-round game-state

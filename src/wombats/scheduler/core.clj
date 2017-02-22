@@ -17,20 +17,29 @@
 
                 ;; TODO: Proper logging
                 {:on-finished
-                 (fn [] 
+                 (fn []
                    (prn "Started game."))
-                 
-                 :error-handler 
+
+                 :error-handler
                  (fn [e]
                    (prn "Error starting game."))}))
     (catch Exception e
       ;; TODO Add to logger
       (prn e))))
 
+(defn schedule-next-round
+  [game-state round-start-fn]
+  (let [{game-status :game/status
+         game-id :game/id} (:game-config game-state)
+        start-time (get-in game-state [:frame :frame/round-start-time])]
+    (when (= game-status :active-intermission)
+      (schedule-game game-id start-time round-start-fn)))
+  game-state)
+
 (defn schedule-pending-games
   [get-games-fn start-round-fn]
   (let [games (get-games-fn)]
     (doseq [game games]
-      (schedule-game (:game/id game) 
+      (schedule-game (:game/id game)
                      (:game/start-time game)
                      start-round-fn))))
