@@ -3,7 +3,6 @@
             [clj-time.core :as t]
             [wombats.game.initializers :as i]
             [wombats.game.finalizers :as f]
-            [wombats.game.player-stats :refer [get-player-stats]]
             [wombats.game.processor :as p]
             [wombats.arena.utils :as au]
             [wombats.scheduler.core :as scheduler]
@@ -73,7 +72,7 @@
       (p/process-decisions)
       (f/finalize-frame)
       (game-sockets/broadcast-arena)
-      (game-sockets/broadcast-stats)
+      (game-sockets/broadcast-game-info)
       (push-frame-to-datomic update-frame)))
 
 (defn- game-loop

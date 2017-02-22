@@ -8,7 +8,6 @@
             [clj-time.periodic :as p]
             [chime :refer [chime-at]]
             [io.pedestal.http.jetty.websockets :as ws]
-            [wombats.game.player-stats :refer [get-player-stats]]
             [wombats.sockets.messages :as m]))
 
 (def ^:private game-rooms (atom {}))
@@ -137,15 +136,9 @@
                         (m/arena-message (:frame/arena frame)))
   game-state)
 
-(defn broadcast-stats
+(defn broadcast-game-info
   [{:keys [game-id] :as game-state}]
   (broadcast-to-viewers game-id
-                        (m/stats-message (get-player-stats game-state)))
-  game-state)
-
-(defn broadcast-game-info
-  [game-state]
-  (broadcast-to-viewers (get-in game-state [:game-config :game/id])
                         (m/game-info-message game-state))
   game-state)
 
@@ -188,10 +181,6 @@
       ;; Sends the current game frame to the frontend
       (send-message chan-id
                     (m/arena-message arena))
-
-      ;; Sends the stats (player info)
-      (send-message chan-id
-                    (m/stats-message (get-player-stats game-state)))
 
       ;; Sends the game info to the front end
       (send-message chan-id
