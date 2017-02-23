@@ -13,8 +13,10 @@
 (defn get-simulator-arena-template-by-id
   [conn]
   (fn [template-id]
-    (get-entity-by-prop conn
-                        :simulator-template/id
-                        template-id
-                        '[*
-                          {:simulator-template/arena-template [*]}])))
+    (let [template (get-entity-by-prop conn
+                                       :simulator-template/id
+                                       template-id
+                                       '[*
+                                         {:simulator-template/arena-template [*]}])]
+      (when-not (= nil (:db/id template))
+        (update template :simulator-template/arena nippy/thaw)))))

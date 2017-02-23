@@ -185,6 +185,34 @@
       (send-message chan-id
                     (m/game-info-message game-state)))))
 
+(defn- build-simulation-game-state
+  [user wombat-id simulator-template-id datomic]
+  (clojure.pprint/pprint user)
+  (let [simulator-template
+        ((:get-simulator-arena-template-by-id datomic)
+         simulator-template-id)
+
+        {github-access-token :user/github-access-token}
+        ((:get-entire-user-by-id datomic)
+         (:user/id user))]
+    (prn github-access-token)
+    ))
+
+(defn- connect-to-simulator
+  [datomic]
+  (fn [{:keys [chan-id :user/id] :as socket-user}
+      {:keys [simulator-template-id wombat-id]}]
+    (let [game-state (build-simulation-game-state socket-user
+                                                  wombat-id
+                                                  simulator-template-id
+                                                  datomic)]
+
+      (if game-state
+        (send-message chan-id
+                      (m/initialize-simulation-message game-state))
+        (send-message chan-id
+                      (m/missing-simulator-template-message simulator-template-id))))))
+
 (defn- leave-game
   [_]
   (fn [{:keys [chan-id] :as socket-user}
@@ -230,6 +258,7 @@
   {:keep-alive keep-alive
    :handshake (handshake datomic)
    :join-game (join-game datomic)
+   :connect-to-simulator (connect-to-simulator datomic)
    :leave-game (leave-game datomic)
    :authenticate-user (authenticate-user datomic)
    :chat-message (chat-message datomic)})

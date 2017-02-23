@@ -84,10 +84,11 @@
    ::get-user-self
    (fn [{:keys [response request] :as context}]
      (let [get-user-by-access-token (dao/get-fn :get-user-by-access-token context)
-           access-token (get-in request [:headers "authorization"])]
+           access-token (get-in request [:headers "authorization"])
+           user (get-user-by-access-token access-token)]
        (assoc context :response (assoc response
-                                       :status 200
-                                       :body (get-user-by-access-token access-token)))))))
+                                       :status (if user 200 401)
+                                       :body user))))))
 
 (def ^:swagger-spec get-user-wombats-spec
   {"/api/v1/users/{user-id}/wombats"
