@@ -4,7 +4,6 @@
             [clojure.core.async :refer [put! <! timeout]]
             [clojure.edn :as edn]
             [clj-time.core :as t]
-            [clj-time.local :as l]
             [clj-time.periodic :as p]
             [chime :refer [chime-at]]
             [io.pedestal.http.jetty.websockets :as ws]
@@ -201,7 +200,9 @@
       (let [formatted-message {:username github-username
                                :message message
                                :color (get-player-color game-id chan-id)
-                               :timestamp (str (l/local-now))}]
+                               :timestamp (->> (t/now)
+                                               (format "#inst \"%s\"")
+                                               (read-string))}]
         (broadcast-to-viewers game-id
                               (m/chat-message game-id formatted-message))))))
 
