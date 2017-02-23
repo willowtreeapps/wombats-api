@@ -1,0 +1,9 @@
+[{:db/id #db/id [:db.part/user]
+  :simulator-template/name "Template 1"
+  :simulator-template/arena []}
+ {:db/id #db/id [:db.part/user]
+  :simulator-template/name "Template 2"
+  :simulator-template/arena []}
+ {:db/id #db/id [:db.part/user]
+  :simulator-template/name "Template 3"
+  :simulator-template/arena []}]

@@ -343,7 +343,7 @@
   :db/ident       :game/stats
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/many
-  :db/doc        "Player / AI scores"}
+  :db/doc         "Player / AI scores"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :game/created-by
@@ -388,6 +388,28 @@
   :db/valueType   :db.type/bytes
   :db/cardinality :db.cardinality/one
   :db/doc         "The arena representation"}
+
+ ;; Simulator Template Entities
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :simulator-template/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An simulator templates public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :simulator-template/name
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The simulator template name"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :simulator-template/arena
+  :db/valueType   :db.type/bytes
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The simulator template arena representation"}
 
  ;; Stat Entities
  {:db/id          #db/id [:db.part/db]

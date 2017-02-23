@@ -129,6 +129,18 @@
   [conn]
   (d/transact conn (load-file "resources/datomic/users.edn")))
 
+(defn- seed-simulator-templates
+  "Seeds the DB with simulator templates"
+  [conn]
+  (require '[wombats.daos.helpers])
+  (require '[taoensso.nippy])
+
+  (->> (load-file "resources/datomic/simulator-templates.edn")
+       (map #(-> %
+                 (assoc :simulator-template/id (wombats.daos.helpers/gen-id))
+                 (update :simulator-template/arena taoensso.nippy/freeze)))
+       (d/transact conn)))
+
 (defn- refresh-db!
   [uri]
   (d/delete-database uri)
@@ -136,7 +148,8 @@
   (let [conn (d/connect uri)]
     @(add-schema conn)
     @(add-roles conn)
-    @(seed-users conn)))
+    @(seed-users conn)
+    @(seed-simulator-templates conn)))
 
 (deftask refresh-dev-ddb
   "Resets the dev dynamo db"
