@@ -1,6 +1,5 @@
 (ns wombats.game.processor
   (:require [cheshire.core :as cheshire]
-            [taoensso.nippy :as nippy]
             [clojure.core.async :as async]
             [clj-time.core :as t]
             [clj-time.coerce :as c]
@@ -108,7 +107,7 @@
 
   (let [client (lambda-client aws-credentials)
         request (lambda-invoke-request decision-maker-state
-                                       {:code (nippy/thaw code)
+                                       {:code code
                                         :path path})
         result (.invoke client request)
         response (.getPayload result)

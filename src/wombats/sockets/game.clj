@@ -224,7 +224,8 @@
 
 (defn t-sim
   [game-state]
-  (clojure.pprint/pprint game-state)
+  (doseq [[_ zakano] (:zakano game-state)]
+    (prn (str (get-in zakano [:state :code :code]))))
   game-state)
 
 (defn- connect-to-simulator

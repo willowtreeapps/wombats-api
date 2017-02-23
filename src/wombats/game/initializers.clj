@@ -2,7 +2,6 @@
   (:require [base64-clj.core :as b64]
             [clj-time.core :as t]
             [cheshire.core :as cheshire]
-            [taoensso.nippy :as nippy]
             [clojure.core.async :as async]
             [org.httpkit.client :as http]
             [wombats.arena.utils :as a-utils]
@@ -90,8 +89,7 @@
   [resp]
   (let [body (:body resp)
         parsed (cheshire/parse-string body true)]
-    {:code (nippy/freeze
-            (decode-bot (:content parsed)))
+    {:code (decode-bot (:content parsed))
      :path (:path parsed)}))
 
 (defn- parse-player-channels
@@ -118,7 +116,7 @@
         ;; url "https://api.github.com/repos/willowtreeapps/wombats-bots/contents/zakano.clj"
         ;; response @(http/get url)
         ;; code (parse-github-code response)
-        code {:code (nippy/freeze (get-zakano-code))
+        code {:code (get-zakano-code)
               :path "zakano.clj"}]
     (update game-state :zakano (fn [zakano]
                                  (reduce (fn [zakano-acc [zakano-id zakano-state]]
