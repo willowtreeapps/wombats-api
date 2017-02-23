@@ -16,6 +16,7 @@
             [wombats.handlers.user :as user]
             [wombats.handlers.auth :as auth]
             [wombats.handlers.arena :as arena]
+            [wombats.handlers.simulator :as simulator]
             [wombats.sockets.game :as game-ws]
             [wombats.daos.core :as dao]))
 
@@ -66,6 +67,10 @@
           {:get arena/get-arena-by-id
            :put arena/update-arena
            :delete arena/delete-arena}]]
+
+        ["/simulator"
+         ["/templates"
+          {:get simulator/get-simulator-arena-templates}]]
 
         ["/games"
          {:get [:get-games
