@@ -129,16 +129,43 @@
   [conn]
   (d/transact conn (load-file "resources/datomic/users.edn")))
 
+(defn- seed-arena-templates
+  "Seeds the DB with simulator templates"
+  [conn]
+  (require '[wombats.daos.helpers])
+
+  (->> (load-file "resources/datomic/arena-templates.edn")
+       (map #(-> % (assoc :arena/id (wombats.daos.helpers/gen-id))))
+       (d/transact conn)))
+
+(defn- lookup-arena-ref
+  [arena-name conn]
+  (require '[wombats.daos.helpers])
+  (wombats.daos.helpers/get-entity-id conn :arena/name arena-name))
+
+(defn- generate-simulator-arena
+  [{:keys [:simulator-template/arena-template] :as template}
+   conn]
+  (require '[wombats.daos.helpers])
+  (require '[wombats.arena.core])
+  (require '[taoensso.nippy])
+  (let [arena-config (wombats.daos.helpers/get-entity-by-prop conn :arena/name arena-template)]
+    (-> template
+        (assoc :simulator-template/arena (wombats.arena.core/generate-arena arena-config))
+        (update :simulator-template/arena taoensso.nippy/freeze))))
+
 (defn- seed-simulator-templates
   "Seeds the DB with simulator templates"
   [conn]
   (require '[wombats.daos.helpers])
-  (require '[taoensso.nippy])
 
   (->> (load-file "resources/datomic/simulator-templates.edn")
        (map #(-> %
                  (assoc :simulator-template/id (wombats.daos.helpers/gen-id))
-                 (update :simulator-template/arena taoensso.nippy/freeze)))
+                 ;; NOTE This must be run prior to update arena-template until I figure out why
+                 ;; I cannot query datomic using the :db/id ref that lookup-arena-ref returns
+                 (generate-simulator-arena conn)
+                 (update :simulator-template/arena-template lookup-arena-ref conn)))
        (d/transact conn)))
 
 (defn- refresh-db!
@@ -149,6 +176,7 @@
     @(add-schema conn)
     @(add-roles conn)
     @(seed-users conn)
+    @(seed-arena-templates conn)
     @(seed-simulator-templates conn)))
 
 (deftask refresh-dev-ddb
