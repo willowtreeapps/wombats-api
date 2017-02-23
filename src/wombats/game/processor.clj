@@ -9,6 +9,8 @@
             [wombats.game.utils :as gu]
             [wombats.arena.utils :as au]
             [wombats.constants :refer [min-lambda-runtime]]
+            [wombats.game.initializers :as i]
+            [wombats.game.finalizers :as f]
             [wombats.game.decisions.turn :refer [turn]]
             [wombats.game.decisions.move :refer [move]]
             [wombats.game.decisions.shoot :refer [shoot]]
@@ -244,3 +246,11 @@
 (defn process-decisions
   [game-state]
   (reduce process-command game-state (:initiative-order game-state)))
+
+(defn frame-processor
+  [game-state update-frame aws-credentials]
+  (-> game-state
+      (i/initialize-frame)
+      (source-decisions aws-credentials)
+      (process-decisions)
+      (f/finalize-frame)))

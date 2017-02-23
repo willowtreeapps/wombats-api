@@ -123,7 +123,7 @@
   (get-message :handshake
                {:chan-id chan-id}))
 
-(defn initialize-simulation-message
+(defn simulation-message
   [game-state]
   (get-message :simulator-update
                game-state))

@@ -80,6 +80,12 @@
 ;; Load code analysis tasks
 (require '[tolitius.boot-check :as check])
 
+;; Load nippy for seed tasks
+(require '[taoensso.nippy])
+
+(require '[wombats.daos.helpers])
+(require '[wombats.arena.core])
+
 (deftask dev []
   (set-env! :source-paths #(conj % "dev/src"))
 
@@ -132,23 +138,17 @@
 (defn- seed-arena-templates
   "Seeds the DB with simulator templates"
   [conn]
-  (require '[wombats.daos.helpers])
-
   (->> (load-file "resources/datomic/arena-templates.edn")
        (map #(-> % (assoc :arena/id (wombats.daos.helpers/gen-id))))
        (d/transact conn)))
 
 (defn- lookup-arena-ref
   [arena-name conn]
-  (require '[wombats.daos.helpers])
   (wombats.daos.helpers/get-entity-id conn :arena/name arena-name))
 
 (defn- generate-simulator-arena
   [{:keys [:simulator-template/arena-template] :as template}
    conn]
-  (require '[wombats.daos.helpers])
-  (require '[wombats.arena.core])
-  (require '[taoensso.nippy])
   (let [arena-config (wombats.daos.helpers/get-entity-by-prop conn :arena/name arena-template)]
     (-> template
         (assoc :simulator-template/arena (wombats.arena.core/generate-arena arena-config))
@@ -157,8 +157,6 @@
 (defn- seed-simulator-templates
   "Seeds the DB with simulator templates"
   [conn]
-  (require '[wombats.daos.helpers])
-
   (->> (load-file "resources/datomic/simulator-templates.edn")
        (map #(-> %
                  (assoc :simulator-template/id (wombats.daos.helpers/gen-id))
