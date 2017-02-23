@@ -50,4 +50,5 @@
    :add-player-to-game (game/add-player-to-game conn)
    :start-game (game/start-game conn aws-credentials)
    ;; Simulator DAOS
-   :get-simulator-arena-templates (simulator/get-simulator-arena-templates conn)})
+   :get-simulator-arena-templates (simulator/get-simulator-arena-templates conn)
+   :get-simulator-arena-template-by-id (simulator/get-simulator-arena-template-by-id conn)})

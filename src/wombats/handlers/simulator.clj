@@ -20,3 +20,21 @@
        (assoc context :response (assoc response
                                        :status 200
                                        :body (get-simulator-arena-templates)))))))
+
+(def ^:swagger-spec get-simulator-arena-template-by-id
+  {"/api/v1/simulator/templates/{template-id}"
+   {:get {:description "Returns the arena template that matches the provided id"
+          :tags ["simulator"]
+          :operationId "get-simulator-arena-template-by-id"
+          :responses {:200 {:description "get-simulator-arena-template-by-id response"}}}}})
+
+(def get-simulator-arena-template-by-id
+  "Returns the matching simulator template"
+  (interceptor/before
+   ::get-simulator-arena-template-by-id
+   (fn [{:keys [response request] :as context}]
+     (let [get-simulator-arena-template-by-id (dao/get-fn :get-simulator-arena-template-by-id context)
+           simulator-id (get-in request [:path-params :template-id])]
+       (assoc context :response (assoc response
+                                       :status 200
+                                       :body (get-simulator-arena-template-by-id simulator-id)))))))

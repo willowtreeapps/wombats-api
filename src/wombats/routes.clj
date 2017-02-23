@@ -70,7 +70,9 @@
 
         ["/simulator"
          ["/templates"
-          {:get simulator/get-simulator-arena-templates}]]
+          {:get simulator/get-simulator-arena-templates}
+          ["/:template-id"
+           {:get simulator/get-simulator-arena-template-by-id}]]]
 
         ["/games"
          {:get [:get-games
