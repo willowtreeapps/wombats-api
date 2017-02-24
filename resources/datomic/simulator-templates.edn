@@ -1,9 +1,6 @@
 [{:db/id #db/id [:db.part/user]
-  :simulator-template/name "Template 1"
-  :simulator-template/arena-template "Arena 1"}
+  :simulator-template/arena-template "Scavenge"}
  {:db/id #db/id [:db.part/user]
-  :simulator-template/name "Template 2"
-  :simulator-template/arena-template "Arena 2"}
+  :simulator-template/arena-template "Combat"}
  {:db/id #db/id [:db.part/user]
-  :simulator-template/name "Template 3"
-  :simulator-template/arena-template "Arena 3"}]
+  :simulator-template/arena-template "Free for all"}]

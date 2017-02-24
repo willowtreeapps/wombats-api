@@ -3,6 +3,7 @@
             [reloaded.repl :refer[init start stop go reset]]
             [wombats.routes :as routes]
             [wombats.components.configuration :as config-component]
+            [wombats.components.logger :as logger-component]
             [wombats.components.datomic :as datomic-component]
             [wombats.components.service :as service-component]
             [wombats.components.pedestal :as pedestal-component]
@@ -13,6 +14,10 @@
   (component/system-map
    :config (config-component/new-configuration)
 
+   :logger (component/using
+            (logger-component/new-logger)
+            [:config])
+
    :datomic (component/using
              (datomic-component/new-database)
              [:config])
@@ -21,11 +26,11 @@
              (service-component/new-service {:new-api-router routes/new-api-router
                                              :new-ws-router routes/new-ws-router})
              [:config :datomic])
-   
+
    :scheduler (component/using
                (scheduler-component/new-scheduler)
                [:config :datomic :service])
-   
+
    :pedestal (component/using
               (pedestal-component/new-pedestal)
               [:config :service])))

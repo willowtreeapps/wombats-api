@@ -1,5 +1,5 @@
 [{:db/id #db/id [:db.part/user]
-  :arena/name "Arena 1"
+  :arena/name "Scavenge"
   :arena/width 20
   :arena/height 20
   :arena/shot-damage 10
@@ -15,7 +15,7 @@
   :arena/wombat-hp 100
   :arena/perimeter true}
  {:db/id #db/id [:db.part/user]
-  :arena/name "Arena 2"
+  :arena/name "Combat"
   :arena/width 10
   :arena/height 10
   :arena/shot-damage 10
@@ -31,7 +31,7 @@
   :arena/wombat-hp 100
   :arena/perimeter false}
  {:db/id #db/id [:db.part/user]
-  :arena/name "Arena 3"
+  :arena/name "Free for all"
   :arena/width 20
   :arena/height 20
   :arena/shot-damage 10

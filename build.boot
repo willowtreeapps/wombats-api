@@ -9,6 +9,15 @@
                             ;; High-performance serialization library
                             [com.taoensso/nippy "2.12.2"]
 
+                            ;; Logging
+                            [com.taoensso/timbre "4.8.0"]
+                            [org.slf4j/jul-to-slf4j     "1.7.21"]
+                            [org.slf4j/jcl-over-slf4j   "1.7.21"]
+                            [org.slf4j/log4j-over-slf4j "1.7.21"]
+
+                            ;; Extended core library for Clojure
+                            [com.taoensso/encore "2.89.0"]
+
                             ;; JSON Parsing
                             [cheshire "5.7.0"]
 
@@ -54,12 +63,7 @@
                             [adzerk/boot-test "1.1.2" :scope "test"]
 
                             ;; Code Analysis
-                            [tolitius/boot-check "0.1.4" :scope "test"]
-
-                            ;; Logging
-                            [org.slf4j/jul-to-slf4j     "1.7.21"]
-                            [org.slf4j/jcl-over-slf4j   "1.7.21"]
-                            [org.slf4j/log4j-over-slf4j "1.7.21"]]
+                            [tolitius/boot-check "0.1.4" :scope "test"]]
           :repositories #(conj % ["my-datomic" {:url "https://my.datomic.com/repo"
                                                 :username (System/getenv "DATOMIC_USERNAME")
                                                 :password (System/getenv "DATOMIC_PASSWORD")}])

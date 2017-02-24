@@ -18,5 +18,5 @@
                                        template-id
                                        '[*
                                          {:simulator-template/arena-template [*]}])]
-      (when-not (= nil (:db/id template))
+      (when-not (nil? (:db/id template))
         (update template :simulator-template/arena nippy/thaw)))))

@@ -1,4 +1,5 @@
 {:datomic {:uri "datomic:ddb://us-east-1/wombats/qa"
            :requires-auth false}
  :pedestal {:port 8888
-            :container-options {:ssl? false}}}
+            :container-options {:ssl? false}}
+ :logger {:level :info}}

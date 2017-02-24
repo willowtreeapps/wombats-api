@@ -243,7 +243,7 @@
 
 (defn- process-simulation-frame
   [datomic]
-  (fn [{:keys [chan-id :user/id] :as socket-user}
+  (fn [{:keys [chan-id :user/id]}
       {:keys [game-state]}]
 
     (send-message

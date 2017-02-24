@@ -49,7 +49,7 @@
   [conn]
   (fn [access-token]
     (let [user (get-entity-by-prop conn :user/access-token access-token all-user-fields)]
-      (when-not (= nil (:db/id user))
+      (when-not (nil? (:db/id user))
         user))))
 
 (defn get-user-by-github-id
