@@ -191,7 +191,7 @@
                     (m/game-info-message game-state)))))
 
 (defn- build-simulation-game-state
-  [game-state socket-user wombat-id simulator-template-id datomic]
+  [socket-user wombat-id simulator-template-id datomic]
   (let [simulator-template
         ((:get-simulator-arena-template-by-id datomic)
          simulator-template-id)
@@ -204,23 +204,22 @@
         ((:get-wombat-by-id datomic)
          wombat-id)]
 
-    (merge game-state
-           {:arena-config (:simulator-template/arena-template simulator-template)
-            :players {(gen-id) {:player {:player/color "gray"}
-                                :stats initial-stats
-                                :user {:user/github-username (:user/github-username user)
-                                       :user/github-access-token (:user/github-access-token user)}
-                                :wombat {:wombat/id (:wombat/id wombat)
-                                         :wombat/name (:wombat/name wombat)
-                                         :wombat/url (:wombat/url wombat)}
-                                :state {:code nil
-                                        :command nil
-                                        :error nil
-                                        :saved-state {}}}}
-            :frame {:frame/frame-number 0
-                    :frame/round-number 1
-                    :frame/round-start-time nil
-                    :frame/arena (:simulator-template/arena simulator-template)}})))
+    {:arena-config (:simulator-template/arena-template simulator-template)
+     :players {(gen-id) {:player {:player/color "gray"}
+                         :stats initial-stats
+                         :user {:user/github-username (:user/github-username user)
+                                :user/github-access-token (:user/github-access-token user)}
+                         :wombat {:wombat/id (:wombat/id wombat)
+                                  :wombat/name (:wombat/name wombat)
+                                  :wombat/url (:wombat/url wombat)}
+                         :state {:code nil
+                                 :command nil
+                                 :error nil
+                                 :saved-state {}}}}
+     :frame {:frame/frame-number 0
+             :frame/round-number 1
+             :frame/round-start-time nil
+             :frame/arena (:simulator-template/arena simulator-template)}}))
 
 (defn t-sim
   [game-state]
@@ -235,16 +234,11 @@
 
     (send-message
      chan-id
-     (-> {}
-         (build-simulation-game-state socket-user
+     (-> (build-simulation-game-state socket-user
                                       wombat-id
                                       simulator-template-id
                                       datomic)
-         (i/add-players-to-game)
-         (i/set-initiative-order)
-         (i/set-zakano-state)
-         (i/source-player-code)
-         (i/source-zakano-code)
+         (i/initialize-game-state)
          (m/simulation-message)))))
 
 (defn- process-simulation-frame

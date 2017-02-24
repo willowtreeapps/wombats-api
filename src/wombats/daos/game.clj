@@ -2,7 +2,7 @@
   (:require [datomic.api :as d]
             [taoensso.nippy :as nippy]
             [wombats.constants :refer [initial-stats]]
-            [wombats.game.core :refer [initialize-round]]
+            [wombats.game.core :as game]
             [wombats.game.utils :refer [decision-maker-state]]
             [wombats.sockets.game :as game-sockets]
             [wombats.daos.helpers :refer [get-entity-by-prop
@@ -337,12 +337,12 @@
 
       ;; We put this in a future so that it gets run on a separate thread
       (future
-        (initialize-round game-state
-                         {:update-frame (update-frame-state conn)
-                          :close-round (close-round conn)
-                          :close-game (close-game-state conn)
-                          :round-start-fn (start-game conn aws-credentials)}
-                         aws-credentials))
+        (game/start-round game-state
+                          {:update-frame (update-frame-state conn)
+                           :close-round (close-round conn)
+                           :close-game (close-game-state conn)
+                           :round-start-fn (start-game conn aws-credentials)}
+                          aws-credentials))
 
       (d/transact-async conn [{:game/id game-id
                                :game/status :active}]))))

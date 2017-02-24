@@ -9,7 +9,7 @@
             [wombats.game.zakano-code :refer [get-zakano-code]]
             [wombats.constants :refer [github-repo-api-base]]))
 
-(defn add-players-to-game
+(defn- add-players-to-game
   "Adds players to random cells in the arena"
   [{:keys [players frame] :as game-state}]
 
@@ -40,7 +40,7 @@
   (let [decision-makers #{:wombat :zakano}]
     (contains? decision-makers (g-utils/get-item-type item))))
 
-(defn set-initiative-order
+(defn- set-initiative-order
   "Sets the initial initiative order"
   [{:keys [frame] :as game-state}]
   (let [decision-makers (reduce
@@ -54,7 +54,7 @@
            :initiative-order
            (shuffle decision-makers))))
 
-(defn set-zakano-state
+(defn- set-zakano-state
   [game-state]
   (reduce (fn [game-state-acc {:keys [uuid type]}]
             (if (= :zakano type)
@@ -102,14 +102,14 @@
           players
           responses))
 
-(defn source-player-code
+(defn- source-player-code
   "Kicks off the code source process"
   [{:keys [players] :as game-state}]
   (let [bot-chans (get-player-channels players)
         responses (async/<!! (async/map vector bot-chans))]
     (update game-state :players parse-player-channels responses)))
 
-(defn source-zakano-code
+(defn- source-zakano-code
   "Sources a bot to run as the zakano"
   [game-state]
   (let [;; TODO put zakano in db, maybe allow for selecting specific zakano?
@@ -144,17 +144,20 @@
   [game-state]
   (assoc-in game-state [:game-config :game/status] :active))
 
-
-(defn initialize-round
+(defn initialize-game-state
   [game-state]
   (-> game-state
-      (set-round-start-time)
-      (set-round-status)
       (add-players-to-game)
       (set-initiative-order)
       (set-zakano-state)
       (source-player-code)
       (source-zakano-code)))
+
+(defn initialize-round
+  [game-state]
+  (-> game-state
+      (set-round-start-time)
+      (set-round-status)))
 
 (defn initialize-frame
   [game-state]

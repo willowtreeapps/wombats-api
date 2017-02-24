@@ -86,7 +86,7 @@
             (push-frame-to-datomic update-frame)
             (recur))))))
 
-(defn initialize-round
+(defn start-round
   "Main entry point for the game engine"
   [game-state
    {update-frame   :update-frame
@@ -97,6 +97,7 @@
 
   (-> game-state
       (i/initialize-round)
+      (i/initialize-game-state)
       (game-sockets/broadcast-game-info)
       (game-loop update-frame
                  close-round
