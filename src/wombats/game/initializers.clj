@@ -29,13 +29,8 @@
       arena
       players))))
 
-(defn- update-initiative-order
-  "Rotates the initiative order"
-  [initiative-order]
-  (concat (take-last 1 initiative-order)
-          (drop-last 1 initiative-order)))
-
 (defn- is-decision-maker?
+  "Checks if the an item is capable of making decisions"
   [item]
   (let [decision-makers #{:wombat :zakano}]
     (contains? decision-makers (g-utils/get-item-type item))))
@@ -125,26 +120,9 @@
                                                   (assoc-in zakano-state [:state :code] code)))
                                          {} zakano)))))
 
-(defn- is-start-of-round?
-  [game-state]
-  (nil? (get-in game-state [:frame :frame/round-start-time] nil)))
-
-(defn- sleep-round
-  [game-state]
-  (when (> (get-in game-state [:frame :frame/round-number]) 1)
-    (Thread/sleep (get-in game-state [:game-config :game/round-intermission]))))
-
-(defn- set-round-start-time
-  [game-state]
-  (assoc-in game-state [:frame :frame/round-start-time] (->> (t/now)
-                                                             (format "#inst \"%s\"")
-                                                             (read-string))))
-
-(defn- set-round-status
-  [game-state]
-  (assoc-in game-state [:game-config :game/status] :active))
-
 (defn initialize-game-state
+  "Prepares the raw built up game state for the frame processor by adding required
+  information to context."
   [game-state]
   (-> game-state
       (add-players-to-game)
@@ -153,13 +131,33 @@
       (source-player-code)
       (source-zakano-code)))
 
+(defn- set-round-start-time
+  "Sets the round start time"
+  [game-state]
+  (assoc-in game-state [:frame :frame/round-start-time] (->> (t/now)
+                                                             (format "#inst \"%s\"")
+                                                             (read-string))))
+
+(defn- set-round-status
+  "Sets the round status"
+  [game-state]
+  (assoc-in game-state [:game-config :game/status] :active))
+
 (defn initialize-round
+  "Adds round metadata to game state"
   [game-state]
   (-> game-state
       (set-round-start-time)
       (set-round-status)))
 
+(defn- update-initiative-order
+  "Rotates the initiative order"
+  [initiative-order]
+  (concat (take-last 1 initiative-order)
+          (drop-last 1 initiative-order)))
+
 (defn initialize-frame
+  "Adds frame metadata to game state"
   [game-state]
   (-> game-state
       (update-in [:frame :frame/frame-number] inc)
