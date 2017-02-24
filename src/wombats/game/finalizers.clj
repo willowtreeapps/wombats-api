@@ -48,7 +48,7 @@
 
 (defn- round-type-game?
   [game-state]
-  (= :round (get-in game-state [:game-config :game/type])))
+  (= :high-score (get-in game-state [:game-config :game/type])))
 
 (defn finalize-frame
   [game-state]
@@ -83,7 +83,7 @@
   "End game condition"
   [game-state]
   (case (get-in game-state [:game-config :game/type])
-    :round (is-end-of-game-type-round? game-state)))
+    :high-score (is-end-of-game-type-round? game-state)))
 
 (defn finalize-game
   [game-state close-game]
