@@ -231,6 +231,15 @@
   [{:keys [:game/status]}]
   (= status :pending-open))
 
+(defn- get-closed-enrollment-error-code
+  [{:keys [:game/status]}]
+  (case status
+    :active 101007
+    :active-intermission 101007
+    :pending-closed 101001
+    :closed 101008
+    101009))
+
 (defn add-player-to-game
   [conn]
   (fn [game user-eid wombat-eid color]
@@ -239,7 +248,7 @@
 
       ;; Check to see if the game is accepting new players
       (when-not (open-for-enrollment? game)
-        (wombat-error {:code 101001}))
+        (wombat-error {:code (get-closed-enrollment-error-code game)}))
 
       ;; Check to see if the player is already in the game
       (when (player-in-game? conn user-eid game-eid)

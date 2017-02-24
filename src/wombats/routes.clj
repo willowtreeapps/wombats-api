@@ -106,4 +106,4 @@
   (let [datomic (get-in services [:datomic :database])
         aws-credentials (:aws services)
         dao-map (dao/init-dao-map datomic aws-credentials)]
-    {"/ws/game" (game-ws/in-game-ws dao-map)}))
+    {"/ws/game" (game-ws/in-game-ws dao-map aws-credentials)}))

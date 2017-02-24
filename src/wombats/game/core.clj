@@ -5,6 +5,7 @@
             [wombats.game.finalizers :as f]
             [wombats.game.processor :as p]
             [wombats.arena.utils :as au]
+            [wombats.constants :refer [min-lambda-runtime]]
             [wombats.scheduler.core :as scheduler]
             [wombats.sockets.game :as game-sockets]))
 
@@ -25,45 +26,6 @@
   (update-frame frame players)
   game-state)
 
-(defn frame-debugger
-  "This is a debugger that will print out a ton of additional
-  information in between each frame"
-  [{:keys [frame] :as game-state} interval]
-
-  ;; Pretty print the arena
-  #_(au/print-arena (:frame/arena frame))
-
-  ;; Pretty print the full arena state
-  #_(clojure.pprint/pprint (:frame/arena frame))
-
-  ;; Pretty print everything but the arena
-  (clojure.pprint/pprint
-   (update-in game-state [:frame] dissoc :frame/arena))
-
-  ;; Pretty print everything
-  #_(clojure.pprint/pprint game-state)
-
-  ;; Print frame number
-  (prn (format "Round Number: %d"
-               (get-in game-state [:frame :frame/round-number])))
-
-  ;; Print frame number
-  (prn (format "Frame Number: %d"
-               (get-in game-state [:frame :frame/frame-number])))
-
-  ;; Print number of players
-  #_(prn (str "Player Count: " (count (keys (:players game-state)))))
-
-  ;; Print game status
-  (prn (format "Game Status: %s"
-               (get-in game-state [:game-config :game/status])))
-
-  ;; Sleep before next frame
-  (Thread/sleep interval)
-
-  ;; Return game-state
-  game-state)
-
 (defn- game-loop
   "Game loop"
   [game-state update-frame close-round close-game aws-credentials]
@@ -80,7 +42,8 @@
 
         ;; Process the frame if the round isn't over
         (not round-is-over?)
-        (-> (p/frame-processor update-frame aws-credentials)
+        (-> (p/frame-processor {:aws-credentials aws-credentials
+                                :minimum-frame-time min-lambda-runtime})
             (game-sockets/broadcast-arena)
             (game-sockets/broadcast-game-info)
             (push-frame-to-datomic update-frame)

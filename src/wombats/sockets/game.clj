@@ -192,7 +192,6 @@
 
 (defn- build-simulation-game-state
   [socket-user wombat-id simulator-template-id datomic]
-
   (try
     (let [simulator-template
           ((:get-simulator-arena-template-by-id datomic)
@@ -234,12 +233,6 @@
     (catch Exception e
       {:error (.getMessage e)})))
 
-(defn t-sim
-  [game-state]
-  (doseq [[_ zakano] (:zakano game-state)]
-    (prn (str (get-in zakano [:state :code :code]))))
-  game-state)
-
 (defn- connect-to-simulator
   [datomic]
   (fn [{:keys [chan-id :user/id] :as socket-user}
@@ -249,26 +242,27 @@
                                                   simulator-template-id
                                                   datomic)]
 
-      (if (:error game-state)
-        (send-message
-         chan-id
+      (send-message
+       chan-id
+       (if (:error game-state)
          (-> game-state
-             (m/simulation-message)))
-        (send-message
-         chan-id
+             (m/simulation-message))
          (-> game-state
              (i/initialize-game-state)
              (m/simulation-message)))))))
 
 (defn- process-simulation-frame
-  [datomic]
+  [datomic aws-credentials]
   (fn [{:keys [chan-id :user/id]}
       {:keys [game-state]}]
+
+    ;; TODO Spec out game-state
 
     (send-message
      chan-id
      (-> game-state
-         (frame-processor)
+         (frame-processor {:aws-credentials aws-credentials
+                           :minimum-frame-time 0})
          (m/simulation-message)))))
 
 (defn- leave-game
@@ -303,7 +297,8 @@
           msg-payload (get msg :payload {})
           msg-fn (msg-type handler-map)]
 
-      (when-not (= msg-type :keep-alive)
+      (when-not (contains? #{:keep-alive
+                             :process-simulation-frame} msg-type)
         ;; Log in dev mode
         (println "\n---------- Start Client Message ----------")
         (clojure.pprint/pprint msg)
@@ -312,12 +307,12 @@
       (msg-fn socket-user msg-payload))))
 
 (defn- message-handlers
-  [datomic]
+  [datomic aws-credentials]
   {:keep-alive keep-alive
    :handshake (handshake datomic)
    :join-game (join-game datomic)
    :connect-to-simulator (connect-to-simulator datomic)
-   :process-simulation-frame (process-simulation-frame datomic)
+   :process-simulation-frame (process-simulation-frame datomic aws-credentials)
    :leave-game (leave-game datomic)
    :authenticate-user (authenticate-user datomic)
    :chat-message (chat-message datomic)})
@@ -349,8 +344,8 @@
 ;; PUBLIC FUNCTIONS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn in-game-ws
-  [datomic]
+  [datomic aws-credentials]
   {:on-connect (ws/start-ws-connection (new-ws-connection datomic))
-   :on-text    (create-socket-handler-map (message-handlers datomic))
+   :on-text    (create-socket-handler-map (message-handlers datomic aws-credentials))
    :on-error   socket-error
    :on-close   socket-close})
