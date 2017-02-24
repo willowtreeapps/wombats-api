@@ -396,7 +396,7 @@
   :db/valueType   :db.type/string
   :db/unique      :db.unique/identity
   :db/cardinality :db.cardinality/one
-  :db/doc         "An simulator template's public id"}
+  :db/doc         "A simulator template's public id"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :simulator-template/arena-template
