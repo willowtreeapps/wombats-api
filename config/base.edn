@@ -14,4 +14,7 @@
           :signing-secret #immuconf/default "shhhhh....."}
  :aws {:access-key-id #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_AWS_ACCESS_KEY_ID"
        :secret-key #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_AWS_SECRET_KEY"}
- :security {:signing-secret #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_SIGNING_SECRET"}}
+ :security {:signing-secret #immuconf/override "Add to ~/.wombats/config.edn or as WOMBATS_SIGNING_SECRET"}
+ :logger {:level #immuconf/override "Add a logging level in the environment config"
+          :ns-whitelist []
+          :ns-blacklist []}}

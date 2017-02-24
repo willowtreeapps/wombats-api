@@ -9,6 +9,15 @@
                             ;; High-performance serialization library
                             [com.taoensso/nippy "2.12.2"]
 
+                            ;; Logging
+                            [com.taoensso/timbre "4.8.0"]
+                            [org.slf4j/jul-to-slf4j     "1.7.21"]
+                            [org.slf4j/jcl-over-slf4j   "1.7.21"]
+                            [org.slf4j/log4j-over-slf4j "1.7.21"]
+
+                            ;; Extended core library for Clojure
+                            [com.taoensso/encore "2.89.0"]
+
                             ;; JSON Parsing
                             [cheshire "5.7.0"]
 
@@ -54,12 +63,7 @@
                             [adzerk/boot-test "1.1.2" :scope "test"]
 
                             ;; Code Analysis
-                            [tolitius/boot-check "0.1.4" :scope "test"]
-
-                            ;; Logging
-                            [org.slf4j/jul-to-slf4j     "1.7.21"]
-                            [org.slf4j/jcl-over-slf4j   "1.7.21"]
-                            [org.slf4j/log4j-over-slf4j "1.7.21"]]
+                            [tolitius/boot-check "0.1.4" :scope "test"]]
           :repositories #(conj % ["my-datomic" {:url "https://my.datomic.com/repo"
                                                 :username (System/getenv "DATOMIC_USERNAME")
                                                 :password (System/getenv "DATOMIC_PASSWORD")}])
@@ -79,6 +83,12 @@
 
 ;; Load code analysis tasks
 (require '[tolitius.boot-check :as check])
+
+;; Load nippy for seed tasks
+(require '[taoensso.nippy])
+
+(require '[wombats.daos.helpers])
+(require '[wombats.arena.core])
 
 (deftask dev []
   (set-env! :source-paths #(conj % "dev/src"))
@@ -129,6 +139,37 @@
   [conn]
   (d/transact conn (load-file "resources/datomic/users.edn")))
 
+(defn- seed-arena-templates
+  "Seeds the DB with simulator templates"
+  [conn]
+  (->> (load-file "resources/datomic/arena-templates.edn")
+       (map #(-> % (assoc :arena/id (wombats.daos.helpers/gen-id))))
+       (d/transact conn)))
+
+(defn- lookup-arena-ref
+  [arena-name conn]
+  (wombats.daos.helpers/get-entity-id conn :arena/name arena-name))
+
+(defn- generate-simulator-arena
+  [{:keys [:simulator-template/arena-template] :as template}
+   conn]
+  (let [arena-config (wombats.daos.helpers/get-entity-by-prop conn :arena/name arena-template)]
+    (-> template
+        (assoc :simulator-template/arena (wombats.arena.core/generate-arena arena-config))
+        (update :simulator-template/arena taoensso.nippy/freeze))))
+
+(defn- seed-simulator-templates
+  "Seeds the DB with simulator templates"
+  [conn]
+  (->> (load-file "resources/datomic/simulator-templates.edn")
+       (map #(-> %
+                 (assoc :simulator-template/id (wombats.daos.helpers/gen-id))
+                 ;; NOTE This must be run prior to update arena-template until I figure out why
+                 ;; I cannot query datomic using the :db/id ref that lookup-arena-ref returns
+                 (generate-simulator-arena conn)
+                 (update :simulator-template/arena-template lookup-arena-ref conn)))
+       (d/transact conn)))
+
 (defn- refresh-db!
   [uri]
   (d/delete-database uri)
@@ -136,7 +177,9 @@
   (let [conn (d/connect uri)]
     @(add-schema conn)
     @(add-roles conn)
-    @(seed-users conn)))
+    @(seed-users conn)
+    @(seed-arena-templates conn)
+    @(seed-simulator-templates conn)))
 
 (deftask refresh-dev-ddb
   "Resets the dev dynamo db"

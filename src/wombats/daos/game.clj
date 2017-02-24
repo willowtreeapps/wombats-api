@@ -1,7 +1,8 @@
 (ns wombats.daos.game
   (:require [datomic.api :as d]
             [taoensso.nippy :as nippy]
-            [wombats.game.core :refer [initialize-round]]
+            [wombats.constants :refer [initial-stats]]
+            [wombats.game.core :as game]
             [wombats.game.utils :refer [decision-maker-state]]
             [wombats.sockets.game :as game-sockets]
             [wombats.daos.helpers :refer [get-entity-by-prop
@@ -272,23 +273,10 @@
                         :player/color color}
             join-trx {:db/id game-eid
                       :game/players player-tmpid}
-            stats-trx {:db/id stats-tmpid
-                       :stats/player player-tmpid
-                       :stats/game game-eid
-                       :stats/frame-number 0
-                       :stats/food-collected 0
-                       :stats/poison-collected 0
-                       :stats/score 0
-                       :stats/wombats-destroyed 0
-                       :stats/wombats-hit 0
-                       :stats/zakano-destroyed 0
-                       :stats/zakano-hit 0
-                       :stats/wood-barriers-destroyed 0
-                       :stats/wood-barriers-hit 0
-                       :stats/shots-fired 0
-                       :stats/shots-hit 0
-                       :stats/smoke-bombs-thrown 0
-                       :stats/number-of-moves 0}
+            stats-trx (merge {:db/id stats-tmpid
+                              :stats/player player-tmpid
+                              :stats/game game-eid}
+                             initial-stats)
             stats-link-to-game-trx {:db/id game-eid
                                     :game/stats stats-tmpid}
             closed-trx {:db/id game-eid
@@ -349,12 +337,12 @@
 
       ;; We put this in a future so that it gets run on a separate thread
       (future
-        (initialize-round game-state
-                         {:update-frame (update-frame-state conn)
-                          :close-round (close-round conn)
-                          :close-game (close-game-state conn)
-                          :round-start-fn (start-game conn aws-credentials)}
-                         aws-credentials))
+        (game/start-round game-state
+                          {:update-frame (update-frame-state conn)
+                           :close-round (close-round conn)
+                           :close-game (close-game-state conn)
+                           :round-start-fn (start-game conn aws-credentials)}
+                          aws-credentials))
 
       (d/transact-async conn [{:game/id game-id
                                :game/status :active}]))))

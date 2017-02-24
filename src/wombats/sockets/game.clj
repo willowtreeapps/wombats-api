@@ -3,11 +3,16 @@
             [clojure.spec :as s]
             [clojure.core.async :refer [put! <! timeout]]
             [clojure.edn :as edn]
+            [datomic.api :as d]
             [clj-time.core :as t]
             [clj-time.periodic :as p]
             [chime :refer [chime-at]]
             [io.pedestal.http.jetty.websockets :as ws]
-            [wombats.sockets.messages :as m]))
+            [wombats.constants :refer [initial-stats]]
+            [wombats.sockets.messages :as m]
+            [wombats.game.initializers :as i]
+            [wombats.game.processor :refer [frame-processor]]
+            [wombats.daos.helpers :refer [gen-id]]))
 
 (def ^:private game-rooms (atom {}))
 (def ^:private connections (atom {}))
@@ -185,6 +190,68 @@
       (send-message chan-id
                     (m/game-info-message game-state)))))
 
+(defn- build-simulation-game-state
+  [socket-user wombat-id simulator-template-id datomic]
+  (let [simulator-template
+        ((:get-simulator-arena-template-by-id datomic)
+         simulator-template-id)
+
+        user
+        ((:get-entire-user-by-id datomic)
+         (:user/id socket-user))
+
+        wombat
+        ((:get-wombat-by-id datomic)
+         wombat-id)]
+
+    {:arena-config (:simulator-template/arena-template simulator-template)
+     :players {(gen-id) {:player {:player/color "gray"}
+                         :stats initial-stats
+                         :user {:user/github-username (:user/github-username user)
+                                :user/github-access-token (:user/github-access-token user)}
+                         :wombat {:wombat/id (:wombat/id wombat)
+                                  :wombat/name (:wombat/name wombat)
+                                  :wombat/url (:wombat/url wombat)}
+                         :state {:code nil
+                                 :command nil
+                                 :error nil
+                                 :saved-state {}}}}
+     :frame {:frame/frame-number 0
+             :frame/round-number 1
+             :frame/round-start-time nil
+             :frame/arena (:simulator-template/arena simulator-template)}}))
+
+(defn t-sim
+  [game-state]
+  (doseq [[_ zakano] (:zakano game-state)]
+    (prn (str (get-in zakano [:state :code :code]))))
+  game-state)
+
+(defn- connect-to-simulator
+  [datomic]
+  (fn [{:keys [chan-id :user/id] :as socket-user}
+      {:keys [simulator-template-id wombat-id]}]
+
+    (send-message
+     chan-id
+     (-> (build-simulation-game-state socket-user
+                                      wombat-id
+                                      simulator-template-id
+                                      datomic)
+         (i/initialize-game-state)
+         (m/simulation-message)))))
+
+(defn- process-simulation-frame
+  [datomic]
+  (fn [{:keys [chan-id :user/id]}
+      {:keys [game-state]}]
+
+    (send-message
+     chan-id
+     (-> game-state
+         (frame-processor)
+         (m/simulation-message)))))
+
 (defn- leave-game
   [_]
   (fn [{:keys [chan-id] :as socket-user}
@@ -230,6 +297,8 @@
   {:keep-alive keep-alive
    :handshake (handshake datomic)
    :join-game (join-game datomic)
+   :connect-to-simulator (connect-to-simulator datomic)
+   :process-simulation-frame (process-simulation-frame datomic)
    :leave-game (leave-game datomic)
    :authenticate-user (authenticate-user datomic)
    :chat-message (chat-message datomic)})

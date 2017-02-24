@@ -1,6 +1,5 @@
 (ns wombats.game.processor
   (:require [cheshire.core :as cheshire]
-            [taoensso.nippy :as nippy]
             [clojure.core.async :as async]
             [clj-time.core :as t]
             [clj-time.coerce :as c]
@@ -9,6 +8,8 @@
             [wombats.game.utils :as gu]
             [wombats.arena.utils :as au]
             [wombats.constants :refer [min-lambda-runtime]]
+            [wombats.game.initializers :as i]
+            [wombats.game.finalizers :as f]
             [wombats.game.decisions.turn :refer [turn]]
             [wombats.game.decisions.move :refer [move]]
             [wombats.game.decisions.shoot :refer [shoot]]
@@ -106,7 +107,7 @@
 
   (let [client (lambda-client aws-credentials)
         request (lambda-invoke-request decision-maker-state
-                                       {:code (nippy/thaw code)
+                                       {:code code
                                         :path path})
         result (.invoke client request)
         response (.getPayload result)
@@ -244,3 +245,11 @@
 (defn process-decisions
   [game-state]
   (reduce process-command game-state (:initiative-order game-state)))
+
+(defn frame-processor
+  [game-state update-frame aws-credentials]
+  (-> game-state
+      (i/initialize-frame)
+      (source-decisions aws-credentials)
+      (process-decisions)
+      (f/finalize-frame)))

@@ -122,3 +122,14 @@
   [chan-id]
   (get-message :handshake
                {:chan-id chan-id}))
+
+(defn simulation-message
+  [game-state]
+  (get-message :simulator-update
+               game-state))
+
+(defn missing-simulator-template-message
+  [template-id]
+  (get-message :simulator-error
+               {:template-id template-id
+                :message "Something went wrong while trying to start the simulation"}))

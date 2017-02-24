@@ -2,7 +2,8 @@
   (:require [datomic.api :as d]
             [wombats.daos.user :as user]
             [wombats.daos.arena :as arena]
-            [wombats.daos.game :as game]))
+            [wombats.daos.game :as game]
+            [wombats.daos.simulator :as simulator]))
 
 (defn init-dao-map
   "Creates a map of all the data accessors that can be used inside of handlers / socket connections.
@@ -47,4 +48,7 @@
    :add-game (game/add-game conn)
    :retract-game (game/retract-game conn)
    :add-player-to-game (game/add-player-to-game conn)
-   :start-game (game/start-game conn aws-credentials)})
+   :start-game (game/start-game conn aws-credentials)
+   ;; Simulator DAOS
+   :get-simulator-arena-templates (simulator/get-simulator-arena-templates conn)
+   :get-simulator-arena-template-by-id (simulator/get-simulator-arena-template-by-id conn)})

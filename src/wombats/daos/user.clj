@@ -48,7 +48,9 @@
   "Returns a user by a given access token"
   [conn]
   (fn [access-token]
-    (get-entity-by-prop conn :user/access-token access-token all-user-fields)))
+    (let [user (get-entity-by-prop conn :user/access-token access-token all-user-fields)]
+      (when-not (nil? (:db/id user))
+        user))))
 
 (defn get-user-by-github-id
   "Returns a user by a given github-id"

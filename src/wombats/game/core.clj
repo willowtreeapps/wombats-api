@@ -64,23 +64,11 @@
   ;; Return game-state
   game-state)
 
-(defn- frame-processor
-  [game-state update-frame aws-credentials]
-  (-> game-state
-      (i/initialize-frame)
-      (p/source-decisions aws-credentials)
-      (p/process-decisions)
-      (f/finalize-frame)
-      (game-sockets/broadcast-arena)
-      (game-sockets/broadcast-game-info)
-      (push-frame-to-datomic update-frame)))
-
 (defn- game-loop
   "Game loop"
   [game-state update-frame close-round close-game aws-credentials]
   (loop [current-game-state game-state]
     (let [round-is-over? (round-over? current-game-state)]
-
       (cond-> current-game-state
         ;; Check if the round is over
         round-is-over?
@@ -92,13 +80,13 @@
 
         ;; Process the frame if the round isn't over
         (not round-is-over?)
-        (frame-processor update-frame aws-credentials)
+        (-> (p/frame-processor update-frame aws-credentials)
+            (game-sockets/broadcast-arena)
+            (game-sockets/broadcast-game-info)
+            (push-frame-to-datomic update-frame)
+            (recur))))))
 
-        ;; Recur if the round isn't over
-        (not round-is-over?)
-        (recur)))))
-
-(defn initialize-round
+(defn start-round
   "Main entry point for the game engine"
   [game-state
    {update-frame   :update-frame
@@ -109,6 +97,7 @@
 
   (-> game-state
       (i/initialize-round)
+      (i/initialize-game-state)
       (game-sockets/broadcast-game-info)
       (game-loop update-frame
                  close-round
