@@ -35,6 +35,9 @@
    101004 "User could not be found."
    101005 "Wombat could not be found."
    101006 "Game cannot be started with no Wombats!"
+   101007 "This game has already been started."
+   101008 "The game you are trying to join is over."
+   101009 "Something went wrong. You are unable to join this game."
    102000 "Wombat with the name '%s' already exists."
    102001 "Wombat source code with that pathname has already registered. If you own the source code, change the file name and try again."})
 

@@ -166,3 +166,42 @@
               (if steep
                 (normalize-slope (map (fn [[y x]] [x y]) plots) from)
                 (normalize-slope plots from)))))))))
+
+(defn frame-debugger
+  "This is a debugger that will print out a ton of additional
+  information in between each frame"
+  [{:keys [frame] :as game-state} interval]
+
+  ;; Pretty print the arena
+  #_(au/print-arena (:frame/arena frame))
+
+  ;; Pretty print the full arena state
+  #_(clojure.pprint/pprint (:frame/arena frame))
+
+  ;; Pretty print everything but the arena
+  (clojure.pprint/pprint
+   (update-in game-state [:frame] dissoc :frame/arena))
+
+  ;; Pretty print everything
+  #_(clojure.pprint/pprint game-state)
+
+  ;; Print frame number
+  (prn (format "Round Number: %d"
+               (get-in game-state [:frame :frame/round-number])))
+
+  ;; Print frame number
+  (prn (format "Frame Number: %d"
+               (get-in game-state [:frame :frame/frame-number])))
+
+  ;; Print number of players
+  #_(prn (str "Player Count: " (count (keys (:players game-state)))))
+
+  ;; Print game status
+  (prn (format "Game Status: %s"
+               (get-in game-state [:game-config :game/status])))
+
+  ;; Sleep before next frame
+  (Thread/sleep interval)
+
+  ;; Return game-state
+  game-state)

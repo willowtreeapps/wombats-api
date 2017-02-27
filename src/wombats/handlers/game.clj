@@ -13,7 +13,7 @@
 (def ^:private game-body-sample
   #:game{:name "New Game"
          :max-players 8
-         :type :round
+         :type :high-score
          :round-intermission (* 1000 60 20)
          :round-length (* 1000 60)
          :num-rounds 3
@@ -137,7 +137,7 @@
                       :active-intermission
                       :closed})
 
-(s/def :game/type #{:round})
+(s/def :game/type #{:high-score})
 (s/def :game/num-rounds #(instance? Long %))
 (s/def :game/round-intermission #(instance? Long %))
 (s/def :game/round-length #(instance? Long %))

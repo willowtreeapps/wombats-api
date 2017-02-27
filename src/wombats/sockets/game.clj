@@ -192,64 +192,77 @@
 
 (defn- build-simulation-game-state
   [socket-user wombat-id simulator-template-id datomic]
-  (let [simulator-template
-        ((:get-simulator-arena-template-by-id datomic)
-         simulator-template-id)
+  (try
+    (let [simulator-template
+          ((:get-simulator-arena-template-by-id datomic)
+           simulator-template-id)
 
-        user
-        ((:get-entire-user-by-id datomic)
-         (:user/id socket-user))
+          user
+          ((:get-entire-user-by-id datomic)
+           (:user/id socket-user))
 
-        wombat
-        ((:get-wombat-by-id datomic)
-         wombat-id)]
+          wombat
+          ((:get-wombat-by-id datomic)
+           wombat-id)]
 
-    {:arena-config (:simulator-template/arena-template simulator-template)
-     :players {(gen-id) {:player {:player/color "gray"}
-                         :stats initial-stats
-                         :user {:user/github-username (:user/github-username user)
-                                :user/github-access-token (:user/github-access-token user)}
-                         :wombat {:wombat/id (:wombat/id wombat)
-                                  :wombat/name (:wombat/name wombat)
-                                  :wombat/url (:wombat/url wombat)}
-                         :state {:code nil
-                                 :command nil
-                                 :error nil
-                                 :saved-state {}}}}
-     :frame {:frame/frame-number 0
-             :frame/round-number 1
-             :frame/round-start-time nil
-             :frame/arena (:simulator-template/arena simulator-template)}}))
+      (when-not simulator-template
+        (throw (Exception. "no simulator template found")))
 
-(defn t-sim
-  [game-state]
-  (doseq [[_ zakano] (:zakano game-state)]
-    (prn (str (get-in zakano [:state :code :code]))))
-  game-state)
+      (when-not user
+        (throw (Exception. "no user found")))
+
+      (when-not wombat
+        (throw (Exception. "no wombat found")))
+
+      {:arena-config (:simulator-template/arena-template simulator-template)
+       :players {(gen-id) {:player {:player/color "gray"}
+                           :stats initial-stats
+                           :user {:user/github-username (:user/github-username user)
+                                  :user/github-access-token (:user/github-access-token user)}
+                           :wombat {:wombat/id (:wombat/id wombat)
+                                    :wombat/name (:wombat/name wombat)
+                                    :wombat/url (:wombat/url wombat)}
+                           :state {:code nil
+                                   :command nil
+                                   :error nil
+                                   :saved-state {}}}}
+       :frame {:frame/frame-number 0
+               :frame/round-number 1
+               :frame/round-start-time nil
+               :frame/arena (:simulator-template/arena simulator-template)}})
+    (catch Exception e
+      {:error (.getMessage e)})))
 
 (defn- connect-to-simulator
   [datomic]
   (fn [{:keys [chan-id :user/id] :as socket-user}
       {:keys [simulator-template-id wombat-id]}]
+    (let [game-state (build-simulation-game-state socket-user
+                                                  wombat-id
+                                                  simulator-template-id
+                                                  datomic)]
 
-    (send-message
-     chan-id
-     (-> (build-simulation-game-state socket-user
-                                      wombat-id
-                                      simulator-template-id
-                                      datomic)
-         (i/initialize-game-state)
-         (m/simulation-message)))))
+      (send-message
+       chan-id
+       (if (:error game-state)
+         (-> game-state
+             (m/simulation-message))
+         (-> game-state
+             (i/initialize-game-state)
+             (m/simulation-message)))))))
 
 (defn- process-simulation-frame
-  [datomic]
+  [datomic aws-credentials]
   (fn [{:keys [chan-id :user/id]}
       {:keys [game-state]}]
+
+    ;; TODO Spec out game-state
 
     (send-message
      chan-id
      (-> game-state
-         (frame-processor)
+         (frame-processor {:aws-credentials aws-credentials
+                           :minimum-frame-time 0})
          (m/simulation-message)))))
 
 (defn- leave-game
@@ -284,7 +297,8 @@
           msg-payload (get msg :payload {})
           msg-fn (msg-type handler-map)]
 
-      (when-not (= msg-type :keep-alive)
+      (when-not (contains? #{:keep-alive
+                             :process-simulation-frame} msg-type)
         ;; Log in dev mode
         (println "\n---------- Start Client Message ----------")
         (clojure.pprint/pprint msg)
@@ -293,12 +307,12 @@
       (msg-fn socket-user msg-payload))))
 
 (defn- message-handlers
-  [datomic]
+  [datomic aws-credentials]
   {:keep-alive keep-alive
    :handshake (handshake datomic)
    :join-game (join-game datomic)
    :connect-to-simulator (connect-to-simulator datomic)
-   :process-simulation-frame (process-simulation-frame datomic)
+   :process-simulation-frame (process-simulation-frame datomic aws-credentials)
    :leave-game (leave-game datomic)
    :authenticate-user (authenticate-user datomic)
    :chat-message (chat-message datomic)})
@@ -330,8 +344,8 @@
 ;; PUBLIC FUNCTIONS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn in-game-ws
-  [datomic]
+  [datomic aws-credentials]
   {:on-connect (ws/start-ws-connection (new-ws-connection datomic))
-   :on-text    (create-socket-handler-map (message-handlers datomic))
+   :on-text    (create-socket-handler-map (message-handlers datomic aws-credentials))
    :on-error   socket-error
    :on-close   socket-close})

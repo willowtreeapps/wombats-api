@@ -7,7 +7,6 @@
             [wombats.game.occlusion :refer [get-occluded-arena]]
             [wombats.game.utils :as gu]
             [wombats.arena.utils :as au]
-            [wombats.constants :refer [min-lambda-runtime]]
             [wombats.game.initializers :as i]
             [wombats.game.finalizers :as f]
             [wombats.game.decisions.turn :refer [turn]]
@@ -150,8 +149,9 @@
 
 (defn source-decisions
   "Source decisions by running their code through AWS Lambda"
-  [game-state aws-credentials]
-  (let [end-time (t/plus (t/now) (t/millis min-lambda-runtime))
+  [game-state {:keys [aws-credentials
+                      minimum-frame-time]}]
+  (let [end-time (t/plus (t/now) (t/millis minimum-frame-time))
         lambda-chans (get-lamdba-channels game-state aws-credentials)
         lambda-responses (async/<!! (async/map vector lambda-chans))]
 
@@ -247,9 +247,9 @@
   (reduce process-command game-state (:initiative-order game-state)))
 
 (defn frame-processor
-  [game-state update-frame aws-credentials]
+  [game-state frame-processor-settings]
   (-> game-state
       (i/initialize-frame)
-      (source-decisions aws-credentials)
+      (source-decisions frame-processor-settings)
       (process-decisions)
       (f/finalize-frame)))
