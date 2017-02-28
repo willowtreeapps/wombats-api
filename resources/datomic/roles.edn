@@ -1,4 +1,0 @@
-[[:db/add (d/tempid :db.part/user) :db/ident :user.roles/user]
- [:db/add (d/tempid :db.part/user) :db/ident :user.roles/admin]
- [:db/add (d/tempid :db.part/user) :db/ident :user.roles/contributor]
- [:db/add (d/tempid :db.part/user) :db/ident :user.roles/coordinator]]

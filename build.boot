@@ -75,6 +75,9 @@
  aot {:namespace '#{wombats.system}}
  jar {:main 'wombats.system})
 
+;; Require io
+(require '[clojure.java.io :as io])
+
 ;; Load testing tasks
 (require '[adzerk.boot-test :refer :all])
 
@@ -89,6 +92,22 @@
 
 (require '[wombats.daos.helpers])
 (require '[wombats.arena.core])
+
+(require '[wombats.datomic.db-functions :as db-fns])
+
+(defn read-all
+  "Read all forms in f, where f is any resource that can
+   be opened by io/reader"
+  [f]
+  (datomic.Util/readAll (io/reader f)))
+
+(defn transact-all
+  "Load and run all transactions from f, where f is any
+   resource that can be opened by io/reader."
+  [conn f]
+  (doseq [txd (read-all f)]
+    @(d/transact conn txd))
+  :done)
 
 (deftask dev []
   (set-env! :source-paths #(conj % "dev/src"))
@@ -124,28 +143,6 @@
                          (str (System/getProperty "user.home") "/.wombats/config.edn"))]
     (get-datomic-uri env-settings config-settings)))
 
-(defn- add-schema
-  "Initializes the DB with the proper schema"
-  [conn]
-  (d/transact conn (load-file "resources/datomic/schema.edn")))
-
-(defn- add-roles
-  "Adds Wombat roles to the DB"
-  [conn]
-  (d/transact conn (load-file "resources/datomic/roles.edn")))
-
-(defn- seed-users
-  "Seeds the DB with users (mainly to support seeding with roles)"
-  [conn]
-  (d/transact conn (load-file "resources/datomic/users.edn")))
-
-(defn- seed-arena-templates
-  "Seeds the DB with simulator templates"
-  [conn]
-  (->> (load-file "resources/datomic/arena-templates.edn")
-       (map #(-> % (assoc :arena/id (wombats.daos.helpers/gen-id))))
-       (d/transact conn)))
-
 (defn- lookup-arena-ref
   [arena-name conn]
   (wombats.daos.helpers/get-entity-id conn :arena/name arena-name))
@@ -161,7 +158,8 @@
 (defn- seed-simulator-templates
   "Seeds the DB with simulator templates"
   [conn]
-  (->> (load-file "resources/datomic/simulator-templates.edn")
+  (->> (read-all "resources/datomic/simulator-templates.dtm")
+       (first)
        (map #(-> %
                  (assoc :simulator-template/id (wombats.daos.helpers/gen-id))
                  ;; NOTE This must be run prior to update arena-template until I figure out why
@@ -175,11 +173,28 @@
   (d/delete-database uri)
   (d/create-database uri)
   (let [conn (d/connect uri)]
-    @(add-schema conn)
-    @(add-roles conn)
-    @(seed-users conn)
-    @(seed-arena-templates conn)
+    @(db-fns/seed-database-functions conn)
+    (transact-all conn "resources/datomic/schema.dtm")
+    (transact-all conn "resources/datomic/roles.dtm")
+    (transact-all conn "resources/datomic/users.dtm")
+    (transact-all conn "resources/datomic/arena-templates.dtm")
     @(seed-simulator-templates conn)))
+
+(deftask refresh-db-functions
+  "resets the transactors in the db"
+  []
+  (System/setProperty "APP_ENV" "dev")
+  (-> (build-connection-string)
+      (d/connect)
+      (db-fns/seed-database-functions)))
+
+(deftask refresh-db
+  "resets the database"
+  []
+  (System/setProperty "APP_ENV" "dev")
+
+  (-> (build-connection-string)
+      refresh-db!))
 
 (deftask refresh-dev-ddb
   "Resets the dev dynamo db"
@@ -190,17 +205,9 @@
       refresh-db!))
 
 (deftask refresh-qa-ddb
-  "Resets the dev dynamo db"
+  "Resets the qa dynamo db"
   []
   (System/setProperty "APP_ENV" "qa-ddb")
-
-  (-> (build-connection-string)
-      refresh-db!))
-
-(deftask refresh-db
-  "resets the database"
-  []
-  (System/setProperty "APP_ENV" "dev")
 
   (-> (build-connection-string)
       refresh-db!))
