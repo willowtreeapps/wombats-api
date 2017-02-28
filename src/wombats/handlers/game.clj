@@ -292,7 +292,7 @@
                           :details {:user-eid user-eid
                                     :wombat-eid wombat-eid}}))
 
-         @(add-player-to-game game user-eid wombat-eid color)
+         (add-player-to-game game user-eid wombat-eid color)
 
          (assoc context :response (assoc response
                                          :status 200

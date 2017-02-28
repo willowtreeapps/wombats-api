@@ -188,120 +188,22 @@
   (fn [game-id]
     (retract-entity-by-prop conn :game/id game-id)))
 
-(defn- game-full?
-  "Check if the game is full by comparing the currnent number of players to the
-  max-players attribute"
-  ([game]
-   (game-full? game 0))
-  ([{:keys [:game/players :game/max-players]} add-n-players]
-   (= (+ (count (or players []))
-         add-n-players)
-      max-players)))
-
-(defn- player-in-game?
-  "Check to see if a player is already in a game
-
-  TODO: Figure out how to query the game id in the datomic query"
-  [conn user-eid game-eid]
-  (let [games (set
-               (apply concat
-                      (d/q '[:find ?games
-                             :in $ ?user-eid
-                             :where [?players :player/user ?user-eid]
-                                    [?games :game/players ?players]]
-                           (d/db conn)
-                           user-eid)))]
-    (contains? games game-eid)))
-
-(defn- color-taken?
-  [conn game-id color]
-  (let [player (ffirst
-                (d/q '[:find ?player
-                       :in $ ?game-id ?color
-                       :where [?game :game/id ?game-id]
-                              [?game :game/players ?player]
-                              [?player :player/color ?color]]
-                     (d/db conn)
-                     game-id
-                     color))]
-    (boolean player)))
-
-(defn- open-for-enrollment?
-  "Check if game is open for enrollment"
-  [{:keys [:game/status]}]
-  (= status :pending-open))
-
-(defn- get-closed-enrollment-error-code
-  [{:keys [:game/status]}]
-  (case status
-    :active 101007
-    :active-intermission 101007
-    :pending-closed 101001
-    :closed 101008
-    101009))
-
 (defn add-player-to-game
   [conn]
-  (fn [game user-eid wombat-eid color]
-    (let [{game-id :game/id
-           game-eid :db/id} game]
+  (fn [{game-eid :db/id
+       game-id :game/id}
+      user-eid
+      wombat-eid
+      color]
 
-      ;; Check to see if the game is accepting new players
-      (when-not (open-for-enrollment? game)
-        (wombat-error {:code (get-closed-enrollment-error-code game)}))
+    (d/transact conn [[:player-join
+                       game-eid
+                       user-eid
+                       wombat-eid
+                       color
+                       initial-stats]])
 
-      ;; Check to see if the player is already in the game
-      (when (player-in-game? conn user-eid game-eid)
-        (wombat-error {:code 101002
-                       :details {:user-eid user-eid
-                                 :game-eid game-eid}}))
-
-      ;; Check for available color
-      (when (color-taken? conn game-id color)
-        (wombat-error {:code 101003
-                       :params [color]}))
-
-      (when-not user-eid
-        (wombat-error {:code 101004
-                       :details {:user-eid user-eid}}))
-
-      (when-not wombat-eid
-        (wombat-error {:code 101005
-                       :details {:wombat-eid wombat-eid}}))
-
-      ;; This next part builds up the transaction(s)
-      ;; 1. Creates the player trx
-      ;; 2. Adds player to the game
-      ;; 3. Adds a stat entity to the game that belongs to the new player
-      ;; 4. If the game is now full, add the :pending closed transaction
-      (let [player-tmpid (d/tempid :db.part/user)
-            stats-tmpid (d/tempid :db.part/user)
-            player-trx {:db/id player-tmpid
-                        :player/user user-eid
-                        :player/wombat wombat-eid
-                        :player/color color}
-            join-trx {:db/id game-eid
-                      :game/players player-tmpid}
-            stats-trx (merge {:db/id stats-tmpid
-                              :stats/player player-tmpid
-                              :stats/game game-eid}
-                             initial-stats)
-            stats-link-to-game-trx {:db/id game-eid
-                                    :game/stats stats-tmpid}
-            closed-trx {:db/id game-eid
-                        :game/status :pending-closed}
-            trx (cond-> []
-                  true (conj player-trx)
-                  true (conj join-trx)
-                  true (conj stats-trx)
-                  true (conj stats-link-to-game-trx)
-                  (game-full? game 1) (conj closed-trx))]
-
-        (future
-          (d/transact conn trx)
-
-          (let [game-state ((get-game-state-by-id conn) game-id)]
-            (game-sockets/broadcast-game-info game-state)))))))
+    (game-sockets/broadcast-game-info ((get-game-state-by-id conn) game-id))))
 
 (defn- update-frame-state
   [conn]
