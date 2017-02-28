@@ -15,21 +15,23 @@
    stats players))
 
 (defn- add-player-hp
-  [stats arena]
+  [stats arena wombat-hp]
   (let [player-ids (set (keys stats))]
     (reduce
      (fn [stats-acc cell]
        (let [cell-uuid (get-in cell [:contents :uuid])]
          (if (contains? player-ids cell-uuid)
-           (assoc-in stats-acc [cell-uuid :hp] (get-in cell [:contents :hp]))
+           (let [hp (get-in cell [:contents :hp])
+                 percent (* (double (/ hp wombat-hp)) 100)]
+             (assoc-in stats-acc [cell-uuid :hp] percent))
            stats-acc)))
      stats (flatten arena))))
 
 (defn get-player-stats
   "Returns stats from game-state"
-  [game-state]
+  [{:keys [players frame arena-config]}]
   (-> {}
-      (add-player-scores (:players game-state))
-      (add-player-hp (get-in game-state [:frame
-                                         :frame/arena]))
+      (add-player-scores players)
+      (add-player-hp (:frame/arena frame)
+                     (:arena/wombat-hp arena-config))
       vals))
