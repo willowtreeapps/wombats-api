@@ -15,4 +15,5 @@
                                     :message (->> params
                                                   (into [message])
                                                   (apply format))
-                                    :details details}))))
+                                    :details details
+                                    :code code}))))

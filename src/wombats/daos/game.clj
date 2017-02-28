@@ -1,7 +1,8 @@
 (ns wombats.daos.game
   (:require [datomic.api :as d]
             [taoensso.nippy :as nippy]
-            [wombats.game.core :refer [initialize-round]]
+            [wombats.constants :refer [initial-stats]]
+            [wombats.game.core :as game]
             [wombats.game.utils :refer [decision-maker-state]]
             [wombats.sockets.game :as game-sockets]
             [wombats.daos.helpers :refer [get-entity-by-prop
@@ -230,6 +231,15 @@
   [{:keys [:game/status]}]
   (= status :pending-open))
 
+(defn- get-closed-enrollment-error-code
+  [{:keys [:game/status]}]
+  (case status
+    :active 101007
+    :active-intermission 101007
+    :pending-closed 101001
+    :closed 101008
+    101009))
+
 (defn add-player-to-game
   [conn]
   (fn [game user-eid wombat-eid color]
@@ -238,7 +248,7 @@
 
       ;; Check to see if the game is accepting new players
       (when-not (open-for-enrollment? game)
-        (wombat-error {:code 101001}))
+        (wombat-error {:code (get-closed-enrollment-error-code game)}))
 
       ;; Check to see if the player is already in the game
       (when (player-in-game? conn user-eid game-eid)
@@ -272,23 +282,10 @@
                         :player/color color}
             join-trx {:db/id game-eid
                       :game/players player-tmpid}
-            stats-trx {:db/id stats-tmpid
-                       :stats/player player-tmpid
-                       :stats/game game-eid
-                       :stats/frame-number 0
-                       :stats/food-collected 0
-                       :stats/poison-collected 0
-                       :stats/score 0
-                       :stats/wombats-destroyed 0
-                       :stats/wombats-hit 0
-                       :stats/zakano-destroyed 0
-                       :stats/zakano-hit 0
-                       :stats/wood-barriers-destroyed 0
-                       :stats/wood-barriers-hit 0
-                       :stats/shots-fired 0
-                       :stats/shots-hit 0
-                       :stats/smoke-bombs-thrown 0
-                       :stats/number-of-moves 0}
+            stats-trx (merge {:db/id stats-tmpid
+                              :stats/player player-tmpid
+                              :stats/game game-eid}
+                             initial-stats)
             stats-link-to-game-trx {:db/id game-eid
                                     :game/stats stats-tmpid}
             closed-trx {:db/id game-eid
@@ -304,8 +301,7 @@
           (d/transact conn trx)
 
           (let [game-state ((get-game-state-by-id conn) game-id)]
-            (game-sockets/broadcast-game-info game-state)
-            (game-sockets/broadcast-stats game-state)))))))
+            (game-sockets/broadcast-game-info game-state)))))))
 
 (defn- update-frame-state
   [conn]
@@ -350,12 +346,12 @@
 
       ;; We put this in a future so that it gets run on a separate thread
       (future
-        (initialize-round game-state
-                         {:update-frame (update-frame-state conn)
-                          :close-round (close-round conn)
-                          :close-game (close-game-state conn)
-                          :round-start-fn (start-game conn aws-credentials)}
-                         aws-credentials))
+        (game/start-round game-state
+                          {:update-frame (update-frame-state conn)
+                           :close-round (close-round conn)
+                           :close-game (close-game-state conn)
+                           :round-start-fn (start-game conn aws-credentials)}
+                          aws-credentials))
 
       (d/transact-async conn [{:game/id game-id
                                :game/status :active}]))))

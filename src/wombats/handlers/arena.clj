@@ -101,11 +101,16 @@
                                        :status 200
                                        :body @(retract-arena arena-id)))))))
 
+(def arena-constraints
+  #(and (instance? Long %)
+        (<= % 25)
+        (>= % 5)))
+
 ;; Arena Specs
 (s/def :arena/id string?)
 (s/def :arena/name string?)
-(s/def :arena/width #(instance? Long %))
-(s/def :arena/height #(instance? Long %))
+(s/def :arena/width arena-constraints)
+(s/def :arena/height arena-constraints)
 (s/def :arena/shot-damage #(instance? Long %))
 (s/def :arean/smoke-duration #(instance? Long %))
 (s/def :arena/food #(instance? Long %))

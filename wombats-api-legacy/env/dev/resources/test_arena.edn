@@ -1,6 +1,0 @@
-[[{:type "open" :display " "} {:type "block" :display "X"} {:type "block" :display "X"} {:type "block" :display "X"} {:type "block" :display "X"} {:type "block" :display "X"}]
-[{:type "open" :display " "} {:type "open" :display " "} {:type "open" :display " "} {:type "open" :display " "} {:type "open" :display " "} {:type "block" :display "X"}]
-[{:type "open" :display " "} {:type "open" :display " "} {:type "open" :display " "} {:type "open" :display " "} {:type "open" :display " "} {:type "block" :display "X"}]
-[{:type "open" :display " "} {:type "player" :display "B"} {:type "open" :display " "} {:type "block" :display "X"} {:type "open" :display " "} {:type "block" :display "X"}]
-[{:type "open" :display " "} {:type "open" :display " "} {:type "open" :display " "} {:type "open" :display " "} {:type "open" :display " "} {:type "block" :display "X"}]
-[{:type "open" :display " "} {:type "block" :display "X"} {:type "block" :display "X"} {:type "block" :display "X"} {:type "block" :display "X"} {:type "block" :display "X"}]]

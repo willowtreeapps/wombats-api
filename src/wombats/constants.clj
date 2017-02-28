@@ -9,6 +9,8 @@
 
 (defonce max-players 8)
 
+(defonce min-lambda-runtime 2000)
+
 ;; Error Codes
 ;; Format: a-bb-ccc
 ;; a: File type: 0 handlers
@@ -33,5 +35,24 @@
    101004 "User could not be found."
    101005 "Wombat could not be found."
    101006 "Game cannot be started with no Wombats!"
+   101007 "This game has already been started."
+   101008 "The game you are trying to join is over."
+   101009 "Something went wrong. You are unable to join this game."
    102000 "Wombat with the name '%s' already exists."
    102001 "Wombat source code with that pathname has already registered. If you own the source code, change the file name and try again."})
+
+(defonce initial-stats
+  {:stats/frame-number 0
+   :stats/food-collected 0
+   :stats/poison-collected 0
+   :stats/score 0
+   :stats/wombats-destroyed 0
+   :stats/wombats-hit 0
+   :stats/zakano-destroyed 0
+   :stats/zakano-hit 0
+   :stats/wood-barriers-destroyed 0
+   :stats/wood-barriers-hit 0
+   :stats/shots-fired 0
+   :stats/shots-hit 0
+   :stats/smoke-bombs-thrown 0
+   :stats/number-of-moves 0})

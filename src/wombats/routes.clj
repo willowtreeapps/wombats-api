@@ -16,6 +16,7 @@
             [wombats.handlers.user :as user]
             [wombats.handlers.auth :as auth]
             [wombats.handlers.arena :as arena]
+            [wombats.handlers.simulator :as simulator]
             [wombats.sockets.game :as game-ws]
             [wombats.daos.core :as dao]))
 
@@ -67,6 +68,12 @@
            :put arena/update-arena
            :delete arena/delete-arena}]]
 
+        ["/simulator"
+         ["/templates"
+          {:get simulator/get-simulator-arena-templates}
+          ["/:template-id"
+           {:get simulator/get-simulator-arena-template-by-id}]]]
+
         ["/games"
          {:get [:get-games
                 game/get-games
@@ -99,4 +106,4 @@
   (let [datomic (get-in services [:datomic :database])
         aws-credentials (:aws services)
         dao-map (dao/init-dao-map datomic aws-credentials)]
-    {"/ws/game" (game-ws/in-game-ws dao-map)}))
+    {"/ws/game" (game-ws/in-game-ws dao-map aws-credentials)}))

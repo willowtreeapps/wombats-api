@@ -3,90 +3,34 @@
             [clj-time.core :as t]
             [wombats.game.initializers :as i]
             [wombats.game.finalizers :as f]
-            [wombats.game.player-stats :refer [get-player-stats]]
             [wombats.game.processor :as p]
             [wombats.arena.utils :as au]
+            [wombats.constants :refer [min-lambda-runtime]]
             [wombats.scheduler.core :as scheduler]
             [wombats.sockets.game :as game-sockets]))
 
 (defn- round-over?
-  [{:keys [game-config frame]}]
+  [{:keys [game-config frame initiative-order]}]
   (let [{round-length :game/round-length} game-config
         {round-start-time :frame/round-start-time} frame
         end-time (t/plus (c/from-date round-start-time)
                          (t/millis round-length))]
-    (t/after? (t/now)
-              end-time)))
+    ;; Check to see if all players / ai are dead, or the
+    ;; max time limit has elapsed
+    (or (empty? initiative-order)
+     (t/after? (t/now)
+               end-time))))
 
 (defn- push-frame-to-datomic
   [{:keys [frame players] :as game-state} update-frame]
   (update-frame frame players)
   game-state)
 
-(defn frame-debugger
-  "This is a debugger that will print out a ton of additional
-  information in between each frame"
-  [{:keys [frame] :as game-state} interval]
-
-  ;; Pretty print the arena
-  #_(au/print-arena (:frame/arena frame))
-
-  ;; Pretty print the full arena state
-  #_(clojure.pprint/pprint (:frame/arena frame))
-
-  ;; Pretty print everything but the arena
-  (clojure.pprint/pprint
-   (update-in game-state [:frame] dissoc :frame/arena))
-
-  ;; Pretty print everything
-  #_(clojure.pprint/pprint game-state)
-
-  ;; Print frame number
-  (prn (format "Round Number: %d"
-               (get-in game-state [:frame :frame/round-number])))
-
-  ;; Print frame number
-  (prn (format "Frame Number: %d"
-               (get-in game-state [:frame :frame/frame-number])))
-
-  ;; Print number of players
-  #_(prn (str "Player Count: " (count (keys (:players game-state)))))
-
-  ;; Print game status
-  (prn (format "Game Status: %s"
-               (get-in game-state [:game-config :game/status])))
-
-  ;; Sleep before next frame
-  (Thread/sleep interval)
-
-  ;; Return game-state
-  game-state)
-
-(defn- timeout-frame
-  "Pause the frame to allow the client to catch up"
-  [game-state time]
-  (Thread/sleep time)
-  game-state)
-
-(defn- frame-processor
-  [game-state update-frame aws-credentials]
-  (-> game-state
-      (i/initialize-frame)
-      (p/source-decisions aws-credentials)
-      (p/process-decisions)
-      (f/finalize-frame)
-      ;; TODO: Remove this timeout
-      (timeout-frame 500)
-      (game-sockets/broadcast-arena)
-      (game-sockets/broadcast-stats)
-      (push-frame-to-datomic update-frame)))
-
 (defn- game-loop
   "Game loop"
   [game-state update-frame close-round close-game aws-credentials]
   (loop [current-game-state game-state]
     (let [round-is-over? (round-over? current-game-state)]
-
       (cond-> current-game-state
         ;; Check if the round is over
         round-is-over?
@@ -98,13 +42,14 @@
 
         ;; Process the frame if the round isn't over
         (not round-is-over?)
-        (frame-processor update-frame aws-credentials)
+        (-> (p/frame-processor {:aws-credentials aws-credentials
+                                :minimum-frame-time min-lambda-runtime})
+            (game-sockets/broadcast-arena)
+            (game-sockets/broadcast-game-info)
+            (push-frame-to-datomic update-frame)
+            (recur))))))
 
-        ;; Recur if the round isn't over
-        (not round-is-over?)
-        (recur)))))
-
-(defn initialize-round
+(defn start-round
   "Main entry point for the game engine"
   [game-state
    {update-frame   :update-frame
@@ -115,6 +60,7 @@
 
   (-> game-state
       (i/initialize-round)
+      (i/initialize-game-state)
       (game-sockets/broadcast-game-info)
       (game-loop update-frame
                  close-round

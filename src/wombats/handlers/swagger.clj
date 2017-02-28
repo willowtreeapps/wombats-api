@@ -6,7 +6,7 @@
 (def ^{:private true
        :doc "List of handlers to be sources for api documentation"}
   handlers
-  #{"user" "game" "arena" "auth"})
+  #{"user" "game" "arena" "auth" "simulator"})
 
 (def ^:private swagger-specs {:info {:title "Wombats API"
                                      :description "API documentation for Wombats"
@@ -27,7 +27,9 @@
                                      {:name "arena"
                                       :description "Arena Configuration API"}
                                      {:name "game"
-                                      :description "Game API"}]})
+                                      :description "Game API"}
+                                     {:name "simulator"
+                                      :description "Simulator API"}]})
 
 (defn- source-handler-vars
   "sources all public vars inside of each ns passed in the handlers set"

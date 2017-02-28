@@ -114,6 +114,7 @@
            {:keys [code state]} (:query-params request)
            web-client-redirect (get-formatted-referer request)
            failed-callback (redirect-home context web-client-redirect)]
+
        (if (= state signing-secret)
          (let [github-access-token @(get-access-token {:client_id client-id
                                                        :client_secret client-secret

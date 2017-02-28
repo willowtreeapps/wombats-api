@@ -1,16 +1,18 @@
 (ns wombats.game.processor
   (:require [cheshire.core :as cheshire]
-            [taoensso.nippy :as nippy]
             [clojure.core.async :as async]
+            [clj-time.core :as t]
+            [clj-time.coerce :as c]
             [wombats.game.partial :refer [get-partial-arena]]
             [wombats.game.occlusion :refer [get-occluded-arena]]
             [wombats.game.utils :as gu]
             [wombats.arena.utils :as au]
+            [wombats.game.initializers :as i]
+            [wombats.game.finalizers :as f]
             [wombats.game.decisions.turn :refer [turn]]
             [wombats.game.decisions.move :refer [move]]
             [wombats.game.decisions.shoot :refer [shoot]]
             [wombats.game.decisions.smoke :refer [smoke]])
-
   (:import [com.amazonaws.auth
             BasicAWSCredentials]
            [com.amazonaws.services.lambda
@@ -104,7 +106,7 @@
 
   (let [client (lambda-client aws-credentials)
         request (lambda-invoke-request decision-maker-state
-                                       {:code (nippy/thaw code)
+                                       {:code code
                                         :path path})
         result (.invoke client request)
         response (.getPayload result)
@@ -147,9 +149,20 @@
 
 (defn source-decisions
   "Source decisions by running their code through AWS Lambda"
-  [game-state aws-credentials]
-  (let [lambda-chans (get-lamdba-channels game-state aws-credentials)
+  [game-state {:keys [aws-credentials
+                      minimum-frame-time]}]
+  (let [end-time (t/plus (t/now) (t/millis minimum-frame-time))
+        lambda-chans (get-lamdba-channels game-state aws-credentials)
         lambda-responses (async/<!! (async/map vector lambda-chans))]
+
+    ;; If the minimum amount of time has not elapsed we want
+    ;; to wait the remaining time to keep frames consistent
+    (when (t/before? (t/now) end-time)
+      (let [time-remaining
+            (- (c/to-long end-time)
+               (c/to-long (t/now)))]
+        (Thread/sleep time-remaining)))
+
     (reduce
      (fn [game-state-acc {:keys [uuid response channel-error type]}]
        (update game-state-acc
@@ -232,3 +245,11 @@
 (defn process-decisions
   [game-state]
   (reduce process-command game-state (:initiative-order game-state)))
+
+(defn frame-processor
+  [game-state frame-processor-settings]
+  (-> game-state
+      (i/initialize-frame)
+      (source-decisions frame-processor-settings)
+      (process-decisions)
+      (f/finalize-frame)))
