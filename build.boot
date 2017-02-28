@@ -205,7 +205,7 @@
       refresh-db!))
 
 (deftask refresh-qa-ddb
-  "Resets the dev dynamo db"
+  "Resets the qa dynamo db"
   []
   (System/setProperty "APP_ENV" "qa-ddb")
 

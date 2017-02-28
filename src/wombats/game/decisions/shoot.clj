@@ -74,7 +74,7 @@
       wombat-victim?
       (update-in [:players (:uuid cell-contents)]
                  (fn [player]
-                   ;; TODO Apply damage & update score
+                   ;; TODO Update score?
                    player))
 
       ;; If the shooter hit something, update their stats
