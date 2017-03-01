@@ -1,6 +1,7 @@
 (ns wombats.components.pedestal
   (:require [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
+            [wombats.interceptors.error-logger :refer [error-logger]]
             [io.pedestal.http :as http]
             [io.pedestal.http.route :as route]
             [io.pedestal.http.cors :as cors]
@@ -85,6 +86,7 @@
 
     (assoc service-map ::http/interceptors
            (cond-> []
+             true (conj error-logger)
              true (conj log-request)
              true (conj (cors/allow-origin allowed-origins))
              true (conj http/not-found)
