@@ -207,11 +207,12 @@
                           initial-stats]])
 
       (game-sockets/broadcast-game-info ((get-game-state-by-id conn) game-id))
+
       (catch Exception e
-        (clojure.pprint/pprint (-> e
-                                   (.getCause)
-                                   (ex-data)
-                                   (wombat-error)))))))
+        (-> e
+            (.getCause)
+            (ex-data)
+            (wombat-error))))))
 
 (defn- update-frame-state
   [conn]
