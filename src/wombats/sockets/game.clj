@@ -3,6 +3,7 @@
             [clojure.spec :as s]
             [clojure.core.async :refer [put! <! timeout]]
             [clojure.edn :as edn]
+            [taoensso.timbre :as log]
             [datomic.api :as d]
             [clj-time.core :as t]
             [clj-time.periodic :as p]
@@ -49,12 +50,9 @@
   (cleanup-empty-games))
 
 (defn connection-clean-err
-  "If the scheduler fails this will be called
-
-  TODO: Send to logs
-  "
+  "If the scheduler fails this will be called"
   [error]
-  (prn error))
+  (log/error (str "Failed to clean up socket connections: " error)))
 
 (defn start-connection-cleanup
   "Kicks off the cleanup job responsible for removing closed channels
@@ -231,7 +229,9 @@
                :frame/round-start-time nil
                :frame/arena (:simulator-template/arena simulator-template)}})
     (catch Exception e
-      {:error (.getMessage e)})))
+      (let [message (.getMessage e)]
+        (log/error "Failed to build up simulator state: " message)
+        {:error message}))))
 
 (defn- connect-to-simulator
   [datomic]
@@ -299,10 +299,12 @@
 
       (when-not (contains? #{:keep-alive
                              :process-simulation-frame} msg-type)
-        ;; Log in dev mode
-        (println "\n---------- Start Client Message ----------")
-        (clojure.pprint/pprint msg)
-        (println "------------ End Client Message ----------\n\n"))
+
+        (log/info
+         (str
+          "\n---------- Start Client Message ----------\n"
+          msg
+          "\n------------ End Client Message ----------\n\n")))
 
       (msg-fn socket-user msg-payload))))
 
@@ -321,7 +323,7 @@
   [datomic]
   (fn [ws-session send-ch]
     (let [chan-id (.hashCode ws-session)]
-      (prn (str "Connection " chan-id " establised"))
+      (log/info (str "Connection " chan-id " establised"))
 
       (swap! connections assoc chan-id {:session ws-session
                                         :chan send-ch
@@ -333,12 +335,12 @@
 (defn- socket-error
   "Called when there has been an error"
   [t]
-  (prn (str "WS Error " (.getMessage t))))
+  (log/error (str "WS Error " (.getMessage t))))
 
 (defn- socket-close
   "Called when a websocket has closed"
   [code reason]
-  (prn (str "WS Closed - Code: " code " Reason: " reason)))
+  (log/info (str "WS Closed - Code: " code " Reason: " reason)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; PUBLIC FUNCTIONS

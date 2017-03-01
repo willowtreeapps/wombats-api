@@ -2,4 +2,6 @@
            :requires-auth true}
  :pedestal {:port 8888
             :container-options {:ssl? false}}
- :logger {:level :debug}}
+ :logger {:level :debug
+          :appenders [{:type :println
+                       :options {:stream :auto}}]}}

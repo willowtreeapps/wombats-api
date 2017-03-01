@@ -2,4 +2,8 @@
            :requires-auth true}
  :pedestal {:port 8888
             :container-options {:ssl? false}}
- :logger {:level :info}}
+ :logger {:level :warn
+          :appenders [{:type :spit
+                       :options {:fname "logfile.log"}}
+                      {:type :println
+                       :options {:stream :auto}}]}}

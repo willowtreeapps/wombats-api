@@ -22,7 +22,7 @@
                (throw (ex-info "Wombat Error" {:type :wombat-error
                                                :message "Game full."
                                                :details {:game-eid game-eid}
-                                               :code :player-join-db-fn})))
+                                               :code :game-full})))
 
              (when-not wombat-id
                (throw (ex-info "Wombat Error" {:type :wombat-error
@@ -43,7 +43,7 @@
                                                :message (d/invoke db :get-closed-enrollment-error-message status)
                                                :details {:game-eid game-eid
                                                          :status status}
-                                               :code :player-join-db-fn})))
+                                               :code (keyword (str "unable-to-join-" (name status)))})))
 
 
              (when (d/invoke db :player-in-game? db game-id user-eid)
@@ -58,7 +58,8 @@
                                                :message "Color taken."
                                                :details {:game-eid game-eid
                                                          :color color}
-                                               :code :player-join-db-fn})))
+                                               :code :player-join-db-fn
+                                               :field-error :wombat-color})))
 
              ;; This next part builds up the transaction(s)
              ;; 1. Creates the player trx
