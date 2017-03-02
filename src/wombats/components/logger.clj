@@ -3,7 +3,7 @@
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.core :as appenders]))
 
-(def ^:private
+(defonce ^:private
   appender-map
   {:spit appenders/spit-appender
    :println appenders/println-appender})

@@ -69,6 +69,7 @@
              (let [player-tmpid (d/tempid :db.part/user)
                    stats-tmpid (d/tempid :db.part/user)
                    player-trx {:db/id player-tmpid
+                               :player/id (str (java.util.UUID/randomUUID))
                                :player/user user-eid
                                :player/wombat wombat-eid
                                :player/color color}
