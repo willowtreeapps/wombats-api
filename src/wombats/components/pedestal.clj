@@ -37,7 +37,7 @@
                                                                                   ws-routes)})}))
 
 (defn- is-dev?
-  "Determins if the service is running in a dev env."
+  "Determines if the service is running in a dev env."
   [service-map]
   (= (::env service-map) :dev))
 

@@ -19,7 +19,8 @@
       component
       (assoc component :service (bootstrap-service config
                                                    route-map
-                                                   {:datomic datomic
+                                                   {:api-settings (get-in config [:settings :api-settings])
+                                                    :datomic datomic
                                                     :github (get-in config [:settings :github])
                                                     :aws (get-in config [:settings :aws])
                                                     :security (get-in config [:settings :security])}))))
