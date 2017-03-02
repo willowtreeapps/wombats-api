@@ -275,7 +275,8 @@
              game (get-game-by-id game-id)]
 
          (when-not (password-match? game join-params)
-           (wombat-error {:code 000005}))
+           (wombat-error {:code 000005
+                          :field-error :password}))
 
          (when-not game
            (wombat-error {:code 000003
