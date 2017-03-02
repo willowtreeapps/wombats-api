@@ -6,7 +6,7 @@
             [buddy.core.mac :as mac]
             [buddy.core.codecs :as codecs]
             [wombats.interceptors.github :refer [get-github-settings]]
-            [wombats.interceptors.authorization :refer [get-hashing-secret]]
+            [wombats.interceptors.authorization :refer [get-api-uri get-hashing-secret]]
             [wombats.daos.helpers :as dao]
             [wombats.constants :refer [github-access-token-url
                                        github-user-profile-url
@@ -84,12 +84,16 @@
   "Signin handler"
   (interceptor/before
    ::sign-in
-   (fn [{:keys [response] :as context}]
+   (fn [{:keys [response request] :as context}]
      (let [{:keys [client-id signing-secret]} (get-github-settings context)
+           api-uri (get-api-uri context)
            github-redirect (str github-authorize-url
                                 "?client_id=" client-id
                                 "&scope=" github-scopes
-                                "&state=" signing-secret)]
+                                "&state=" signing-secret
+                                "&redirect_uri=" (str api-uri
+                                                      "/api/v1/auth/github/callback?referer=" 
+                                                      (get-formatted-referer request)))]
 
        (assoc context :response (assoc response
                                        :headers {"Location" github-redirect}
@@ -111,9 +115,8 @@
      (let [{:keys [client-id
                    client-secret
                    signing-secret]} (get-github-settings context)
-           {:keys [code state]} (:query-params request)
-           web-client-redirect (get-formatted-referer request)
-           failed-callback (redirect-home context web-client-redirect)]
+           {:keys [code referer state]} (:query-params request)
+           failed-callback (redirect-home context referer)]
 
        (if (= state signing-secret)
          (let [github-access-token @(get-access-token {:client_id client-id
@@ -134,7 +137,7 @@
                                                         github-access-token
                                                         user-access-token
                                                         (:user/id current-user))]
-               (redirect-home context web-client-redirect user-access-token))
+               (redirect-home context referer user-access-token))
              failed-callback))
          failed-callback)))))
 

@@ -6,7 +6,8 @@
             [wombats.interceptors.dao :refer [add-dao-functions]]
             [wombats.interceptors.current-user :refer [add-current-user]]
             [wombats.interceptors.github :refer [add-github-settings]]
-            [wombats.interceptors.authorization :refer [add-security-settings
+            [wombats.interceptors.authorization :refer [add-api-settings
+                                                        add-security-settings
                                                         authorize]]
             [wombats.interceptors.error-handler :refer [service-error-handler]]
             [wombats.handlers.swagger :as swagger]
@@ -22,7 +23,8 @@
 
 (defn new-api-router
   [services]
-  (let [datomic (get-in services [:datomic :database])
+  (let [api-settings (:api-settings services)
+        datomic (get-in services [:datomic :database])
         github (:github services)
         security (:security services)
         aws-credentials (:aws services)]
@@ -92,7 +94,8 @@
 
         ["/auth"
          ["/github"
-          ^:interceptors [(add-security-settings security)
+          ^:interceptors [(add-api-settings api-settings)
+                          (add-security-settings security)
                           (add-github-settings github)]
           ["/signin"
            {:get auth/signin}]

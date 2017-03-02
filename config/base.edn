@@ -1,4 +1,5 @@
-{:datomic {:uri #immuconf/override "Specify the database uri in the envioronment config"
+{:api-settings {:uri #immuconf/override "Specify the uri where the API is hosted"}
+ :datomic {:uri #immuconf/override "Specify the database uri in the envioronment config"
            :requires-auth #immuconf/default false}
  :pedestal {:port #immuconf/override "Specify pedestal's http port in the environment config"
             :type :jetty

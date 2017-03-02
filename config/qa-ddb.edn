@@ -1,4 +1,5 @@
-{:datomic {:uri "datomic:ddb://us-east-1/wombats/qa"
+{:api-settings {:uri "http://qa.api.wombats.io"}
+ :datomic {:uri "datomic:ddb://us-east-1/wombats/qa"
            :requires-auth true}
  :pedestal {:port 8888
             :container-options {:ssl? false}}
