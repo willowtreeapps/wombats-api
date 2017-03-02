@@ -275,7 +275,8 @@
              game (get-game-by-id game-id)]
 
          (when-not (password-match? game join-params)
-           (wombat-error {:code 000005}))
+           (wombat-error {:code 000005
+                          :field-error :password}))
 
          (when-not game
            (wombat-error {:code 000003
@@ -292,7 +293,7 @@
                           :details {:user-eid user-eid
                                     :wombat-eid wombat-eid}}))
 
-         @(add-player-to-game game user-eid wombat-eid color)
+         (add-player-to-game game user-eid wombat-eid color)
 
          (assoc context :response (assoc response
                                          :status 200

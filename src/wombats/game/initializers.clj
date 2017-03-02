@@ -11,7 +11,7 @@
 
 (defn- add-players-to-game
   "Adds players to random cells in the arena"
-  [{:keys [players frame] :as game-state}]
+  [{:keys [players frame arena-config] :as game-state}]
 
   (update-in
    game-state
@@ -22,8 +22,7 @@
         (let [formatted-player (-> (:wombat a-utils/arena-items)
                                    (merge {:uuid player-uuid
                                            :color (:player/color player)
-                                           ;; TODO Pull from config
-                                           :hp 100
+                                           :hp (:arena/wombat-hp arena-config)
                                            :orientation (g-utils/rand-orientation)}))]
           (a-utils/sprinkle new-arena formatted-player)))
       arena

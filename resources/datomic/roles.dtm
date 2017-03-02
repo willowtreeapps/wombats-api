@@ -1,0 +1,4 @@
+[[:db/add #db/id [:db.part/user] :db/ident :user.roles/user]
+ [:db/add #db/id [:db.part/user] :db/ident :user.roles/admin]
+ [:db/add #db/id [:db.part/user] :db/ident :user.roles/contributor]
+ [:db/add #db/id [:db.part/user] :db/ident :user.roles/coordinator]]

@@ -1,5 +1,8 @@
-{:datomic {:uri "datomic:free://localhost:4334/wombats-dev"
+{:api-settings {:uri "http://localhost:8888"}
+ :datomic {:uri "datomic:free://localhost:4334/wombats-dev"
            :requires-auth false}
  :pedestal {:port 8888
             :container-options {:ssl? false}}
- :logger {:level :debug}}
+ :logger {:level :debug
+          :appenders [{:type :println
+                       :options {:stream :auto}}]}}

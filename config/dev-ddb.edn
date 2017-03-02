@@ -1,5 +1,8 @@
-{:datomic {:uri "datomic:ddb://us-east-1/wombats/dev"
+{:api-settings {:uri "http://dev.api.wombats.io"}
+ :datomic {:uri "datomic:ddb://us-east-1/wombats/dev"
            :requires-auth true}
  :pedestal {:port 8888
             :container-options {:ssl? false}}
- :logger {:level :debug}}
+ :logger {:level :debug
+          :appenders [{:type :println
+                       :options {:stream :auto}}]}}

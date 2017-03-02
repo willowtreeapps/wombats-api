@@ -1,9 +1,9 @@
 (ns wombats.components.datomic
   (:require [clojure.java.io :as io]
+            [taoensso.timbre :as log]
             [io.rkn.conformity :as c]
             [com.stuartsierra.component :as component]
-            [datomic.api :as d]
-            [io.pedestal.log :as log]))
+            [datomic.api :as d]))
 
 ;; Private helper functions
 
@@ -23,9 +23,10 @@
                       (add-auth-to-conn-uri conn-uri access-key-id secret-key)
                       conn-uri)
         _ (d/create-database datomic-uri)
-        conn (d/connect datomic-uri)
-        schema (c/read-resource "datomic/schema.edn")]
-    (d/transact conn schema)
+        conn (d/connect datomic-uri)]
+
+    (log/info (str "Connecting to Datomic at: " conn-uri))
+
     {:conn conn}))
 
 ;; Component

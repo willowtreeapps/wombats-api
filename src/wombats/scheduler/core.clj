@@ -1,5 +1,6 @@
 (ns wombats.scheduler.core
   (:require [chime :refer [chime-at]]
+            [taoensso.timbre :as log]
             [clj-time.core :as t]
             [clj-time.coerce :as c]))
 
@@ -14,18 +15,14 @@
       (chime-at [(-> start-time)]
                 (fn [time]
                   (start-round-fn game-id))
-
-                ;; TODO: Proper logging
                 {:on-finished
                  (fn []
-                   (prn "Started game."))
-
+                   (log/info (str "Starting scheduled round in game " game-id)))
                  :error-handler
                  (fn [e]
-                   (prn "Error starting game."))}))
+                   (log/error (str "Error processing scheduled game " game-id)))}))
     (catch Exception e
-      ;; TODO Add to logger
-      (prn e))))
+      (log/error (str "Error scheduling game " game-id)))))
 
 (defn schedule-next-round
   [game-state round-start-fn]

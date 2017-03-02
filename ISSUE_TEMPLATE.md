@@ -23,7 +23,7 @@ A feature request constitutes any feature not currently supported by the API / G
 
 ## GAMEPLAY REQUEST?
 
-A gameplay request constitutes any feature that would imporve or modify the gameplay experience of Wombats. Examples would be, additional actions (i.e. morter, play dead, etc...), or additional arena elements (i.e. lava, jetpack, etc...).
+A gameplay request constitutes any feature that would improve or modify the gameplay experience of Wombats. Examples would be, additional actions (i.e. mortar, play dead, etc...), or additional arena elements (i.e. lava, jetpack, etc...).
 
 - Describe the gameplay enhancement you would like to see.
 - Provide details on expected behavior.

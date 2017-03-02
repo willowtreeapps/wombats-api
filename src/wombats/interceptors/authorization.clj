@@ -23,6 +23,15 @@
   [context]
   (get-in context [::security-settings :signing-secret]))
 
+(defn add-api-settings
+  [api-settings]
+  {:name ::api-settings
+   :enter (fn [context] (assoc context ::api-settings api-settings))})
+
+(defn get-api-uri
+  [context]
+  (get-in context [::api-settings :uri]))
+
 (defn- user-has-role?
   "Checks to see if a user has a role contained in the passed in role set"
   [user roles]

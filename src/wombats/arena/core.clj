@@ -14,10 +14,10 @@
   [{:keys [config arena] :as arena-map}]
   (if (:arena/perimeter config)
     (let [{dimx :arena/width
-           dimy :arena/height} config
+           dimy :arena/height
+           wood-wall-hp :arena/wood-wall-hp} config
           wall (merge (:wood-barrier a-utils/arena-items)
-                      ;; TODO Pull from config
-                      {:hp 30})
+                      {:hp wood-wall-hp})
           xform (map-indexed (fn [y row]
                                (if (#{0 (dec dimy)} y)
                                  (vec (map #(assoc % :contents (a-utils/ensure-uuid wall)) row))
@@ -106,14 +106,13 @@
         [l' arena]))))
 
 (defn- get-wall-contents
-  [wall-type]
+  [wall-type {:keys [:arena/wood-wall-hp
+                     :arena/steel-wall-hp]}]
   (case wall-type
     :arena/wood-walls (merge (:wood-barrier a-utils/arena-items)
-                             {;; TODO Pull from config
-                              :hp 20})
+                             {:hp wood-wall-hp})
     :arena/steel-walls (merge (:steel-barrier a-utils/arena-items)
-                              {;; TODO Pull from config
-                               :hp 200})))
+                              {:hp steel-wall-hp})))
 
 (defn- place-walls
   "places walls in an organized structures around the arena"
@@ -137,7 +136,7 @@
                                                     arena-dimensions
                                                     arena
 
-                                                    (get-wall-contents wall-type))]
+                                                    (get-wall-contents wall-type config))]
               (recur arena'
                      (- walls-remaining walls-placed)
                      (dec tries)))
@@ -152,7 +151,8 @@
 (defn generate-arena
   [{:keys [:arena/food
            :arena/poison
-           :arena/zakano] :as arena-config}]
+           :arena/zakano
+           :arena/zakano-hp] :as arena-config}]
 
   (-> {:config arena-config
        :arena nil}
@@ -164,6 +164,5 @@
       (add-to-arena (:poison a-utils/arena-items) poison)
       (add-to-arena (merge (:zakano a-utils/arena-items)
                            {:orientation (g-utils/rand-orientation)
-                            ;; TODO Add to arena config
-                            :hp 50}) zakano)
+                            :hp zakano-hp}) zakano)
       (:arena)))
