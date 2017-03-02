@@ -115,7 +115,7 @@
   (require 'user))
 
 (deftask dev-ddb
-  "Start"[]
+  []
   (set-env! :source-paths #(conj % "dev/src"))
   (System/setProperty "APP_ENV" "dev-ddb")
 

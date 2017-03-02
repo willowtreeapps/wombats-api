@@ -3,6 +3,7 @@
             [taoensso.nippy :as nippy]
             [wombats.constants :refer [initial-stats]]
             [wombats.game.core :as game]
+            [wombats.handlers.helpers :refer [wombat-error]]
             [wombats.game.utils :refer [decision-maker-state]]
             [wombats.sockets.game :as game-sockets]
             [wombats.daos.helpers :refer [get-entity-by-prop
@@ -196,14 +197,22 @@
       wombat-eid
       color]
 
-    (d/transact conn [[:player-join
-                       game-eid
-                       user-eid
-                       wombat-eid
-                       color
-                       initial-stats]])
+    ;; TODO Move to error handler
+    (try
+      @(d/transact conn [[:player-join
+                          game-eid
+                          user-eid
+                          wombat-eid
+                          color
+                          initial-stats]])
 
-    (game-sockets/broadcast-game-info ((get-game-state-by-id conn) game-id))))
+      (game-sockets/broadcast-game-info ((get-game-state-by-id conn) game-id))
+
+      (catch Exception e
+        (-> e
+            (.getCause)
+            (ex-data)
+            (wombat-error))))))
 
 (defn- update-frame-state
   [conn]
