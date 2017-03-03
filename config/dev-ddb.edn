@@ -1,6 +1,7 @@
 {:api-settings {:uri "http://dev.api.wombats.io"
                 :lambda {:clj "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure"
-                         :js "arn:aws:lambda:us-east-1:356223155086:function:wombats-javascript"}}
+                         :js "arn:aws:lambda:us-east-1:356223155086:function:wombats-javascript"
+                         :py "arn:aws:lambda:us-east-1:356223155086:function:wombats-python"}}
  :datomic {:uri "datomic:ddb://us-east-1/wombats/dev"
            :requires-auth true}
  :pedestal {:port 8888
