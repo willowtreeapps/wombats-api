@@ -9,12 +9,13 @@
     (if scheduler
       component
       (let [conn (get-in datomic [:database :conn])
-            aws-credentials (get-in config [:settings :aws])]
+            aws-credentials (get-in config [:settings :aws])
+            lambda-settings (get-in config [:settings :api-settings :lambda])]
         ;; Go through all the pending games, and schedule them
         (assoc component
                :scheduler
                (scheduler/schedule-pending-games (game/get-all-pending-games conn)
-                                                 (game/start-game conn aws-credentials))))))
+                                                 (game/start-game conn aws-credentials lambda-settings))))))
   (stop [component]
     (if-not scheduler
       component

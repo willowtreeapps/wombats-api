@@ -28,7 +28,7 @@
 
 (defn- game-loop
   "Game loop"
-  [game-state update-frame close-round close-game aws-credentials]
+  [game-state update-frame close-round close-game aws-credentials lambda-settings]
   (loop [current-game-state game-state]
     (let [round-is-over? (round-over? current-game-state)]
       (cond-> current-game-state
@@ -43,7 +43,8 @@
         ;; Process the frame if the round isn't over
         (not round-is-over?)
         (-> (p/frame-processor {:aws-credentials aws-credentials
-                                :minimum-frame-time min-lambda-runtime})
+                                :minimum-frame-time min-lambda-runtime}
+                               lambda-settings)
             (game-sockets/broadcast-arena)
             (game-sockets/broadcast-game-info)
             (push-frame-to-datomic update-frame)
@@ -56,7 +57,8 @@
     close-round    :close-round
     close-game     :close-game
     round-start-fn :round-start-fn}
-   aws-credentials]
+   aws-credentials
+   lambda-settings]
 
   (-> game-state
       (i/initialize-round)
@@ -65,7 +67,8 @@
       (game-loop update-frame
                  close-round
                  close-game
-                 aws-credentials)
+                 aws-credentials
+                 lambda-settings)
       (game-sockets/broadcast-game-info)
       (game-sockets/broadcast-arena)
       (scheduler/schedule-next-round round-start-fn)))

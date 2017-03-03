@@ -232,7 +232,7 @@
 
 (defn start-game
   "Transitions the game status to active"
-  [conn aws-credentials]
+  [conn aws-credentials lambda-settings]
   (fn [game-id]
     (let [game-state ((get-game-state-by-id conn) game-id)
           {game-eid :db/id} game-state]
@@ -248,7 +248,8 @@
                            :close-round (close-round conn)
                            :close-game (close-game-state conn)
                            :round-start-fn (start-game conn aws-credentials)}
-                          aws-credentials))
+                          aws-credentials
+                          lambda-settings))
 
       (d/transact-async conn [{:game/id game-id
                                :game/status :active}]))))

@@ -10,7 +10,8 @@
   This makes no assumption of authentication / authorization which should be handled prior to gaining
   access to these functions."
   [{:keys [conn] :as datomic}
-   aws-credentials]
+   aws-credentials
+   lambda-settings]
 
   {;; User DAOS
    :get-users (user/get-users conn)
@@ -48,7 +49,7 @@
    :add-game (game/add-game conn)
    :retract-game (game/retract-game conn)
    :add-player-to-game (game/add-player-to-game conn)
-   :start-game (game/start-game conn aws-credentials)
+   :start-game (game/start-game conn aws-credentials lambda-settings)
    ;; Simulator DAOS
    :get-simulator-arena-templates (simulator/get-simulator-arena-templates conn)
    :get-simulator-arena-template-by-id (simulator/get-simulator-arena-template-by-id conn)})
