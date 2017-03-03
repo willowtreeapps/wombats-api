@@ -1,4 +1,6 @@
-{:api-settings {:uri #immuconf/override "Specify the uri where the API is hosted"}
+{:api-settings {:uri #immuconf/override "Specify the uri where the API is hosted"
+                :lambda {:clj #immuconf/override "Specify the uri for the clj lambda function"
+                         :js #immuconf/override "Specify the uri for the js lambda function"}}
  :datomic {:uri #immuconf/override "Specify the database uri in the envioronment config"
            :requires-auth #immuconf/default false}
  :pedestal {:port #immuconf/override "Specify pedestal's http port in the environment config"

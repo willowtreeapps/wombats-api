@@ -92,22 +92,27 @@
                              :state player-state}))
 
 (defn- lambda-invoke-request
-  [player-state bot-code]
-  (let [request (new InvokeRequest)]
-    ;; TODO Move to config
-    (.setFunctionName request "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure")
-    (.setPayload request (lambda-request-body player-state bot-code))
+  [player-state {:keys [path] :as bot-code} lambda-settings]
+  (let [path-ext (keyword (last (clojure.string/split path #"\.")))
+        lambda-uri (get lambda-settings path-ext)
+        request (new InvokeRequest)
+        payload (lambda-request-body player-state bot-code)]
+
+    (.setFunctionName request lambda-uri)
+    (.setPayload request payload)
     request))
 
 (defn- lambda-request
   [decision-maker-state
    {:keys [code path]}
-   aws-credentials]
+   aws-credentials
+   lambda-settings]
 
   (let [client (lambda-client aws-credentials)
         request (lambda-invoke-request decision-maker-state
                                        {:code code
-                                        :path path})
+                                        :path path}
+                                       lambda-settings)
         result (.invoke client request)
         response (.getPayload result)
         response-string (new String (.array response) "UTF-8")
@@ -120,9 +125,11 @@
   (let [key-name (if (= type :wombat) :players type)]
     (get-in game-state [key-name uuid :state :code])))
 
-(defn- get-lamdba-channels
+(defn- get-lambda-channels
   "Kicks off the AWS Lambda process"
-  [{:keys [initiative-order] :as game-state} aws-credentials]
+  [{:keys [initiative-order] :as game-state}
+   aws-credentials
+   lambda-settings]
   (map (fn [{:keys [uuid type]}]
          (let [ch (async/chan 1)]
            (async/go
@@ -133,7 +140,8 @@
                                                   (get-decision-maker-code game-state
                                                                            uuid
                                                                            type)
-                                                  aws-credentials)]
+                                                  aws-credentials
+                                                  lambda-settings)]
 
                  (async/>! ch {:uuid uuid
                                :response lambda-resp
@@ -149,10 +157,14 @@
 
 (defn source-decisions
   "Source decisions by running their code through AWS Lambda"
-  [game-state {:keys [aws-credentials
-                      minimum-frame-time]}]
+  [game-state
+   {:keys [aws-credentials
+           minimum-frame-time]}
+   lambda-settings]
   (let [end-time (t/plus (t/now) (t/millis minimum-frame-time))
-        lambda-chans (get-lamdba-channels game-state aws-credentials)
+        lambda-chans (get-lambda-channels game-state
+                                          aws-credentials
+                                          lambda-settings)
         lambda-responses (async/<!! (async/map vector lambda-chans))]
 
     ;; If the minimum amount of time has not elapsed we want
@@ -247,9 +259,9 @@
   (reduce process-command game-state (:initiative-order game-state)))
 
 (defn frame-processor
-  [game-state frame-processor-settings]
+  [game-state frame-processor-settings lambda-settings]
   (-> game-state
       (i/initialize-frame)
-      (source-decisions frame-processor-settings)
+      (source-decisions frame-processor-settings lambda-settings)
       (process-decisions)
       (f/finalize-frame)))
