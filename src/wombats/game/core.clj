@@ -43,7 +43,8 @@
         ;; Process the frame if the round isn't over
         (not round-is-over?)
         (-> (p/frame-processor {:aws-credentials aws-credentials
-                                :minimum-frame-time min-lambda-runtime}
+                                :minimum-frame-time min-lambda-runtime
+                                :attach-mini-maps false}
                                lambda-settings)
             (game-sockets/broadcast-arena)
             (game-sockets/broadcast-game-info)

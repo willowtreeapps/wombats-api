@@ -38,7 +38,7 @@
 (defn- contains-occluding-metadata
   [metadata]
   (let [types (vec (map #(:type %) metadata))]
-    (contains? types :smoke)))
+    (contains? (set types) :smoke)))
 
 (defn- is-non-transparent-cell?
   "Determines if a cell is transparent"
