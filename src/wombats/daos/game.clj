@@ -1,5 +1,6 @@
 (ns wombats.daos.game
   (:require [datomic.api :as d]
+            [taoensso.timbre :as log]
             [taoensso.nippy :as nippy]
             [wombats.constants :refer [initial-stats]]
             [wombats.game.core :as game]
@@ -243,13 +244,16 @@
 
       ;; We put this in a future so that it gets run on a separate thread
       (future
-        (game/start-round game-state
-                          {:update-frame (update-frame-state conn)
-                           :close-round (close-round conn)
-                           :close-game (close-game-state conn)
-                           :round-start-fn (start-game conn aws-credentials)}
-                          aws-credentials
-                          lambda-settings))
+        (try
+          (game/start-round game-state
+                            {:update-frame (update-frame-state conn)
+                             :close-round (close-round conn)
+                             :close-game (close-game-state conn)
+                             :round-start-fn (start-game conn aws-credentials lambda-settings)}
+                            aws-credentials
+                            lambda-settings)
+          (catch Exception e
+            (log/error e))))
 
       (d/transact-async conn [{:game/id game-id
                                :game/status :active}]))))
