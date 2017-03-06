@@ -109,7 +109,8 @@
   [{:keys [game-config] :as game-state}]
 
   (get-message :game-info
-               {:game/round-start-time (get-start-time game-state)
+               {:game/id (:game/id game-config)
+                :game/round-start-time (get-start-time game-state)
                 :game/round-number (get-round-number game-state)
                 :game/max-players (:game/max-players game-config)
                 :game/player-count (count (:players game-state))
