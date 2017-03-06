@@ -109,14 +109,15 @@
   [{:keys [game-config] :as game-state}]
 
   (get-message :game-info
-               {:round-start-time (get-start-time game-state)
-                :round-number (get-round-number game-state)
-                :max-players (:game/max-players game-config)
-                :player-count (count (:players game-state))
-                :name (:game/name game-config)
-                :status (:game/status game-config)
-                :game-winner (get-game-winner game-state)
-                :stats (vec (get-player-stats game-state))}))
+               {:game/round-start-time (get-start-time game-state)
+                :game/round-number (get-round-number game-state)
+                :game/max-players (:game/max-players game-config)
+                :game/players (:players game-state)
+                :game/name (:game/name game-config)
+                :game/status (:game/status game-config)
+                :game/winner (get-game-winner game-state)
+                :game/stats (vec (get-player-stats game-state))
+                :game/is-private (:game/is-private game-config)}))
 
 (defn handshake-message
   [chan-id]
