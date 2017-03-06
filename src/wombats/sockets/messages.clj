@@ -70,15 +70,15 @@
 (defn- filter-winners
   [sorted-stats]
   (reduce (fn [winners player]
-               (if (empty? winners)
-                 (conj winners player)
-                 (if (= (-> winners
-                            (first)
-                            (get-in [:stats :stats/score]))
-                        (get-in player [:stats :stats/score]))
-                   (conj winners player)
-                   winners)))
-             [] sorted-stats))
+            (if (empty? winners)
+              (conj winners player)
+              (if (= (-> winners
+                         (first)
+                         (get-in [:stats :stats/score]))
+                     (get-in player [:stats :stats/score]))
+                (conj winners player)
+                winners)))
+          [] sorted-stats))
 
 (defn- sort-by-stats
   [players]
@@ -108,17 +108,24 @@
   "Pulls out relevant info from game-state and sends it in join-game"
   [{:keys [game-config] :as game-state}]
 
-  (get-message :game-info
-               {:game/id (:game/id game-config)
-                :game/start-time (get-start-time game-state)
-                :game/round-number (get-round-number game-state)
-                :game/max-players (:game/max-players game-config)
-                :game/player-count (count (:players game-state))
-                :game/name (:game/name game-config)
-                :game/status (:game/status game-config)
-                :game/winner (get-game-winner game-state)
-                :game/stats (vec (get-player-stats game-state))
-                :game/is-private (:game/is-private game-config)}))
+  ;; TODO: #305 Once game-state is more compatible
+  ;;       w/ game we won't need this conversion.
+  (let [players (map (fn [[_ v]]
+                       {:player/user {:user/github-username
+                                      (get-in v [:user :user/github-username])}})
+                     (:players game-state))]
+
+    (get-message :game-info
+                 {:game/id (:game/id game-config)
+                  :game/start-time (get-start-time game-state)
+                  :game/round-number (get-round-number game-state)
+                  :game/max-players (:game/max-players game-config)
+                  :game/players players
+                  :game/name (:game/name game-config)
+                  :game/status (:game/status game-config)
+                  :game/winner (get-game-winner game-state)
+                  :game/stats (vec (get-player-stats game-state))
+                  :game/is-private (:game/is-private game-config)})))
 
 (defn handshake-message
   [chan-id]
