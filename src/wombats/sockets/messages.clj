@@ -112,7 +112,7 @@
                {:game/round-start-time (get-start-time game-state)
                 :game/round-number (get-round-number game-state)
                 :game/max-players (:game/max-players game-config)
-                :game/players (:players game-state)
+                :game/player-count (count (:players game-state))
                 :game/name (:game/name game-config)
                 :game/status (:game/status game-config)
                 :game/winner (get-game-winner game-state)
