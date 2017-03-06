@@ -168,17 +168,33 @@
                  (update :simulator-template/arena-template lookup-arena-ref conn)))
        (d/transact conn)))
 
-(defn- refresh-db!
+(defn- seed-db!
   [uri]
-  (d/delete-database uri)
-  (d/create-database uri)
   (let [conn (d/connect uri)]
     @(db-fns/seed-database-functions conn)
     (transact-all conn "resources/datomic/schema.dtm")
     (transact-all conn "resources/datomic/roles.dtm")
     (transact-all conn "resources/datomic/users.dtm")
     (transact-all conn "resources/datomic/arena-templates.dtm")
-    @(seed-simulator-templates conn)))
+    @(seed-simulator-templates conn))
+  uri)
+
+(defn- create-db!
+  [uri]
+  (d/create-database uri)
+  uri)
+
+(defn- delete-db!
+  [uri]
+  (d/delete-database uri)
+  uri)
+
+(defn- refresh-db!
+  [uri]
+  (-> uri
+      delete-db!
+      create-db!
+      seed-db!))
 
 (deftask refresh-db-functions
   "resets the transactors in the db"
@@ -211,6 +227,15 @@
 
   (-> (build-connection-string)
       refresh-db!))
+
+#_(deftask seed-prod
+  "Seeds the prod dynamo db"
+  []
+  (System/setProperty "APP_ENV" "prod-ddb")
+
+  (-> (build-connection-string)
+      create-db!
+      seed-db!))
 
 (deftask build
   "Creates a new build"
