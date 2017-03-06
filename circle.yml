@@ -30,6 +30,10 @@ deployment:
     commands:
       - ./deploy.sh deploy@dev.api.wombats.io
   qa:
-    branch: master
+    branch: qa
     commands:
       - ./deploy.sh deploy@qa.api.wombats.io
+  prod:
+    branch: master
+    commands:
+      - ./deploy.sh deploy@api.wombats.io
