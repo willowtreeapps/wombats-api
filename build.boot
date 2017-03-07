@@ -204,7 +204,16 @@
       (d/connect)
       (db-fns/seed-database-functions)))
 
-(deftask refresh-db
+(deftask seed-local
+  "Seeds the dev dynamo db"
+  []
+  (System/setProperty "APP_ENV" "dev")
+
+  (-> (build-connection-string)
+      create-db!
+      seed-db!))
+
+(deftask refresh-local
   "resets the database"
   []
   (System/setProperty "APP_ENV" "dev")
@@ -212,13 +221,46 @@
   (-> (build-connection-string)
       refresh-db!))
 
-(deftask refresh-dev-ddb
+(deftask delete-local
+  "deletes the local db"
+  []
+  (System/setProperty "APP_ENV" "dev")
+
+  (-> (build-connection-string)
+      delete-db!))
+
+(deftask seed-dev
+  "Seeds the dev dynamo db"
+  []
+  (System/setProperty "APP_ENV" "dev-ddb")
+
+  (-> (build-connection-string)
+      create-db!
+      seed-db!))
+
+(deftask refresh-dev
   "Resets the dev dynamo db"
   []
   (System/setProperty "APP_ENV" "dev-ddb")
 
   (-> (build-connection-string)
       refresh-db!))
+
+(deftask delete-dev
+  []
+  (System/setProperty "APP_ENV" "dev-ddb")
+
+  (-> (build-connection-string)
+      delete-db!))
+
+(deftask seed-qa
+  "Seeds the dev dynamo db"
+  []
+  (System/setProperty "APP_ENV" "qa-ddb")
+
+  (-> (build-connection-string)
+      create-db!
+      seed-db!))
 
 (deftask refresh-qa-ddb
   "Resets the qa dynamo db"
@@ -227,6 +269,13 @@
 
   (-> (build-connection-string)
       refresh-db!))
+
+(deftask delete-qa
+  []
+  (System/setProperty "APP_ENV" "qa-ddb")
+
+  (-> (build-connection-string)
+      delete-db!))
 
 #_(deftask seed-prod
   "Seeds the prod dynamo db"

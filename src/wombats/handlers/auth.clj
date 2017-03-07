@@ -92,7 +92,7 @@
                                 "&scope=" github-scopes
                                 "&state=" signing-secret
                                 "&redirect_uri=" (str api-uri
-                                                      "/api/v1/auth/github/callback?referer=" 
+                                                      "/api/v1/auth/github/callback?referer="
                                                       (get-formatted-referer request)))]
 
        (assoc context :response (assoc response
@@ -122,8 +122,6 @@
          (let [github-access-token @(get-access-token {:client_id client-id
                                                        :client_secret client-secret
                                                        :code code})
-               ;; TODO BUG If the user does not have their email setup on GH this
-               ;; step will fail
                user (when github-access-token
                       (parse-user-response @(get-github-user github-access-token)))
                create-or-update-user (dao/get-fn :create-or-update-user context)
