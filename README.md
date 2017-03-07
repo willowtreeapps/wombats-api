@@ -28,7 +28,7 @@ This is where all project decisions that affect the team will be logged.
 
 ### Liscense Information
 
-MIT License 
+MIT License
 
 Copyright (c) 2017 WillowTree, Inc.
 

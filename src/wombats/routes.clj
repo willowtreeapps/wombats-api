@@ -27,7 +27,8 @@
         datomic (get-in services [:datomic :database])
         github (:github services)
         security (:security services)
-        aws-credentials (:aws services)]
+        aws-credentials (:aws services)
+        lambda-settings (get-in services [:api-settings :lambda])]
     [[["/"
        ^:interceptors [html-body]
        {:get static/home-page}]
@@ -38,7 +39,8 @@
                        content-neg-intc
                        (body-params)
                        (add-dao-functions (dao/init-dao-map datomic
-                                                            aws-credentials))
+                                                            aws-credentials
+                                                            lambda-settings))
                        add-current-user]
        ["/docs" {:get swagger/get-specs}]
        ["/v1"
@@ -108,5 +110,6 @@
   [services]
   (let [datomic (get-in services [:datomic :database])
         aws-credentials (:aws services)
-        dao-map (dao/init-dao-map datomic aws-credentials)]
-    {"/ws/game" (game-ws/in-game-ws dao-map aws-credentials)}))
+        lambda-settings (get-in services [:api-settings :lambda])
+        dao-map (dao/init-dao-map datomic aws-credentials lambda-settings)]
+    {"/ws/game" (game-ws/in-game-ws dao-map aws-credentials lambda-settings)}))

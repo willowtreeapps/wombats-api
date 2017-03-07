@@ -19,13 +19,6 @@
             AWSLambdaClient
             model.InvokeRequest]))
 
-(defn- add-global-coords
-  "Add the global coordinates of decision maker"
-  [state {:keys [frame]} uuid]
-  (assoc state
-         :global-coords
-         (gu/get-item-coords (:frame/arena frame) uuid)))
-
 (defn- add-local-coords
   "Add the coordinates that a decision maker is locally positioned at (in partial view)"
   [{:keys [arena] :as state} uuid]
@@ -72,14 +65,15 @@
                                                        uuid)))
 
 (defn- calculate-decision-maker-state
-  [{:keys [players zakano frame] :as game-state} uuid type]
-  (let [arena (:frame/arena frame)]
-    (-> {}
-        (add-global-coords game-state uuid)
-        (add-partial-view game-state type)
-        (add-local-coords uuid)
-        (add-occlusion-view game-state type)
-        (add-custom-state game-state uuid type))))
+  [game-state uuid type]
+  (let [global-coords (gu/get-item-coords (get-in game-state [:frame :frame/arena]) uuid)]
+    (if global-coords
+      (-> {:global-coords global-coords}
+          (add-partial-view game-state type)
+          (add-local-coords uuid)
+          (add-occlusion-view game-state type)
+          (add-custom-state game-state uuid type))
+      game-state)))
 
 (defn- lambda-client
   [{:keys [access-key-id secret-key]}]
@@ -92,22 +86,27 @@
                              :state player-state}))
 
 (defn- lambda-invoke-request
-  [player-state bot-code]
-  (let [request (new InvokeRequest)]
-    ;; TODO Move to config
-    (.setFunctionName request "arn:aws:lambda:us-east-1:356223155086:function:wombats-clojure")
-    (.setPayload request (lambda-request-body player-state bot-code))
+  [player-state {:keys [path] :as bot-code} lambda-settings]
+  (let [path-ext (keyword (last (clojure.string/split path #"\.")))
+        lambda-uri (get lambda-settings path-ext)
+        request (new InvokeRequest)
+        payload (lambda-request-body player-state bot-code)]
+
+    (.setFunctionName request lambda-uri)
+    (.setPayload request payload)
     request))
 
 (defn- lambda-request
   [decision-maker-state
    {:keys [code path]}
-   aws-credentials]
+   aws-credentials
+   lambda-settings]
 
   (let [client (lambda-client aws-credentials)
         request (lambda-invoke-request decision-maker-state
                                        {:code code
-                                        :path path})
+                                        :path path}
+                                       lambda-settings)
         result (.invoke client request)
         response (.getPayload result)
         response-string (new String (.array response) "UTF-8")
@@ -120,9 +119,11 @@
   (let [key-name (if (= type :wombat) :players type)]
     (get-in game-state [key-name uuid :state :code])))
 
-(defn- get-lamdba-channels
+(defn- get-lambda-channels
   "Kicks off the AWS Lambda process"
-  [{:keys [initiative-order] :as game-state} aws-credentials]
+  [{:keys [initiative-order] :as game-state}
+   aws-credentials
+   lambda-settings]
   (map (fn [{:keys [uuid type]}]
          (let [ch (async/chan 1)]
            (async/go
@@ -133,7 +134,8 @@
                                                   (get-decision-maker-code game-state
                                                                            uuid
                                                                            type)
-                                                  aws-credentials)]
+                                                  aws-credentials
+                                                  lambda-settings)]
 
                  (async/>! ch {:uuid uuid
                                :response lambda-resp
@@ -149,10 +151,14 @@
 
 (defn source-decisions
   "Source decisions by running their code through AWS Lambda"
-  [game-state {:keys [aws-credentials
-                      minimum-frame-time]}]
+  [game-state
+   {:keys [aws-credentials
+           minimum-frame-time]}
+   lambda-settings]
   (let [end-time (t/plus (t/now) (t/millis minimum-frame-time))
-        lambda-chans (get-lamdba-channels game-state aws-credentials)
+        lambda-chans (get-lambda-channels game-state
+                                          aws-credentials
+                                          lambda-settings)
         lambda-responses (async/<!! (async/map vector lambda-chans))]
 
     ;; If the minimum amount of time has not elapsed we want
@@ -179,15 +185,15 @@
 
                        decision-maker-update
                        (assoc decision-maker :state
-                              (merge (:state decision-maker)
-                                     {;; Note: Saved state should not be updated
-                                      ;;       to nil on error
-                                      :saved-state (or response-state
-                                                       (:saved-state decision-maker))
-                                      :error user-code-stacktrace
-                                      :command response-command}))]
+                              (-> {}
+                                  (merge (:state decision-maker))
+                                  (merge {;; Note: Saved state should not be updated
+                                          ;;       to nil on error
+                                          :saved-state (or response-state
+                                                           (:saved-state decision-maker))
+                                          :error user-code-stacktrace
+                                          :command response-command})))]
                    (merge decision-makers {uuid decision-maker-update})))))
-
      game-state
      lambda-responses)))
 
@@ -244,12 +250,15 @@
 
 (defn process-decisions
   [game-state]
-  (reduce process-command game-state (:initiative-order game-state)))
+  (reduce process-command
+          game-state
+          (:initiative-order game-state)))
 
 (defn frame-processor
-  [game-state frame-processor-settings]
+  [game-state frame-processor-settings lambda-settings]
   (-> game-state
       (i/initialize-frame)
-      (source-decisions frame-processor-settings)
+      (source-decisions frame-processor-settings lambda-settings)
       (process-decisions)
-      (f/finalize-frame)))
+      (f/finalize-frame frame-processor-settings
+                        calculate-decision-maker-state)))

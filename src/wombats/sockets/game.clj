@@ -252,7 +252,7 @@
              (m/simulation-message)))))))
 
 (defn- process-simulation-frame
-  [datomic aws-credentials]
+  [datomic aws-credentials lambda-settings]
   (fn [{:keys [chan-id :user/id]}
       {:keys [game-state]}]
 
@@ -262,7 +262,9 @@
      chan-id
      (-> game-state
          (frame-processor {:aws-credentials aws-credentials
-                           :minimum-frame-time 0})
+                           :minimum-frame-time 0
+                           :attach-mini-maps true}
+                          lambda-settings)
          (m/simulation-message)))))
 
 (defn- leave-game
@@ -309,12 +311,12 @@
       (msg-fn socket-user msg-payload))))
 
 (defn- message-handlers
-  [datomic aws-credentials]
+  [datomic aws-credentials lambda-settings]
   {:keep-alive keep-alive
    :handshake (handshake datomic)
    :join-game (join-game datomic)
    :connect-to-simulator (connect-to-simulator datomic)
-   :process-simulation-frame (process-simulation-frame datomic aws-credentials)
+   :process-simulation-frame (process-simulation-frame datomic aws-credentials lambda-settings)
    :leave-game (leave-game datomic)
    :authenticate-user (authenticate-user datomic)
    :chat-message (chat-message datomic)})
@@ -346,8 +348,8 @@
 ;; PUBLIC FUNCTIONS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn in-game-ws
-  [datomic aws-credentials]
+  [datomic aws-credentials lambda-settings]
   {:on-connect (ws/start-ws-connection (new-ws-connection datomic))
-   :on-text    (create-socket-handler-map (message-handlers datomic aws-credentials))
+   :on-text    (create-socket-handler-map (message-handlers datomic aws-credentials lambda-settings))
    :on-error   socket-error
    :on-close   socket-close})
