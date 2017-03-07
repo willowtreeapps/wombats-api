@@ -50,10 +50,25 @@
   [game-state]
   (= :high-score (get-in game-state [:game-config :game/type])))
 
+(defn- add-mini-maps
+  "This function is primarily used to support the minimap used
+  in the simulator, but could be used in the live mode as well."
+  [game-state calculate-decision-maker-state-fn]
+  (reduce-kv (fn [game-state player-id player]
+               (assoc-in game-state
+                         [:players player-id :state :mini-map]
+                         (vec
+                          (map #(vec %)
+                               (:arena (calculate-decision-maker-state-fn game-state player-id :wombat))))))
+             game-state (:players game-state)))
+
 (defn finalize-frame
-  [game-state]
-  (-> game-state
-      (update-arena-data)))
+  [game-state
+   {attach-mini-maps :attach-mini-maps}
+   calculate-decision-maker-state-fn]
+  (cond-> game-state
+    true (update-arena-data)
+    attach-mini-maps (add-mini-maps calculate-decision-maker-state-fn)))
 
 (defn- format-date
   [date]

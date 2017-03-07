@@ -19,13 +19,6 @@
             AWSLambdaClient
             model.InvokeRequest]))
 
-(defn- add-global-coords
-  "Add the global coordinates of decision maker"
-  [state {:keys [frame]} uuid]
-  (assoc state
-         :global-coords
-         (gu/get-item-coords (:frame/arena frame) uuid)))
-
 (defn- add-local-coords
   "Add the coordinates that a decision maker is locally positioned at (in partial view)"
   [{:keys [arena] :as state} uuid]
@@ -72,14 +65,15 @@
                                                        uuid)))
 
 (defn- calculate-decision-maker-state
-  [{:keys [players zakano frame] :as game-state} uuid type]
-  (let [arena (:frame/arena frame)]
-    (-> {}
-        (add-global-coords game-state uuid)
-        (add-partial-view game-state type)
-        (add-local-coords uuid)
-        (add-occlusion-view game-state type)
-        (add-custom-state game-state uuid type))))
+  [game-state uuid type]
+  (let [global-coords (gu/get-item-coords (get-in game-state [:frame :frame/arena]) uuid)]
+    (if global-coords
+      (-> {:global-coords global-coords}
+          (add-partial-view game-state type)
+          (add-local-coords uuid)
+          (add-occlusion-view game-state type)
+          (add-custom-state game-state uuid type))
+      game-state)))
 
 (defn- lambda-client
   [{:keys [access-key-id secret-key]}]
@@ -191,15 +185,15 @@
 
                        decision-maker-update
                        (assoc decision-maker :state
-                              (merge (:state decision-maker)
-                                     {;; Note: Saved state should not be updated
-                                      ;;       to nil on error
-                                      :saved-state (or response-state
-                                                       (:saved-state decision-maker))
-                                      :error user-code-stacktrace
-                                      :command response-command}))]
+                              (-> {}
+                                  (merge (:state decision-maker))
+                                  (merge {;; Note: Saved state should not be updated
+                                          ;;       to nil on error
+                                          :saved-state (or response-state
+                                                           (:saved-state decision-maker))
+                                          :error user-code-stacktrace
+                                          :command response-command})))]
                    (merge decision-makers {uuid decision-maker-update})))))
-
      game-state
      lambda-responses)))
 
@@ -256,7 +250,9 @@
 
 (defn process-decisions
   [game-state]
-  (reduce process-command game-state (:initiative-order game-state)))
+  (reduce process-command
+          game-state
+          (:initiative-order game-state)))
 
 (defn frame-processor
   [game-state frame-processor-settings lambda-settings]
@@ -264,4 +260,5 @@
       (i/initialize-frame)
       (source-decisions frame-processor-settings lambda-settings)
       (process-decisions)
-      (f/finalize-frame)))
+      (f/finalize-frame frame-processor-settings
+                        calculate-decision-maker-state)))

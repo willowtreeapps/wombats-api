@@ -262,7 +262,8 @@
      chan-id
      (-> game-state
          (frame-processor {:aws-credentials aws-credentials
-                           :minimum-frame-time 0}
+                           :minimum-frame-time 0
+                           :attach-mini-maps true}
                           lambda-settings)
          (m/simulation-message)))))
 
