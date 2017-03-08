@@ -14,8 +14,19 @@
     (catch Exception e (prn (str "Invalid client message: " raw-message)))))
 
 (defn format-message
-  "Converts the msg into a string before sending it"
-  [msg] (prn-str msg))
+  "Converts the msg into a string before sending it
+
+  NOTE: As of 1.9.0-alpha14, prn-str automatically converts namespaced keywords into
+  namespaced maps.
+
+  https://github.com/clojure/clojure/commit/0b930f1e7e2bb2beef4ed1a12c51e4e17782666d#diff-fffb1aa81bef3f5238a444e036bec5cd
+
+  Currently the cljs reader does not support parsing this format
+
+  http://dev.clojure.org/jira/browse/CLJS-1706
+
+  For now we have to turn of the new feature until cljs adds support"
+  [msg] (binding [*print-namespace-maps* false] (prn-str msg)))
 
 (defn- get-message
   [msg-type payload]
