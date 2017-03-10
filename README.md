@@ -14,7 +14,7 @@ TODO: Mission Statement / Goals
 
 ### Development
 
-TODO: Basic into
+TODO: Basic info
 
 Want to contribute? [See how](./CONTRIBUTING.md) you can get involved.
 
