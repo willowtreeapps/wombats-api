@@ -26,6 +26,12 @@
          :local-coords
          (gu/get-item-coords arena uuid)))
 
+(defn- add-global-dimensions
+  [decision-maker-state game-state]
+  (assoc decision-maker-state
+         :global-dimensions
+         (au/get-arena-dimensions (get-in game-state [:frame :frame/arena]))))
+
 (defn- add-partial-view
   "Creates a partial view for a decision maker"
   [{:keys [global-coords] :as player-state}
@@ -71,6 +77,7 @@
       (-> {:global-coords global-coords}
           (add-partial-view game-state type)
           (add-local-coords uuid)
+          (add-global-dimensions game-state)
           (add-occlusion-view game-state type)
           (add-custom-state game-state uuid type))
       game-state)))
