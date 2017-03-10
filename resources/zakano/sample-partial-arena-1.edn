@@ -1,0 +1,173 @@
+[[{:contents
+   {:type :open, :uuid "e6f5d85f-80f6-4b30-9f67-708fff655863"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "3e692871-14fa-4242-83fa-0769f45aa384"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "caa60b38-42f4-4f71-848d-28d7b5c2063e"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "26a30017-c44d-448f-af36-2fbb57691729"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "5a6f0eff-167f-44b9-9abb-bec30c849f91"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "430600a4-fb08-48b5-813c-9c53ff5af847"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "78eac260-4ed5-4957-960b-db6da70838be"},
+   :meta []}]
+ [{:contents
+   {:type :food, :uuid "01b96b93-4190-45b2-b2c9-511be082b2e2"},
+   :meta []}
+  {:contents
+   {:type :poison, :uuid "e823d1f5-f37e-4205-9e9a-641fc4aa6cdd"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "caa60b38-42f4-4f71-848d-28d7b5c2063e"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "26a30017-c44d-448f-af36-2fbb57691729"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "5a6f0eff-167f-44b9-9abb-bec30c849f91"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "430600a4-fb08-48b5-813c-9c53ff5af847"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "78eac260-4ed5-4957-960b-db6da70838be"},
+   :meta []}]
+ [{:contents
+   {:type :open, :uuid "e6f5d85f-80f6-4b30-9f67-708fff655863"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "3e692871-14fa-4242-83fa-0769f45aa384"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "caa60b38-42f4-4f71-848d-28d7b5c2063e"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "26a30017-c44d-448f-af36-2fbb57691729"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "5a6f0eff-167f-44b9-9abb-bec30c849f91"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "430600a4-fb08-48b5-813c-9c53ff5af847"},
+   :meta []}
+  {:contents
+   {:type :food, :uuid "1ed4140c-4bff-467d-8b40-b82de351ec7d"},
+   :meta []}]
+ [{:contents
+   {:type :food, :uuid "684f1769-212a-41b0-b957-23985304e68f"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "3e692871-14fa-4242-83fa-0769f45aa384"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "caa60b38-42f4-4f71-848d-28d7b5c2063e"},
+   :meta []}
+  {:contents
+   {:type :wombat,
+    :uuid "2d0e8172-d47b-4b48-8825-8e3326e1a3d7",
+    :color "gray",
+    :hp 100,
+    :orientation :e,
+    :deterioration-level :low},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "5a6f0eff-167f-44b9-9abb-bec30c849f91"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "430600a4-fb08-48b5-813c-9c53ff5af847"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "78eac260-4ed5-4957-960b-db6da70838be"},
+   :meta []}]
+ [{:contents
+   {:type :open, :uuid "e6f5d85f-80f6-4b30-9f67-708fff655863"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "3e692871-14fa-4242-83fa-0769f45aa384"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "caa60b38-42f4-4f71-848d-28d7b5c2063e"},
+   :meta []}
+  {:contents
+   {:type :food, :uuid "467a4f35-84a9-4ca9-8af5-9f7576e2bb18"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "5a6f0eff-167f-44b9-9abb-bec30c849f91"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "430600a4-fb08-48b5-813c-9c53ff5af847"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "78eac260-4ed5-4957-960b-db6da70838be"},
+   :meta []}]
+ [{:contents
+   {:type :open, :uuid "e6f5d85f-80f6-4b30-9f67-708fff655863"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "3e692871-14fa-4242-83fa-0769f45aa384"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "caa60b38-42f4-4f71-848d-28d7b5c2063e"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "26a30017-c44d-448f-af36-2fbb57691729"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "5a6f0eff-167f-44b9-9abb-bec30c849f91"},
+   :meta []}
+  {:contents
+   {:type :food, :uuid "cae35138-fbdf-42c5-b97d-04256c20fd98"},
+   :meta []}
+  {:contents
+   {:type :open, :uuid "78eac260-4ed5-4957-960b-db6da70838be"},
+   :meta []}]
+ [{:contents
+   {:type :wood-barrier,
+    :hp 20,
+    :uuid "13e12046-9148-4faa-bfd9-db86641637d4",
+    :deterioration-level :low},
+   :meta []}
+  {:contents
+   {:type :wood-barrier,
+    :hp 20,
+    :uuid "6aa12e2a-7cc9-40fe-b368-fb5974fd8d4c",
+    :deterioration-level :low},
+   :meta []}
+  {:contents
+   {:type :wood-barrier,
+    :hp 20,
+    :uuid "db247be8-0311-4161-9b4e-711d83dda207",
+    :deterioration-level :low},
+   :meta []}
+  {:contents
+   {:type :wood-barrier,
+    :hp 20,
+    :uuid "c971039d-228d-4d7a-b895-d9b19a8ab389",
+    :deterioration-level :low},
+   :meta []}
+  {:contents
+   {:type :wood-barrier,
+    :hp 20,
+    :uuid "dd0a0272-b366-4c46-a8d7-053026a212a1",
+    :deterioration-level :low},
+   :meta []}
+  {:contents
+   {:type :wood-barrier,
+    :hp 20,
+    :uuid "f1d01b11-090a-479d-8829-143c0bd41cd6",
+    :deterioration-level :low},
+   :meta []}
+  {:contents
+   {:type :wood-barrier,
+    :hp 20,
+    :uuid "9fba01ed-d561-4f5d-995c-bd47578ab7bd",
+    :deterioration-level :low},
+   :meta []}]]
