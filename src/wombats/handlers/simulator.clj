@@ -99,7 +99,7 @@
                         :params [template-id]}))
 
        (when-not user
-         (wombat-error {:code :handlers.simulator.initialize-simulator/misssing-user
+         (wombat-error {:code :handlers.simulator.initialize-simulator/missing-user
                         :params [user-id]}))
 
        (when-not wombat
