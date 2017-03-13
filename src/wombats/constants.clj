@@ -11,14 +11,11 @@
 
 (defonce min-lambda-runtime 2000)
 
-;; Error Codes
-;; Format: a-bb-ccc
-;; a: File type: 0 handlers
-;;               1 dao
-;; b: File number: Increments by one for each file
-;; c: Error number: Increments by one for each error
 (def errors
-  {000000 "Arena not found."
+  {:handlers.simulator.initialize-simulator/missing-template "Simulator template '%s' not found."
+   :handlers.simulator.initialize-simulator/missing-user "User with id '%s' not found."
+   :handlers.simulator.initialize-simulator/missing-wombat "Wombat with id '%s' not found."
+   000000 "Arena not found."
    000001 "Wombat cound not be found."
    000002 "You do not have permissions to use this wombat."
    000003 "Game could not be found."

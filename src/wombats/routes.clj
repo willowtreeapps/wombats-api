@@ -76,7 +76,12 @@
          ["/templates"
           {:get simulator/get-simulator-arena-templates}
           ["/:template-id"
-           {:get simulator/get-simulator-arena-template-by-id}]]]
+           {:get simulator/get-simulator-arena-template-by-id}]]
+         ["/initialize"
+          {:post simulator/initialize-simulator}]
+         ["/process_frame"
+          {:post (simulator/process-simulation-frame aws-credentials
+                                                     lambda-settings)}]]
 
         ["/games"
          {:get [:get-games
@@ -112,4 +117,4 @@
         aws-credentials (:aws services)
         lambda-settings (get-in services [:api-settings :lambda])
         dao-map (dao/init-dao-map datomic aws-credentials lambda-settings)]
-    {"/ws/game" (game-ws/in-game-ws dao-map aws-credentials lambda-settings)}))
+    {"/ws/game" (game-ws/in-game-ws dao-map aws-credentials)}))

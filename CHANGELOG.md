@@ -3,17 +3,6 @@ CHANGELOG
 
 ## Master
 **Enhancements**
-* None
-
-**Bug Fixes**
-* None
-
-## QA
-**Enhancements**
-
-**Bug Fixes**
-## Develop
-**Enhancements**
 * Basic gameplay set up
 * Add, edit, and delete a wombat.
 * Join a Game
@@ -25,3 +14,18 @@ CHANGELOG
 
 **Bug Fixes**
 * None
+
+## QA
+**Enhancements**
+* None
+
+**Bug Fixes**
+* None
+
+## Develop
+**Enhancements**
+* None
+
+**Bug Fixes**
+* Simulator State Transfer
+    [Matt O'Connell](https://github.com/oconn) #[326](https://github.com/willowtreeapps/wombats-api/issues/326)
