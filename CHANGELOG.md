@@ -1,18 +1,18 @@
 CHANGELOG
 =========
 
-## Prod
+## Master
 **Enhancements**
 * None
 
 **Bug Fixes**
 * None
 
-## Alpha2
+## QA
 **Enhancements**
 
 **Bug Fixes**
-## Alpha1
+## Develop
 **Enhancements**
 * Basic gameplay set up
 * Add, edit, and delete a wombat.
@@ -22,3 +22,6 @@ CHANGELOG
 * Playing simulator
 * Game Engine
 * Integration with Lambda and Datomic
+
+**Bug Fixes**
+* None
