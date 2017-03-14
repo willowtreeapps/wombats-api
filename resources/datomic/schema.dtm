@@ -58,14 +58,55 @@
   :db/cardinality :db.cardinality/many
   :db/doc         "All the wombats that belong to a user"}
 
+ ;; Access key entities
+
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :user/created-by
+  :db/ident       :access-key/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An access key's public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/key
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An access key's key value"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/max-number-of-uses
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The max number of times an access key may be used"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/number-of-uses
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The number of times an access key had been used"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/expiration-date
+  :db/valueType   :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The date that the access key will no longer work for new enrollments"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/description
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "How the access key is planned to be used"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/created-by
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
   :db/doc         "Created by metadata"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :user/updated-by
+  :db/ident       :access-key/updated-by
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
   :db/doc         "Updated by metadata"}
