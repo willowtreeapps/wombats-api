@@ -101,9 +101,12 @@
            {:put game/start-game}]]]
 
         ["/access_keys"
-         ^:interceptors [(authorize #{:user.roles/event-coordinator})]
          {:get access-key/get-access-keys
-          :post access-key/add-access-key}]
+          :post access-key/add-access-key}
+         ["/:access-key-id"
+          {:get access-key/get-access-key
+           :delete access-key/delete-access-key
+           :put access-key/update-access-key}]]
 
         ["/auth"
          ["/github"

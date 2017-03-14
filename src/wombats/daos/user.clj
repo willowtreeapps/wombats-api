@@ -62,20 +62,28 @@
   "If a user does not exist in the system, create one. If it does, update values
   and attach the new access token"
   [conn]
-  (fn [{:keys [login id avatar_url] :as user}
+  (fn [{:keys [login id avatar_url]}
       github-access-token
       user-access-token
-      current-user-id]
-    (let [update {:user/github-access-token github-access-token
-                  :user/access-token user-access-token
-                  :user/github-username login
-                  :user/github-id id
-                  :user/avatar-url avatar_url}]
-      (if-not current-user-id
-        (d/transact-async conn [(merge update {:db/id (d/tempid :db.part/user)
-                                               :user/id (gen-id)
-                                               :user/roles [:user.roles/user]})])
-        (d/transact-async conn [(merge update {:user/id current-user-id})])))))
+      access-key]
+    (let [current-user ((get-user-by-github-id conn) id)
+          current-user-id (:user/id current-user)
+          update (cond-> {:user/github-access-token github-access-token
+                          :user/access-token user-access-token
+                          :user/github-username login
+                          :user/github-id id
+                          :user/avatar-url avatar_url}
+                   (and current-user
+                        access-key
+                        (not (:user/access-key current-user)))
+                   (assoc :user/access-key (:db/id access-key)))]
+
+      (let [trx (if-not current-user-id
+                  @(d/transact conn [(merge update {:db/id (d/tempid :db.part/user)
+                                                   :user/id (gen-id)
+                                                   :user/roles [:user.roles/user]})])
+                  @(d/transact conn [(merge update {:user/id current-user-id})]))]
+        ((get-user-by-github-id conn) id)))))
 
 (defn remove-access-token
   [conn]

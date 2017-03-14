@@ -180,22 +180,14 @@
       wombat-eid
       color]
 
-    ;; TODO Move to error handler
-    (try
-      @(d/transact conn [[:player-join
-                          game-eid
-                          user-eid
-                          wombat-eid
-                          color
-                          initial-stats]])
+    @(d/transact conn [[:player-join
+                        game-eid
+                        user-eid
+                        wombat-eid
+                        color
+                        initial-stats]])
 
-      (game-sockets/broadcast-game-info ((get-game-state-by-id conn) game-id))
-
-      (catch Exception e
-        (-> e
-            (.getCause)
-            (ex-data)
-            (wombat-error))))))
+    (game-sockets/broadcast-game-info ((get-game-state-by-id conn) game-id))))
 
 (defn- update-frame-state
   [conn]

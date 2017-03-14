@@ -133,12 +133,40 @@
                       color)]
              (> (count player) 0))}))
 
+(def add-access-key
+  (d/function
+   '{:lang :clojure
+     :params [db access-key]
+     :code (let [requesting-key (:access-key/key access-key)
+                 current-access-key? (not
+                                      (empty?
+                                       (d/q '[:find ?access-key
+                                              :in $ ?access-key-key
+                                              :where
+                                              [?access-key :access-key/key ?access-key-key]]
+                                            db
+                                            requesting-key)))]
+
+             (when current-access-key?
+               (throw (ex-info "Wombat Error" {:type :wombat-error
+                                               :message "access key already in use."
+                                               :details {:access-key/key requesting-key}
+                                               :code :transactor/access-key-in-use})))
+
+             (clojure.pprint/pprint access-key)
+
+             [(assoc access-key :db/id (d/tempid :db.part/user))])}))
+
 (defn seed-database-functions
   [conn]
   (d/transact conn [{:db/id (d/tempid :db.part/user)
                      :db/ident :player-join
                      :db/doc "Transaction for players joining a game."
                      :db/fn player-join}
+                    {:db/id (d/tempid :db.part/user)
+                     :db/ident :add-access-key
+                     :db/doc "Transaction for adding access keys"
+                     :db/fn add-access-key}
                     {:db/id (d/tempid :db.part/user)
                      :db/ident :get-closed-enrollment-error-message
                      :db/doc "Returns the error message when a game is considered in a closed enrollment state."

@@ -2,6 +2,7 @@
   (:require [datomic.api :as d]
             [wombats.daos.user :as user]
             [wombats.daos.arena :as arena]
+            [wombats.daos.access-key :as access-key]
             [wombats.daos.game :as game]
             [wombats.daos.simulator :as simulator]))
 
@@ -52,4 +53,11 @@
    :start-game (game/start-game conn aws-credentials lambda-settings)
    ;; Simulator DAOS
    :get-simulator-arena-templates (simulator/get-simulator-arena-templates conn)
-   :get-simulator-arena-template-by-id (simulator/get-simulator-arena-template-by-id conn)})
+   :get-simulator-arena-template-by-id (simulator/get-simulator-arena-template-by-id conn)
+   ;; Access Key DAOS
+   :get-access-keys (access-key/get-access-keys conn)
+   :get-access-key-by-id (access-key/get-access-key-by-id conn)
+   :get-access-key-by-key (access-key/get-access-key-by-key conn)
+   :add-access-key (access-key/add-access-key conn)
+   :retract-access-key (access-key/retract-access-key conn)
+   :update-access-key (access-key/update-access-key conn)})

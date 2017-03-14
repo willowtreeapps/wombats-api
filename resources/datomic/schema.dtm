@@ -58,6 +58,12 @@
   :db/cardinality :db.cardinality/many
   :db/doc         "All the wombats that belong to a user"}
 
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :user/access-key
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "If the user was a part of beta / alpha they require an access key to login"}
+
  ;; Access key entities
 
  {:db/id          #db/id [:db.part/db]
@@ -95,7 +101,6 @@
  {:db/id          #db/id [:db.part/db]
   :db/ident       :access-key/description
   :db/valueType   :db.type/string
-  :db/unique      :db.unique/identity
   :db/cardinality :db.cardinality/one
   :db/doc         "How the access key is planned to be used"}
 
