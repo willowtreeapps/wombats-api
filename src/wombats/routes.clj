@@ -15,6 +15,7 @@
             [wombats.handlers.echo :as echo]
             [wombats.handlers.game :as game]
             [wombats.handlers.user :as user]
+            [wombats.handlers.access-keys :as access-keys]
             [wombats.handlers.auth :as auth]
             [wombats.handlers.arena :as arena]
             [wombats.handlers.simulator :as simulator]
@@ -98,6 +99,11 @@
            {:put game/join-game}]
           ["/start"
            {:put game/start-game}]]]
+
+        ["/access_keys"
+         ^:interceptors [(authorize #{:user.roles/event-coordinator})]
+         {:get access-keys/get-access-keys
+          :post access-keys/add-access-key}]
 
         ["/auth"
          ["/github"
