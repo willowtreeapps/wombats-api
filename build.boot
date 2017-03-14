@@ -1,5 +1,5 @@
 (set-env! :project 'wombats
-          :version "0.1.0-SNAPSHOT"
+          :version "1.0.0-alpha1"
           :source-paths #{"src" "test"}
           :resource-paths #{"src" "resources" "config"}
           :dependencies   '[;; Core Clojure libs
