@@ -310,4 +310,5 @@
   ;; https://github.com/jonase/eastwood/issues/201
   (set-env! :source-paths #{"src" "test"})
   (comp
-   (check/with-eastwood)))
+   #_(check/with-eastwood)
+   (check/with-bikeshed)))

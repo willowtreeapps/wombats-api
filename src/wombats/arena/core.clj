@@ -20,10 +20,15 @@
                       {:hp wood-wall-hp})
           xform (map-indexed (fn [y row]
                                (if (#{0 (dec dimy)} y)
-                                 (vec (map #(assoc % :contents (a-utils/ensure-uuid wall)) row))
+                                 (vec (map #(assoc % 
+                                                   :contents 
+                                                   (a-utils/ensure-uuid wall)) 
+                                           row))
                                  (-> (vec row)
-                                     (assoc-in [0 :contents] (a-utils/ensure-uuid wall))
-                                     (assoc-in [(dec dimx) :contents] (a-utils/ensure-uuid wall))))))]
+                                     (assoc-in [0 :contents] 
+                                               (a-utils/ensure-uuid wall))
+                                     (assoc-in [(dec dimx) :contents] 
+                                               (a-utils/ensure-uuid wall))))))]
       (assoc arena-map
              :arena
              (vec (sequence xform arena))))
@@ -34,13 +39,14 @@
   [{:keys [config] :as arena-map}]
   (let [{dimx :arena/width
          dimy :arena/height} config
-        open-space (:open a-utils/arena-items)]
+        open-space (:open a-utils/arena-items)
+        contents (a-utils/ensure-uuid open-space)]
     (assoc arena-map
            :arena
            (vec (repeat dimy
                         (vec (repeatedly dimx
                                          (fn []
-                                           {:contents (a-utils/ensure-uuid open-space)
+                                           {:contents contents
                                             :meta []}))))))))
 
 (let [moves {:n [ 0 -1] :ne [ 1 -1] :e [ 1  0] :se [ 1  1]
@@ -76,7 +82,8 @@
         (list :n :e :s :w)))
 
 (defn- place-wall
-  "place a single contiguous block wall of max length l starting at coordinates start in direction d"
+  "place a single contiguous block wall of max length 
+  l starting at coordinates start in direction d"
   [starting-cell
    walls-remaining
    direction
@@ -89,9 +96,11 @@
          l' 0
          head starting-cell
          anchor-count 0]
-    (let [anchor-count (+ anchor-count (if (wall-adjacent? starting-cell
-                                                           arena
-                                                           arena-dimensions) 1 0))]
+    (let [anchor-count (+ anchor-count 
+                          (if (wall-adjacent? starting-cell
+                                              arena
+                                              arena-dimensions)
+                            1 0))]
       (if (and (< l' walls-remaining)
                (a-utils/pos-open? head arena) (< anchor-count 2))
         (let [arena' (a-utils/update-cell-contents arena
