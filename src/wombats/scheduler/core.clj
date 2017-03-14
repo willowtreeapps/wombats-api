@@ -12,7 +12,7 @@
       ;; Start time has already passed
       (start-round-fn game-id)
       ;; Set interval to start game in the future
-      (chime-at [(-> start-time)]
+      (chime-at [start-time]
                 (fn [time]
                   (start-round-fn game-id))
                 {:on-finished

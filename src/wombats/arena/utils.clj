@@ -43,7 +43,7 @@
   [content-type]
   (ensure-uuid (content-type arena-items)))
 
-(defn- print-cell
+(defn- stringify-cell
   [cell]
   (let [display-values {:wood-barrier "w"
                         :steel-barrier "s"
@@ -53,28 +53,27 @@
                         :food "f"
                         :open "o"
                         :fog "?"}]
-    (print (format
-            " %s "
-            (-> cell
-                (get-in [:contents :type])
-                (display-values))))))
+    (format
+     " %s "
+     (-> cell
+         (get-in [:contents :type])
+         (display-values)))))
 
-(defn- print-row
-  [row]
-  (print "\n")
-  (doall (map print-cell row)))
+(defn- stringify-arena
+  [arena]
+  (str "\n"
+       (clojure.string/join "\n" (map #(clojure.string/join "" (map stringify-cell %)) arena))
+       "\n"))
 
 (defn print-arena
   "Pretty prints an arena"
   [arena]
 
   (let [[x y] (get-arena-dimensions arena)]
-
-    (println "\n--------------------------------")
-
+    (println "--------------------------------")
     (print (str " " (clojure.string/join "  " (range 0 x))))
-    (doall (map print-row arena))
-    (println "\n\n--------------------------------")))
+    (print (stringify-arena arena))
+    (println "--------------------------------")))
 
 ;; Modifiers. Probably belong somewhere else
 

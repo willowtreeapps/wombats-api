@@ -30,16 +30,15 @@
   "Game loop"
   [game-state update-frame close-round close-game aws-credentials lambda-settings]
   (loop [current-game-state game-state]
-    (let [round-is-over? (round-over? current-game-state)]
+    (let [round-is-over? (round-over? current-game-state)
+          current-game-state (cond-> current-game-state
+                               ;; Check if the round is over
+                               round-is-over?
+                               (f/finalize-round close-round))
+          current-game-state (-> current-game-state
+                                 ;; Check if the game is over
+                                 (f/finalize-game close-game))]
       (cond-> current-game-state
-        ;; Check if the round is over
-        round-is-over?
-        (f/finalize-round close-round)
-
-        ;; Check if the game is over
-        true
-        (f/finalize-game close-game)
-
         ;; Process the frame if the round isn't over
         (not round-is-over?)
         (-> (p/frame-processor {:aws-credentials aws-credentials

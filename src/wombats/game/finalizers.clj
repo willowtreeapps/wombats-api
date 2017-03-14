@@ -66,9 +66,10 @@
   [game-state
    {attach-mini-maps :attach-mini-maps}
    calculate-decision-maker-state-fn]
-  (cond-> game-state
-    true (update-arena-data)
-    attach-mini-maps (add-mini-maps calculate-decision-maker-state-fn)))
+  (let [game-state (-> game-state
+                       (update-arena-data))]
+    (cond-> game-state
+      attach-mini-maps (add-mini-maps calculate-decision-maker-state-fn))))
 
 (defn- format-date
   [date]

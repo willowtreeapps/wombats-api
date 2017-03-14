@@ -22,9 +22,8 @@
    :defined "wombats.game.utils"}
   [current-orientation modifier]
 
-  (def ^:private orientations [:n :e :s :w])
-
-  (let [current-idx (.indexOf orientations current-orientation)]
+  (let [orientations [:n :e :s :w]
+        current-idx (.indexOf orientations current-orientation)]
     (if (not= current-idx -1)
       (condp = modifier
         :right (get orientations (mod (inc current-idx) 4))

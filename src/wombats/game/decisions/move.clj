@@ -56,14 +56,15 @@
   (let [updated-decision-maker-contents (update-decision-maker-with decision-maker-contents
                                                                     desired-space-contents
                                                                     desired-space-metadata)
-        is-player? (gu/is-player? decision-maker-contents)]
+        is-player? (gu/is-player? decision-maker-contents)
+        game-state (-> game-state
+                       (update-in [:frame :frame/arena] #(au/update-cell-contents %
+                                                                                  desired-space-coords
+                                                                                  updated-decision-maker-contents))
+                       (update-in [:frame :frame/arena] #(au/update-cell-contents %
+                                                                                  decision-maker-coords
+                                                                                  (au/create-new-contents :open))))]
     (cond-> game-state
-      true (update-in [:frame :frame/arena] #(au/update-cell-contents %
-                                                                      desired-space-coords
-                                                                      updated-decision-maker-contents))
-      true (update-in [:frame :frame/arena] #(au/update-cell-contents %
-                                                                      decision-maker-coords
-                                                                      (au/create-new-contents :open)))
       is-player? (update-in [:players (:uuid decision-maker-contents) :stats]
                             (fn [stats]
                               (condp = (:type desired-space-contents)

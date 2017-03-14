@@ -44,16 +44,16 @@
                       (damage-cell cell-contents damage))
         destroyed? (and contains-hp?
                         (= (:type cell-update) :open))
-        wombat-shooter? (= (:type shooter) :wombat)]
+        wombat-shooter? (= (:type shooter) :wombat)
+        game-state (-> game-state
+                       ;; Always update the cell metadata to attach the shot
+                       (update-in [:frame :frame/arena]
+                                  #(au/update-cell-metadata %
+                                                            cell-coords
+                                                            (conj cell-metadata
+                                                                  (get-shot-metadata shooter)))))]
 
     (cond-> game-state
-      ;; Always update the cell metadata to attach the shot
-      true
-      (update-in [:frame :frame/arena]
-                 #(au/update-cell-metadata %
-                                           cell-coords
-                                           (conj cell-metadata
-                                                 (get-shot-metadata shooter))))
 
       ;; If the cell is able to be damaged, apply damage and update the arena
       contains-hp?
@@ -81,12 +81,11 @@
       (and contains-hp? wombat-shooter?)
       (update-in [:players (:uuid shooter) :stats]
                  (fn [stats]
-                   (let [item-hit (:type cell-contents)]
+                   (let [item-hit (:type cell-contents)
+                         stats (-> stats
+                                   ;; Always update hit counter
+                                   (update :stats/shots-hit inc))]
                      (cond-> stats
-                       ;; Always update hit counter
-                       true
-                       (update :stats/shots-hit inc)
-
                        ;; Update wombat hit stats
                        (= item-hit :wombat)
                        (-> (update :stats/wombats-hit inc)

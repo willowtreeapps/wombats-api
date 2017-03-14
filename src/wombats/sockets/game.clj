@@ -15,21 +15,26 @@
 (def ^:private game-rooms (atom {}))
 (def ^:private connections (atom {}))
 
-(defn- remove-chan-from-room
+(defn- remove-chan-from-room!
   [game-id chan-id]
   (swap! game-rooms update-in [game-id :players] dissoc chan-id))
 
-(defn- cleanup-closed-connections
+(defn- remove-chan-from-rooms!
+  [chan-id]
+  (map (fn [game-id {players :players}]
+         (let [contains-connection? (chan-id players)]
+           (when contains-connection?
+             (remove-chan-from-room! game-id chan-id))))
+       @game-rooms))
+
+(defn- cleanup-closed-connections!
   []
   (doseq [[chan-id {:keys [session]}] @connections]
     (let [channel-open? (.isOpen session)]
       (when-not channel-open?
         ;; Remove channel from game rooms
-        (map (fn [game-id {players :players}]
-               (let [contains-connection? (chan-id players)]
-                 (when contains-connection?
-                   (remove-chan-from-room game-id chan-id))))
-             @game-rooms)
+        (remove-chan-from-rooms! chan-id)
+
         ;; Remove channel from connections
         (swap! connections dissoc chan-id)))))
 
@@ -43,7 +48,7 @@
 (defn clean-connections
   "Removes all closed connections from state"
   [time]
-  (cleanup-closed-connections)
+  (cleanup-closed-connections!)
   (cleanup-empty-games))
 
 (defn connection-clean-err
@@ -189,7 +194,7 @@
   [_]
   (fn [{:keys [chan-id] :as socket-user}
       {:keys [game-id]}]
-    (remove-chan-from-room game-id chan-id)))
+    (remove-chan-from-room! game-id chan-id)))
 
 (defn- chat-message
   [datomic]

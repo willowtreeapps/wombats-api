@@ -1,4 +1,4 @@
-(ns wombats.test.game.partial
+(ns wombats.test.game.zakano-code
   (:require [clojure.test :refer :all]
             [wombats.arena.utils :refer [print-arena]]
             [wombats.game.zakano-code :as zc]))

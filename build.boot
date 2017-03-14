@@ -305,5 +305,9 @@
 (deftask check-sources
   "Analyzes source code"
   []
+  ;; Eastwood cannot be used until this issue is 
+  ;; resolved (due to namespaced maps)
+  ;; https://github.com/jonase/eastwood/issues/201
+  (set-env! :source-paths #{"src" "test"})
   (comp
    (check/with-eastwood)))
