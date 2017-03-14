@@ -1,4 +1,4 @@
-(ns wombats.handlers.access-keys
+(ns wombats.handlers.access-key
   (:require [io.pedestal.interceptor.helpers :as interceptor]))
 
 (def ^:swagger-spec get-access-keys-spec
