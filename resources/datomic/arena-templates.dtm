@@ -48,4 +48,21 @@
   :arena/zakano 3
   :arena/zakano-hp 50
   :arena/wombat-hp 100
+  :arena/perimeter true}
+ {:db/id #db/id [:db.part/user]
+  :arena/id "41193bec-4cf3-4f5d-8386-bed7ae3e5745"
+  :arena/name "Small Arena"
+  :arena/width 10
+  :arena/height 10
+  :arena/shot-damage 10
+  :arena/smoke-duration 3
+  :arena/food 10
+  :arena/poison 4
+  :arena/steel-walls 4
+  :arena/steel-wall-hp 200
+  :arena/wood-walls 4
+  :arena/wood-wall-hp 20
+  :arena/zakano 2
+  :arena/zakano-hp 20
+  :arena/wombat-hp 100
   :arena/perimeter true}]
