@@ -32,4 +32,4 @@
 (defn update-access-key
   [conn]
   (fn [access-key-id]
-    "NOT IMPLEMENTED DUE TO MISSING REQUIREMENTS https://github.com/willowtreeapps/wombats-api/issues/341"))
+    "NOT YET IMPLEMENTED. https://github.com/willowtreeapps/wombats-api/issues/341"))

@@ -74,6 +74,7 @@
            :delete arena/delete-arena}]]
 
         ["/simulator"
+         ^:interceptors [(authorize #{:user.roles/user})]
          ["/templates"
           {:get simulator/get-simulator-arena-templates}
           ["/:template-id"
@@ -92,15 +93,20 @@
                  game/add-game
                  ^:interceptors [(authorize #{:user.roles/admin})]]}
          ["/:game-id"
-          ^:interceptors [(authorize #{:user.roles/user})]
-          {:get game/get-game-by-id
-           :delete game/delete-game}
+          {:get [:get-game
+                 game/get-game-by-id
+                 ^:interceptors [(authorize #{:user.roles/user})]]
+           :delete [:delete-game
+                    game/delete-game
+                    ^:interceptors [(authorize #{:user.roles/admin})]]}
           ["/join"
            {:put game/join-game}]
           ["/start"
            {:put game/start-game}]]]
 
         ["/access_keys"
+         ^:interceptors [(authorize #{:user.roles/coordinator
+                                      :user.roles/admin})]
          {:get access-key/get-access-keys
           :post access-key/add-access-key}
          ["/:access-key-id"

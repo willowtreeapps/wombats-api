@@ -22,7 +22,7 @@
 (def ^:private add-access-key-body-params
   {:name "access-key-body"
    :in "body"
-   :description "values for a access key"
+   :description "values for an access key"
    :required true
    :default (str add-access-key-body-sample)
    :schema {}})

@@ -149,7 +149,7 @@
 
              (when current-access-key?
                (throw (ex-info "Wombat Error" {:type :wombat-error
-                                               :message "access key already in use."
+                                               :message "Access key already in use."
                                                :details {:access-key/key requesting-key}
                                                :code :transactor/access-key-in-use})))
 
@@ -198,7 +198,7 @@
                              :user/id (.toString (java.util.UUID/randomUUID))
                              :user/roles [:user.roles/user]}))
 
-               (not (nil? current-user-id))
+               (some? current-user-id)
                (conj (merge user-update {:user/id current-user-id}))
 
                valid-access-key?
