@@ -110,21 +110,6 @@
       (mac/hash {:key secret-key :alg :hmac+sha256})
       (codecs/bytes->hex)))
 
-(defn- valid-access-key?
-  [access-key]
-  false)
-
-(defn- get-when-valid-access-key
-  [access-key-key context]
-  (let [get-access-key-by-key (dao/get-fn :get-access-key-by-key context)
-        {:keys [:access-key/max-number-of-uses
-                :access-key/number-of-uses
-                :access-key/expiration-date] :as access-key} (get-access-key-by-key access-key-key)]
-
-    (when (and access-key
-               (< number-of-uses max-number-of-uses))
-      access-key)))
-
 (def github-callback
   "Callback handler from GitHub OAuth request"
   (interceptor/before
@@ -140,28 +125,31 @@
            {signing-secret-check :signing-secret
             access-key-key :access-key} (read-string (url-decode state))]
 
+       ;; Check to see if the request is originating from the correct user
        (if (= signing-secret-check signing-secret)
          (let [github-access-token @(get-access-token {:client_id client-id
                                                        :client_secret client-secret
                                                        :code code})
                user (when github-access-token
                       (parse-user-response @(get-github-user github-access-token)))]
+
+           ;; Ensure that a github user has been found
            (if (and github-access-token user)
              (let [user-fields (select-keys user [:login :id :avatar_url])
                    user-access-token (gen-user-access-token (get-hashing-secret context)
-                                                            (:id user-fields))
-                   access-key (get-when-valid-access-key access-key-key context)]
+                                                            (:id user-fields))]
 
+               ;; Update the database with the requesting users information
                (create-or-update-user user-fields
                                       github-access-token
                                       user-access-token
-                                      access-key)
+                                      access-key-key)
 
                (let [updated-user (get-user-by-github-id (:id user-fields))]
-
-                 (clojure.pprint/pprint updated-user)
-
-                 (redirect-home context referer user-access-token)))
+                 ;; Check if the user has a vaild access key
+                 (if (:user/access-key updated-user)
+                   (redirect-home context referer user-access-token)
+                   (failed-redirect))))
              (failed-redirect)))
          (failed-redirect))))))
 
