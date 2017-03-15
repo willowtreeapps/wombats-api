@@ -5,6 +5,8 @@ CHANGELOG
 **Enhancements**
 * Added new simulator template
     [Matt O'Connell](https://github.com/oconn) *No Issue*
+* Add access keys
+    [Matt O'Connell](https://github.com/oconn) #[325](https://github.com/willowtreeapps/wombats-api/issues/325)
 
 **Bug Fixes**
 * Simulator State Transfer
