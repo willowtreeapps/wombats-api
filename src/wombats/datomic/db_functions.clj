@@ -133,12 +133,92 @@
                       color)]
              (> (count player) 0))}))
 
+(def add-access-key
+  (d/function
+   '{:lang :clojure
+     :params [db access-key]
+     :code (let [requesting-key (:access-key/key access-key)
+                 current-access-key? (not
+                                      (empty?
+                                       (d/q '[:find ?access-key
+                                              :in $ ?access-key-key
+                                              :where
+                                              [?access-key :access-key/key ?access-key-key]]
+                                            db
+                                            requesting-key)))]
+
+             (when current-access-key?
+               (throw (ex-info "Wombat Error" {:type :wombat-error
+                                               :message "Access key already in use."
+                                               :details {:access-key/key requesting-key}
+                                               :code :transactor/access-key-in-use})))
+
+             [(assoc access-key :db/id (d/tempid :db.part/user))])}))
+
+(def create-or-update-user
+  (d/function
+   '{:lang :clojure
+     :params [db github-user github-access-token user-access-token access-key-key]
+     :code (let [{github-id :id
+                  github-username :login
+                  avatar-url :avatar_url} github-user
+                 access-key (when access-key-key
+                                 (ffirst
+                                  (d/q '[:find (pull ?access-key [*])
+                                         :in $ ?access-key-key
+                                         :where [?access-key :access-key/key ?access-key-key]]
+                                       db access-key-key)))
+                 valid-access-key? (and
+                                    ;; Access key exists
+                                    access-key
+                                    ;; Access key has not reached max uses
+                                    (< (:access-key/number-of-uses access-key)
+                                       (:access-key/max-number-of-uses access-key))
+                                    ;; Access key has not expired
+                                    (< (.getTime (new java.util.Date))
+                                       (.getTime (:access-key/expiration-date access-key))))
+                 current-user (ffirst
+                               (d/q '[:find ?user
+                                      :in $ ?github-id
+                                      :where [?user :user/github-id ?github-id]]
+                                    db github-id))
+                 current-user-id (get current-user :user/id)
+                 user-update (cond-> {:user/github-access-token github-access-token
+                                      :user/access-token user-access-token
+                                      :user/github-username github-username
+                                      :user/github-id github-id
+                                      :user/avatar-url avatar-url}
+                               (and access-key
+                                    (nil? (:user/access-key current-user)))
+                               (assoc :user/access-key (:db/id access-key)))]
+             (cond-> []
+               (nil? current-user-id)
+               (conj (merge user-update
+                            {:db/id (d/tempid :db.part/user)
+                             :user/id (.toString (java.util.UUID/randomUUID))
+                             :user/roles [:user.roles/user]}))
+
+               (some? current-user-id)
+               (conj (merge user-update {:user/id current-user-id}))
+
+               valid-access-key?
+               (conj {:access-key/key (:access-key/key access-key)
+                      :access-key/number-of-uses (inc (:access-key/number-of-uses access-key))})))}))
+
 (defn seed-database-functions
   [conn]
   (d/transact conn [{:db/id (d/tempid :db.part/user)
                      :db/ident :player-join
                      :db/doc "Transaction for players joining a game."
                      :db/fn player-join}
+                    {:db/id (d/tempid :db.part/user)
+                     :db/ident :add-access-key
+                     :db/doc "Transaction for adding access keys"
+                     :db/fn add-access-key}
+                    {:db/id (d/tempid :db.part/user)
+                     :db/ident :create-or-update-user
+                     :db/doc "Transaction for creating or updating a users credentials"
+                     :db/fn create-or-update-user}
                     {:db/id (d/tempid :db.part/user)
                      :db/ident :get-closed-enrollment-error-message
                      :db/doc "Returns the error message when a game is considered in a closed enrollment state."
