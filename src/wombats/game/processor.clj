@@ -13,7 +13,8 @@
             [wombats.game.decisions.turn :refer [turn]]
             [wombats.game.decisions.move :refer [move]]
             [wombats.game.decisions.shoot :refer [shoot]]
-            [wombats.game.decisions.smoke :refer [smoke]])
+            [wombats.game.decisions.smoke :refer [smoke]]
+            [wombats.game.dev-mode.core :as dev])
   (:import [com.amazonaws.auth
             BasicAWSCredentials]
            [com.amazonaws.services.lambda
@@ -111,33 +112,43 @@
                              :state player-state}))
 
 (defn- lambda-invoke-request
-  [player-state {:keys [path] :as bot-code} lambda-settings]
-  (let [path-ext (keyword (last (clojure.string/split path #"\.")))
-        lambda-uri (get lambda-settings path-ext)
-        request (new InvokeRequest)
-        payload (lambda-request-body player-state bot-code)]
+  [payload {:keys [path path-ext] :as bot-code} lambda-settings]
+  (let [lambda-uri (get lambda-settings path-ext)
+        request (new InvokeRequest)]
 
     (.setFunctionName request lambda-uri)
     (.setPayload request payload)
     request))
 
 (defn- lambda-request
+  "This converts the decision-maker-state to a string payload, sends
+  it to AWS Lambda (or not, for dev-mode), and parses the string that
+  gets returned."
   [decision-maker-state
    {:keys [code path]}
    aws-credentials
    lambda-settings]
 
-  (let [client (lambda-client aws-credentials)
-        request (lambda-invoke-request decision-maker-state
-                                       {:code code
-                                        :path path}
-                                       lambda-settings)
-        result (.invoke client request)
-        response (.getPayload result)
-        response-string (new String (.array response) "UTF-8")
-        response-parsed (cheshire/parse-string response-string true)]
+  (future
+    (let [path-ext (keyword (last (clojure.string/split path #"\.")))
+          code-path {:code code
+                     :path path
+                     :path-ext path-ext}
+          is-dev (or (empty? aws-credentials) (empty? lambda-settings))
+          ;; This is where it converts the state to the string. 
+          request-body (lambda-request-body decision-maker-state code-path)
+          response (if is-dev
+                     (dev/request-handler code-path request-body)
 
-    (future response-parsed)))
+                     (let [client (lambda-client aws-credentials)
+                           request (lambda-invoke-request request-body
+                                                          code-path
+                                                          lambda-settings)
+                           result (.invoke client request)
+                           response (.getPayload result)]
+                       (new String (.array response) "UTF-8")))]
+
+      (cheshire/parse-string response true))))
 
 (defn- get-lambda-channels
   "Kicks off the AWS Lambda process"
@@ -148,15 +159,12 @@
          (let [ch (async/chan 1)]
            (async/go
              (try
-               (let [lambda-resp
-                     @(lambda-request (calculate-decision-maker-state game-state
-                                                                      type
-                                                                      uuid)
-                                      (get-decision-maker-code game-state
-                                                               type
-                                                               uuid)
-                                      aws-credentials
-                                      lambda-settings)]
+               (let [player-state (calculate-decision-maker-state game-state type uuid)
+                     player-code (get-decision-maker-code game-state type uuid)
+                     lambda-resp @(lambda-request player-state player-code
+                                                  aws-credentials
+                                                  lambda-settings)]
+
                  (async/>! ch {:uuid uuid
                                :response lambda-resp
                                :channel-error nil

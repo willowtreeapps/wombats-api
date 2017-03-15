@@ -3,7 +3,8 @@ CHANGELOG
 
 ## Develop
 **Enhancements**
-* None
+* AWS Lambda Mock
+	[Eric Rochester](https://github.com/erochest) #[329](https://github.com/willowtreeapps/wombats-api/issues/329)
 
 **Bug Fixes**
 * None
@@ -11,7 +12,7 @@ CHANGELOG
 ## QA (3.21.2017)
 **Enhancements**
 * Added new simulator template
-    [Matt O'Connell][/oconn] *No Issue*
+	[Matt O'Connell](https://github.com/oconn) *No Issue*
 * Add access keys
     [Matt O'Connell][/oconn] #[325](https://github.com/willowtreeapps/wombats-api/issues/325)
 * Add Eric to the DB (Seed as admin)
