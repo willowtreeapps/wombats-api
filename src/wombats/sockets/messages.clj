@@ -118,25 +118,14 @@
 (defn game-info-message
   "Pulls out relevant info from game-state and sends it in join-game"
   [{:keys [game-config] :as game-state}]
-
-  ;; TODO: #305 Once game-state is more compatible
-  ;;       w/ game we won't need this conversion.
-  (let [players (map (fn [[_ v]]
-                       {:player/user {:user/github-username
-                                      (get-in v [:user :user/github-username])}})
-                     (:players game-state))]
-
-    (get-message :game-info
-                 {:game/id (:game/id game-config)
-                  :game/start-time (get-start-time game-state)
-                  :game/round-number (get-round-number game-state)
-                  :game/max-players (:game/max-players game-config)
-                  :game/players players
-                  :game/name (:game/name game-config)
-                  :game/status (:game/status game-config)
-                  :game/winner (get-game-winner game-state)
-                  :game/stats (vec (get-player-stats game-state))
-                  :game/is-private (:game/is-private game-config)})))
+  (get-message :game-info
+               (merge (dissoc game-config
+                              :game/arena
+                              :game/frame) 
+                      {:game/start-time (get-start-time game-state)
+                       :game/round-number (get-round-number game-state)
+                       :game/winner (get-game-winner game-state)
+                       :game/stats (vec (get-player-stats game-state))})))
 
 (defn handshake-message
   [chan-id]

@@ -33,54 +33,70 @@
 ;; ↓   ↑
 ;; 2 → ↑
 
-(def game-projection
+(defonce game-projection
+  ;; This is what is exposed to the client
   '[*
+    {:game/arena [:db/id *]}
     {:game/players [*
                     {:player/user [:user/github-username]}
                     {:player/wombat [*]}]}
     {:game/stats [*]}])
 
+(defonce game-state-projection
+  ;; This is what our API uses internally
+  '[*
+    {:game/arena [:db/id *]}
+    {:game/players [*
+                    {:player/user [:db/id
+                                   :user/github-username
+                                   :user/github-access-token]}
+                    {:player/wombat [*]}]}
+    {:game/stats [*
+                  {:stats/player [:player/id]}]}
+    {:game/frame [*]}])
+
+(defn filter-game-password
+  [conn]
+  (d/filter (d/db conn)
+            (fn [db datom] 
+              (not= (d/entid db :game/password) 
+                    (.a datom)))))
+
 (defn get-games-by-eids
   [conn]
   (fn [game-eids]
     (d/pull-many
-     (d/db conn) '[*
-                   {:game/arena [:db/id *]}
-                   {:game/players [:db/id :player/color
-                                   {:player/user [:db/id :user/github-username]}
-                                   {:player/wombat [:db/id :wombat/name]}]}]
+     (filter-game-password conn)
+     game-projection
      game-eids)))
 
 (defn get-game-eids-by-status
   [conn]
   (fn [status]
-    (let [db (d/db conn)
-          formatted-status (if (vector? status)
+    (let [formatted-status (if (vector? status)
                              (map keyword status)
-                             [(keyword status)])
-          game-eids (apply concat
-                           (d/q '[:find ?games
-                                  :in $ [?status ...]
-                                  :where [?games :game/status ?status]]
-                                db
-                                formatted-status))]
-      game-eids)))
+                             [(keyword status)])]
+      (apply concat
+             (d/q '[:find ?games
+                    :in $ [?status ...]
+                    :where [?games :game/status ?status]]
+                  (d/db conn)
+                  formatted-status)))))
 
 (defn get-game-eids-by-player
   [conn]
   (fn [user-id]
     (let [user-ids (if (vector? user-id)
                      user-id
-                     [user-id])
-          game-eids (apply concat
-                           (d/q '[:find ?games
-                                  :in $ [?user-ids ...]
-                                  :where [?users :user/id ?user-ids]
-                                         [?players :player/user ?users]
-                                         [?games :game/players ?players]]
-                                (d/db conn)
-                                user-ids))]
-      game-eids)))
+                     [user-id])]
+      (apply concat
+             (d/q '[:find ?games
+                    :in $ [?user-ids ...]
+                    :where [?users :user/id ?user-ids]
+                    [?players :player/user ?users]
+                    [?games :game/players ?players]]
+                  (d/db conn)
+                  user-ids)))))
 
 (defn get-all-game-eids
   [conn]
@@ -130,23 +146,11 @@
     (let [raw-game-state (get-entity-by-prop conn
                                              :game/id
                                              game-id
-                                             '[*
-                                               {:game/players [*
-                                                               {:player/wombat [*]}
-                                                               {:player/user [:db/id
-                                                                              :user/github-username
-                                                                              :user/github-access-token]}]}
-                                               {:game/stats [*
-                                                             {:stats/player [:player/id]}]}
-                                               {:game/frame [*]}
-                                               {:game/arena [*]}])]
+                                             game-state-projection)]
       {:game-id (:game/id raw-game-state)
        :frame (update (:game/frame raw-game-state) :frame/arena nippy/thaw)
        :arena-config (:game/arena raw-game-state)
-       :game-config (dissoc raw-game-state :game/arena
-                                           :game/frame
-                                           :game/players
-                                           :game/stats)
+       :game-config raw-game-state
        :players (format-player-map raw-game-state)})))
 
 (defn add-game
