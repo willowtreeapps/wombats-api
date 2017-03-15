@@ -24,7 +24,8 @@ CHANGELOG
 
 ## Develop
 **Enhancements**
-* None
+* Game State Refactor
+    [C.P. Dehli](https://github.com/dehli) #[305](https://github.com/willowtreeapps/wombats-api/issues/305)
 
 **Bug Fixes**
 * Simulator State Transfer
