@@ -3,4 +3,6 @@
  {:db/id #db/id [:db.part/user]
   :simulator-template/arena-template "Combat"}
  {:db/id #db/id [:db.part/user]
-  :simulator-template/arena-template "Free for all"}]
+  :simulator-template/arena-template "Free for all"}
+ {:db/id #db/id [:db.part/user]
+  :simulator-template/arena-template "Small Arena"}]
