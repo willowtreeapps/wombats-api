@@ -57,12 +57,12 @@
   :arena/shot-damage 10
   :arena/smoke-duration 3
   :arena/food 10
-  :arena/poison 4
-  :arena/steel-walls 4
-  :arena/steel-wall-hp 200
+  :arena/poison 0
+  :arena/steel-walls 0
+  :arena/steel-wall-hp 0
   :arena/wood-walls 4
   :arena/wood-wall-hp 20
-  :arena/zakano 2
-  :arena/zakano-hp 20
+  :arena/zakano 0
+  :arena/zakano-hp 0
   :arena/wombat-hp 100
   :arena/perimeter true}]
