@@ -56,6 +56,9 @@
                             ;; HTTP Client
                             [http-kit "2.3.0-alpha1"]
 
+                            ;; URL util lib
+                            [com.cemerick/url "0.1.1"]
+
                             ;; Repl reloading
                             [reloaded.repl "0.2.3" :scope "test"]
 
@@ -176,6 +179,7 @@
     (transact-all conn "resources/datomic/roles.dtm")
     (transact-all conn "resources/datomic/users.dtm")
     (transact-all conn "resources/datomic/arena-templates.dtm")
+    (transact-all conn "resources/datomic/access-keys.dtm")
     @(seed-simulator-templates conn))
   uri)
 
