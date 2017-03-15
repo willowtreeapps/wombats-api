@@ -179,6 +179,7 @@
     (transact-all conn "resources/datomic/roles.dtm")
     (transact-all conn "resources/datomic/users.dtm")
     (transact-all conn "resources/datomic/arena-templates.dtm")
+    (transact-all conn "resources/datomic/access-keys.dtm")
     @(seed-simulator-templates conn))
   uri)
 

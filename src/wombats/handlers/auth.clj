@@ -135,13 +135,12 @@
                    signing-secret]} (get-github-settings context)
            {:keys [code referer state]} (:query-params request)
            create-or-update-user (dao/get-fn :create-or-update-user context)
-           failed-callback (redirect-home context referer)
+           get-user-by-github-id (dao/get-fn :get-user-by-github-id context)
+           failed-redirect #(redirect-home context referer)
            {signing-secret-check :signing-secret
-            access-key-key :access-key} (read-string (url-decode state))
-           access-key (get-when-valid-access-key access-key-key context)
-           valid-signing-secret? (= signing-secret-check signing-secret)]
+            access-key-key :access-key} (read-string (url-decode state))]
 
-       (if valid-signing-secret?
+       (if (= signing-secret-check signing-secret)
          (let [github-access-token @(get-access-token {:client_id client-id
                                                        :client_secret client-secret
                                                        :code code})
@@ -151,17 +150,20 @@
              (let [user-fields (select-keys user [:login :id :avatar_url])
                    user-access-token (gen-user-access-token (get-hashing-secret context)
                                                             (:id user-fields))
-                   user-update (create-or-update-user user-fields
-                                                      github-access-token
-                                                      user-access-token
-                                                      access-key)]
+                   access-key (get-when-valid-access-key access-key-key context)]
 
-               (clojure.pprint/pprint user-update)
+               (create-or-update-user user-fields
+                                      github-access-token
+                                      user-access-token
+                                      access-key)
 
-               (redirect-home context referer user-access-token))
-             failed-callback)
-           failed-callback)
-         failed-callback)))))
+               (let [updated-user (get-user-by-github-id (:id user-fields))]
+
+                 (clojure.pprint/pprint updated-user)
+
+                 (redirect-home context referer user-access-token)))
+             (failed-redirect)))
+         (failed-redirect))))))
 
 (def ^:swagger-spec signout-spec
   {"/api/v1/auth/github/signout"
