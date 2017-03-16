@@ -46,25 +46,23 @@
                         (= (:type cell-update) :open))
         wombat-shooter? (= (:type shooter) :wombat)]
 
-    (cond-> game-state
-      ;; Always update the cell metadata to attach the shot
-      true
-      (update-in [:frame :frame/arena]
-                 #(au/update-cell-metadata %
-                                           cell-coords
-                                           (conj cell-metadata
-                                                 (get-shot-metadata shooter))))
+    ;; Always update the cell metadata to attach the shot
+    (cond-> (update-in game-state [:game/frame :frame/arena]
+                       #(au/update-cell-metadata %
+                                                 cell-coords
+                                                 (conj cell-metadata
+                                                       (get-shot-metadata shooter))))
 
       ;; If the cell is able to be damaged, apply damage and update the arena
       contains-hp?
-      (update-in [:frame :frame/arena]
+      (update-in [:game/frame :frame/arena]
                  #(au/update-cell-contents %
                                            cell-coords
                                            cell-update))
 
       ;; If the cell was destroyed, attach explosion metadata
       destroyed?
-      (update-in [:frame :frame/arena]
+      (update-in [:game/frame :frame/arena]
                  #(au/update-cell-metadata %
                                            cell-coords
                                            (conj cell-metadata
@@ -72,21 +70,17 @@
 
       ;; If the effected cell was another player, updated messages
       wombat-victim?
-      (update-in [:players (:uuid cell-contents)]
+      (update-in [:game/players (:uuid cell-contents)]
                  (fn [player]
-                   ;; TODO Update score?
+                   ;; TODO Update how many times i've been hit / killed
                    player))
 
       ;; If the shooter hit something, update their stats
       (and contains-hp? wombat-shooter?)
-      (update-in [:players (:uuid shooter) :stats]
+      (update-in [:game/players (:uuid shooter) :player/stats]
                  (fn [stats]
                    (let [item-hit (:type cell-contents)]
-                     (cond-> stats
-                       ;; Always update hit counter
-                       true
-                       (update :stats/shots-hit inc)
-
+                     (cond-> (update stats :stats/shots-hit inc)
                        ;; Update wombat hit stats
                        (= item-hit :wombat)
                        (-> (update :stats/wombats-hit inc)
@@ -107,9 +101,9 @@
 
       ;; If the shooter was a player and they destroyed something, update their stats
       (and destroyed? wombat-shooter?)
-      (update-in [:players (:uuid shooter) :stats]
+      (update-in [:game/players (:uuid shooter) :player/stats]
                  (fn [stats]
-                   (condp = (:type cell-contents)
+                   (case (:type cell-contents)
                      :wombat (-> stats
                                  (update :stats/wombats-destroyed inc)
                                  ;; TODO Pull from config
@@ -131,7 +125,7 @@
            should-progress?
            shooter] :as shot-state}
    shot-cell-coords]
-  (let [arena (get-in game-state [:frame :frame/arena])
+  (let [arena (get-in game-state [:game/frame :frame/arena])
         cell-at-point (gu/get-item-at-coords shot-cell-coords arena)]
     (if (shot-should-progress? should-progress? cell-at-point shot-damage)
       (let [cell-hp (get-in cell-at-point [:contents :hp] 0)
@@ -149,20 +143,18 @@
       (assoc shot-state :should-progress? false))))
 
 (defn shoot
-  [{:keys [arena-config frame] :as game-state}
-   metadata
-   decision-maker-state]
+  [game-state metadata decision-maker-state]
 
   (let [decision-maker-coords (dh/get-decision-maker-coords decision-maker-state)
         decision-maker-contents (dh/get-decision-maker-contents decision-maker-state)
         direction (gu/orientation-to-direction (:orientation decision-maker-contents))
         {shot-distance :arena/shot-distance
-         shot-damage :arena/shot-damage} arena-config
-        shoot-coords (gu/draw-line-from-point (:frame/arena frame)
-                                             decision-maker-coords
-                                             direction
-                                             ;; TODO Add to config
-                                             (or shot-distance 5))]
+         shot-damage :arena/shot-damage} (:game/arena game-state)
+        shoot-coords (gu/draw-line-from-point (get-in game-state [:game/frame :frame/arena])
+                                              decision-maker-coords
+                                              direction
+                                              ;; TODO Add to config
+                                              (or shot-distance 5))]
     (cond-> (:game-state
              (reduce process-shot
                      {:game-state game-state
@@ -173,7 +165,7 @@
 
       ;; Update shooter stats if the shooter is a player
       (= (:type decision-maker-contents) :wombat)
-      (update-in [:players (:uuid decision-maker-contents) :stats]
+      (update-in [:game/players (:uuid decision-maker-contents) :player/stats]
                  (fn [stats]
                    (-> stats
                        (update :stats/shots-fired inc)))))))

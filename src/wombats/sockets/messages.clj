@@ -1,6 +1,5 @@
 (ns wombats.sockets.messages
-  (:require [clojure.edn :as edn]
-            [wombats.game.player-stats :refer [get-player-stats]]))
+  (:require [clojure.edn :as edn]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions
@@ -39,8 +38,7 @@
 
 (defn arena-message
   [arena]
-  (get-message :frame-update
-               arena))
+  (get-message :frame-update arena))
 
 (defn chat-message
   [game-id formatted-message]
@@ -59,24 +57,24 @@
   (contains? #{:closed} status))
 
 (defn- get-start-time
-  [{:keys [game-config frame] :as game-state}]
-  (if (pre-game-start? game-config)
-    (:game/start-time game-config)
+  [{:keys [:game/frame :game/start-time] :as game-state}]
+  (if (pre-game-start? game-state)
+    start-time
     (:frame/round-start-time frame)))
 
 (defn- get-round-number
-  [{:keys [game-config frame] :as game-state}]
-  (if (pre-game-start? game-config)
+  [{:keys [:game/frame] :as game-state}]
+  (if (pre-game-start? game-state)
     1
     (:frame/round-number frame)))
 
 (defn- format-winners
   [players]
   (map (fn [player]
-         {:username (get-in player [:user :user/github-username])
-          :wombat-name (get-in player [:wombat :wombat/name])
-          :wombat-color (get-in player [:player :player/color])
-          :score (get-in player [:stats :stats/score])}) players))
+         {:username (get-in player [:player/user :user/github-username])
+          :wombat-name (get-in player [:player/wombat :wombat/name])
+          :wombat-color (:player/color player)
+          :score (get-in player [:player/stats :stats/score])}) players))
 
 (defn- filter-winners
   [sorted-stats]
@@ -104,9 +102,9 @@
          player) player-map))
 
 (defn- get-game-winner
-  [{:keys [game-config players] :as game-state}]
+  [{:keys [:game/players] :as game-state}]
 
-  (if (post-game? game-config)
+  (if (post-game? game-state)
     (-> players
         (format-players)
         (sort-by-stats)
@@ -115,17 +113,23 @@
         (vec))
     nil))
 
+(defn- sanitize-game-state
+  [game-state]
+  (-> game-state
+      (dissoc :game/initiative-order)
+      (dissoc :game/zakano)
+      (update :game/players (fn [players]
+                              (reduce-kv (fn [player-map player-id player]
+                                           (assoc player-map player-id (-> player
+                                                                           (dissoc :db/id)
+                                                                           (dissoc :user/github-access-token))))
+                                         {}
+                                         players)))))
+
 (defn game-info-message
   "Pulls out relevant info from game-state and sends it in join-game"
-  [{:keys [game-config] :as game-state}]
-  (get-message :game-info
-               (merge (dissoc game-config
-                              :game/arena
-                              :game/frame) 
-                      {:game/start-time (get-start-time game-state)
-                       :game/round-number (get-round-number game-state)
-                       :game/winner (get-game-winner game-state)
-                       :game/stats (vec (get-player-stats game-state))})))
+  [game-state]
+  (get-message :game-info (sanitize-game-state game-state)))
 
 (defn handshake-message
   [chan-id]

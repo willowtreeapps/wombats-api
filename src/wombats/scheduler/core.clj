@@ -27,8 +27,8 @@
 (defn schedule-next-round
   [game-state round-start-fn]
   (let [{game-status :game/status
-         game-id :game/id} (:game-config game-state)
-        start-time (get-in game-state [:frame :frame/round-start-time])]
+         game-id :game/id} game-state
+        start-time (get-in game-state [:game/frame :frame/round-start-time])]
     (when (= game-status :active-intermission)
       (schedule-game game-id start-time round-start-fn)))
   game-state)
@@ -40,3 +40,6 @@
       (schedule-game (:game/id game)
                      (:game/start-time game)
                      start-round-fn))))
+
+;; TODO Schedule active & active intermission games in the case
+;;      of system restart.

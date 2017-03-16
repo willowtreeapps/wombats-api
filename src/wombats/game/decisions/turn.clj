@@ -15,7 +15,7 @@
         updated-contents (assoc contents :orientation new-orientation)]
 
     (update-in game-state
-               [:frame :frame/arena]
+               [:game/frame :frame/arena]
                (fn [arena]
                  (au/update-cell-contents arena
                                           coords
