@@ -2,6 +2,7 @@
   (:require [io.pedestal.interceptor.helpers :as interceptor]
             [clojure.spec :as s]
             [clj-time.core :as t]
+            [wombats.handlers.helpers :refer [wombat-error]]
             [wombats.specs.utils :as sutils]
             [wombats.daos.helpers :as dao]
             [wombats.interceptors.current-user :refer [get-current-user]]))
@@ -46,7 +47,8 @@
 (s/def :access-key/id string?)
 (s/def :access-key/key string?)
 (s/def :access-key/max-number-of-uses #(instance? Long %))
-(s/def :access-key/number-of-uses #(instance? Long %))
+(s/def :access-key/number-of-uses (s/and #(instance? Long %)
+                                         #(> % 0)))
 (s/def :access-key/expiration-date inst?)
 (s/def :access-key/description string?)
 (s/def :access-key/created-by #(instance? Long %))
@@ -71,10 +73,11 @@
            :parameters [add-access-key-body-params]
            :responses {:200 {:description "add-access-key response"}}}}})
 
-(defn- format-new-access-key-request
+(defn- format-access-key-request
   [access-key]
-  (-> access-key
-      (update :access-key/expiration-date #(when % (read-string (str "#inst \"" % "\""))))))
+  (when access-key
+    (-> access-key
+        (update :access-key/expiration-date #(when % (read-string (str "#inst \"" % "\"")))))))
 
 (defn- add-access-key-fields
   [{user-ref :db/id} access-key]
@@ -89,7 +92,7 @@
    ::add-access-key
    (fn [{:keys [request response] :as context}]
      (let [access-key (->> (:edn-params request)
-                           (format-new-access-key-request)
+                           (format-access-key-request)
                            (sutils/validate-input ::new-access-key)
                            (add-access-key-fields (get-current-user context))
                            (sutils/validate-input ::access-key))
@@ -146,12 +149,32 @@
           :parameters [access-key-id-path-param]
           :responses {:200 {:description "update-access-key response"}}}}})
 
+(defn- update-access-key-fields
+  [{user-ref :db/id}
+   {:keys [:access-key/number-of-uses
+           :access-key/max-number-of-uses] :as access-key}]
+
+  (when (> number-of-uses max-number-of-uses)
+    (wombat-error {:code :handlers.access_key.update-access-key-fields/max-number-of-keys
+                   :datials {:max-number-of-uses max-number-of-uses
+                             :number-of-uses number-of-uses}}))
+
+  (-> access-key
+      (assoc :access-key/updated-by user-ref)))
+
 (def update-access-key
   (interceptor/before
    ::update-access-key
    (fn [{:keys [request response] :as context}]
      (let [access-key-id (get-in request [:path-params :access-key-id])
+           new-access-key (->> (:edn-params request)
+                               (format-access-key-request)
+                               (sutils/validate-input ::new-access-key)
+                               (update-access-key-fields (get-current-user context))
+                               (sutils/validate-input ::access-key))
+           current-access-key ((dao/get-fn :get-access-key-by-id context) access-key-id)
            update-access-key (dao/get-fn :update-access-key context)]
+
        (assoc context :response (assoc response
                                        :status 200
                                        :body (update-access-key access-key-id)))))))
