@@ -21,4 +21,10 @@
                :user.roles/coordinator
                :user.roles/contributor
                :user.roles/admin]
+  :user/github-username "erochest"}
+ {:db/id #db/id [:db.part/user]
+  :user/roles [:user.roles/user
+               :user.roles/coordinator
+               :user.roles/contributor
+               :user.roles/admin]
   :user/github-username "morganedmonds"}]
