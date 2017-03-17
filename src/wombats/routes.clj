@@ -105,11 +105,14 @@
            {:put game/start-game}]]]
 
         ["/access_keys"
-         ^:interceptors [(authorize #{:user.roles/coordinator
-                                      :user.roles/admin})]
-         {:get access-key/get-access-keys
-          :post access-key/add-access-key}
+         {:get [:get-access-keys
+                access-key/get-access-keys
+                ^:interceptors [(authorize #{:user.roles/coordinator})]]
+          :post [:add-access-key
+                 access-key/add-access-key
+                 ^:interceptors [(authorize #{:user.roles/coordinator})]]}
          ["/:access-key-id"
+          ^:interceptors [(authorize #{:user.roles/admin})]
           {:get access-key/get-access-key
            :delete access-key/delete-access-key
            :put access-key/update-access-key}]]
