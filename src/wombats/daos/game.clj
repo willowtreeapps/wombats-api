@@ -210,10 +210,11 @@
 
 (defn- close-round
   [conn]
-  (fn [{:keys [:game/frame :game/status]}]
+  (fn [{:keys [:game/id :game/frame :game/status]}]
 
     (let [frame-trx (-> frame (update :frame/arena nippy/freeze))
-          game-trx {:game/status status}]
+          game-trx {:game/id id
+                    :game/status status}]
 
       (d/transact-async conn [frame-trx game-trx]))))
 
