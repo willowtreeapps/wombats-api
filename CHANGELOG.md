@@ -7,6 +7,10 @@ CHANGELOG
     [Matt O'Connell](https://github.com/oconn) *No Issue*
 * Add access keys
     [Matt O'Connell](https://github.com/oconn) #[325](https://github.com/willowtreeapps/wombats-api/issues/325)
+* Add Eric to the DB (Seed as admin)
+    [Matt O'Connell](https://github.com/oconn) *No Issue*
+* Add ability to update access keys
+    [Matt O'Connell](https://github.com/oconn) #[341](https://github.com/willowtreeapps/wombats-api/issues/341) #[332](https://github.com/willowtreeapps/wombats-api/issues/332)
 
 **Bug Fixes**
 * Simulator State Transfer

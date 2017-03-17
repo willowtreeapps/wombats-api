@@ -15,6 +15,7 @@
   {:handlers.simulator.initialize-simulator/missing-template "Simulator template '%s' not found."
    :handlers.simulator.initialize-simulator/missing-user "User with id '%s' not found."
    :handlers.simulator.initialize-simulator/missing-wombat "Wombat with id '%s' not found."
+   :handlers.access_key.update-access-key-fields/max-number-of-keys "Max number of keys must be greater than or eaual to the number of claimed keys."
    000000 "Arena not found."
    000001 "Wombat cound not be found."
    000002 "You do not have permissions to use this wombat."
