@@ -77,7 +77,8 @@
   [access-key]
   (when access-key
     (-> access-key
-        (update :access-key/expiration-date #(when % (read-string (str "#inst \"" % "\"")))))))
+        (update :access-key/expiration-date
+                #(when % (read-string (str "#inst \"" % "\"")))))))
 
 (defn- add-access-key-fields
   [{user-ref :db/id} access-key]
@@ -159,9 +160,10 @@
         (merge current-access-key updated-access-key)]
 
     (when (> number-of-uses max-number-of-uses)
-      (wombat-error {:code :handlers.access_key.update-access-key-fields/max-number-of-keys
-                     :datials {:max-number-of-uses max-number-of-uses
-                               :number-of-uses number-of-uses}}))
+      (wombat-error
+       {:code :handlers.access_key.update-access-key-fields/max-number-of-keys
+        :datials {:max-number-of-uses max-number-of-uses
+                  :number-of-uses number-of-uses}}))
 
     (assoc access-key :access-key/updated-by user-ref)))
 
@@ -169,15 +171,24 @@
   (interceptor/before
    ::update-access-key
    (fn [{:keys [request response] :as context}]
-     (let [update-access-key (dao/get-fn :update-access-key context)
-           access-key-id (get-in request [:path-params :access-key-id])
-           current-access-key ((dao/get-fn :get-access-key-by-id context) access-key-id)
-           new-access-key (->> (:edn-params request)
-                               (format-access-key-request)
-                               (sutils/validate-input ::new-access-key)
-                               (update-access-key-fields (get-current-user context)
-                                                         current-access-key))]
+     (let [update-access-key
+           (dao/get-fn :update-access-key context)
 
-       (assoc context :response (assoc response
-                                       :status 200
-                                       :body (update-access-key access-key-id new-access-key)))))))
+           access-key-id
+           (get-in request [:path-params :access-key-id])
+
+           current-access-key
+           ((dao/get-fn :get-access-key-by-id context) access-key-id)
+
+           new-access-key
+           (->> (:edn-params request)
+                (format-access-key-request)
+                (sutils/validate-input ::new-access-key)
+                (update-access-key-fields (get-current-user context)
+                                          current-access-key))]
+
+       (assoc context :response
+              (assoc response
+                     :status 200
+                     :body (update-access-key access-key-id
+                                              new-access-key)))))))

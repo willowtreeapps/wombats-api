@@ -150,10 +150,12 @@
                  ;; Check if the user has a vaild access key
                  (if (:user/access-key updated-user)
                    (redirect-home context referer user-access-token)
-                   (failed-redirect "Wombats is in Alpha. You'll need to request an early access token to get started now."))))
+                   (failed-redirect
+                    (str "Oops! What's the magic word?"
+                         " Please request an access key from an administrator.")))))
              (failed-redirect "We were unable to lookup your Github Account.")))
          (do
-           (log/error (str "Signin request has been tampored with.\n\n" request))
+           (log/error (str "Sign in request has been tampored with.\n\n" request))
            (failed-redirect "Something went wrong while trying to sign in.")))))))
 
 (def ^:swagger-spec signout-spec
