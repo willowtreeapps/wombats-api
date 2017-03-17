@@ -7,7 +7,7 @@
             [wombats.daos.helpers :as dao]
             [wombats.interceptors.current-user :refer [get-current-user]]))
 
-(def ^:private add-access-key-body-sample
+(def ^:private access-key-body-sample
   #:access-key{:key "wt2017_alpha"
                :max-number-of-uses 100
                :expiration-date (str (t/plus (t/now)
@@ -20,12 +20,12 @@
    :description "id belonging to an access key"
    :required true})
 
-(def ^:private add-access-key-body-params
+(def ^:private access-key-body-params
   {:name "access-key-body"
    :in "body"
    :description "values for an access key"
    :required true
-   :default (str add-access-key-body-sample)
+   :default (str access-key-body-sample)
    :schema {}})
 
 (def ^:swagger-spec get-access-keys-spec
@@ -70,7 +70,7 @@
    {:post {:description "Creates and returns a new access key"
            :tags ["access-key"]
            :operationId "add-access-keys"
-           :parameters [add-access-key-body-params]
+           :parameters [access-key-body-params]
            :responses {:200 {:description "add-access-key response"}}}}})
 
 (defn- format-access-key-request
@@ -94,8 +94,7 @@
      (let [access-key (->> (:edn-params request)
                            (format-access-key-request)
                            (sutils/validate-input ::new-access-key)
-                           (add-access-key-fields (get-current-user context))
-                           (sutils/validate-input ::access-key))
+                           (add-access-key-fields (get-current-user context)))
            add-access-key (dao/get-fn :add-access-key context)
            get-access-key-by-id (dao/get-fn :get-access-key-by-id context)]
 
@@ -146,35 +145,39 @@
    {:put {:description "Updates an access key"
           :tags ["access-key"]
           :operationId "update-access-key"
-          :parameters [access-key-id-path-param]
+          :parameters [access-key-id-path-param
+                       access-key-body-params]
           :responses {:200 {:description "update-access-key response"}}}}})
 
 (defn- update-access-key-fields
   [{user-ref :db/id}
-   {:keys [:access-key/number-of-uses
-           :access-key/max-number-of-uses] :as access-key}]
+   current-access-key
+   updated-access-key]
 
-  (when (> number-of-uses max-number-of-uses)
-    (wombat-error {:code :handlers.access_key.update-access-key-fields/max-number-of-keys
-                   :datials {:max-number-of-uses max-number-of-uses
-                             :number-of-uses number-of-uses}}))
+  (let [{:keys [:access-key/number-of-uses
+                :access-key/max-number-of-uses] :as access-key}
+        (merge current-access-key updated-access-key)]
 
-  (-> access-key
-      (assoc :access-key/updated-by user-ref)))
+    (when (> number-of-uses max-number-of-uses)
+      (wombat-error {:code :handlers.access_key.update-access-key-fields/max-number-of-keys
+                     :datials {:max-number-of-uses max-number-of-uses
+                               :number-of-uses number-of-uses}}))
+
+    (assoc access-key :access-key/updated-by user-ref)))
 
 (def update-access-key
   (interceptor/before
    ::update-access-key
    (fn [{:keys [request response] :as context}]
-     (let [access-key-id (get-in request [:path-params :access-key-id])
+     (let [update-access-key (dao/get-fn :update-access-key context)
+           access-key-id (get-in request [:path-params :access-key-id])
+           current-access-key ((dao/get-fn :get-access-key-by-id context) access-key-id)
            new-access-key (->> (:edn-params request)
                                (format-access-key-request)
                                (sutils/validate-input ::new-access-key)
-                               (update-access-key-fields (get-current-user context))
-                               (sutils/validate-input ::access-key))
-           current-access-key ((dao/get-fn :get-access-key-by-id context) access-key-id)
-           update-access-key (dao/get-fn :update-access-key context)]
+                               (update-access-key-fields (get-current-user context)
+                                                         current-access-key))]
 
        (assoc context :response (assoc response
                                        :status 200
-                                       :body (update-access-key access-key-id)))))))
+                                       :body (update-access-key access-key-id new-access-key)))))))

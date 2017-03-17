@@ -1,5 +1,6 @@
 (ns wombats.handlers.auth
   (:require [clojure.string :refer [ends-with? join split]]
+            [taoensso.timbre :as log]
             [io.pedestal.interceptor.helpers :as interceptor]
             [cemerick.url :refer [url-encode url-decode]]
             [org.httpkit.client :as http]
@@ -121,7 +122,7 @@
            {:keys [code referer state]} (:query-params request)
            create-or-update-user (dao/get-fn :create-or-update-user context)
            get-user-by-github-id (dao/get-fn :get-user-by-github-id context)
-           failed-redirect #(redirect-home context referer)
+           failed-redirect #(redirect-home context (str referer "?login-error=" (url-encode %)))
            {signing-secret-check :signing-secret
             access-key-key :access-key} (read-string (url-decode state))]
 
@@ -149,9 +150,11 @@
                  ;; Check if the user has a vaild access key
                  (if (:user/access-key updated-user)
                    (redirect-home context referer user-access-token)
-                   (failed-redirect))))
-             (failed-redirect)))
-         (failed-redirect))))))
+                   (failed-redirect "Wombats is in Alpha. You'll need to request an early access token to get started now."))))
+             (failed-redirect "We were unable to lookup your Github Account.")))
+         (do
+           (log/error (str "Signin request has been tampored with.\n\n" request))
+           (failed-redirect "Something went wrong while trying to sign in.")))))))
 
 (def ^:swagger-spec signout-spec
   {"/api/v1/auth/github/signout"

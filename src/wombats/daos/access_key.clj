@@ -22,7 +22,7 @@
 (defn add-access-key
   [conn]
   (fn [access-key]
-    @(d/transact conn [[:add-access-key access-key]])))
+    @(d/transact conn [[:add-or-update-access-key access-key]])))
 
 (defn retract-access-key
   [conn]
@@ -31,5 +31,6 @@
 
 (defn update-access-key
   [conn]
-  (fn [access-key-id]
-    "NOT YET IMPLEMENTED. https://github.com/willowtreeapps/wombats-api/issues/341"))
+  (fn [access-key-id access-key]
+    @(d/transact conn [[:add-or-update-access-key access-key]])
+    access-key))

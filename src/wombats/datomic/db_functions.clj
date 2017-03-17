@@ -133,27 +133,34 @@
                       color)]
              (> (count player) 0))}))
 
-(def add-access-key
+(def add-or-update-access-key
   (d/function
    '{:lang :clojure
      :params [db access-key]
-     :code (let [requesting-key (:access-key/key access-key)
-                 current-access-key? (not
-                                      (empty?
-                                       (d/q '[:find ?access-key
-                                              :in $ ?access-key-key
-                                              :where
-                                              [?access-key :access-key/key ?access-key-key]]
-                                            db
-                                            requesting-key)))]
+     :code (let [{requesting-key :access-key/key
+                  requesting-eid :db/id} access-key
 
-             (when current-access-key?
+                 current-access-key
+                 (ffirst
+                  (d/q '[:find (pull ?access-key [*])
+                         :in $ ?access-key-key
+                         :where
+                         [?access-key :access-key/key ?access-key-key]]
+                       db
+                       requesting-key))]
+
+             (when (and current-access-key
+                        (not= (:db/id current-access-key)
+                              requesting-eid))
                (throw (ex-info "Wombat Error" {:type :wombat-error
                                                :message "Access key already in use."
-                                               :details {:access-key/key requesting-key}
+                                               :details {:access-key/key requesting-key
+                                                         :db/id requesting-eid}
                                                :code :transactor/access-key-in-use})))
 
-             [(assoc access-key :db/id (d/tempid :db.part/user))])}))
+             [(if (some? requesting-eid)
+                access-key
+                (assoc access-key :db/id (d/tempid :db.part/user)))])}))
 
 (def create-or-update-user
   (d/function
@@ -212,9 +219,9 @@
                      :db/doc "Transaction for players joining a game."
                      :db/fn player-join}
                     {:db/id (d/tempid :db.part/user)
-                     :db/ident :add-access-key
-                     :db/doc "Transaction for adding access keys"
-                     :db/fn add-access-key}
+                     :db/ident :add-or-update-access-key
+                     :db/doc "Transaction for adding or updating access keys"
+                     :db/fn add-or-update-access-key}
                     {:db/id (d/tempid :db.part/user)
                      :db/ident :create-or-update-user
                      :db/doc "Transaction for creating or updating a users credentials"
