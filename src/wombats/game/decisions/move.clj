@@ -28,12 +28,12 @@
 
 (defn- apply-food-effects
   [decision-maker-contents]
-  ;; TODO pull from config
+  ;; TODO #333 pull from config
   (update decision-maker-contents :hp #(+ % 10)))
 
 (defn- apply-poison-effects
   [decision-maker-contents]
-  ;; TODO pull from config
+  ;; TODO #333 pull from config
   (update decision-maker-contents :hp #(- % 10)))
 
 (defn update-decision-maker-with

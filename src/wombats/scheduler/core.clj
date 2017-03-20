@@ -41,5 +41,6 @@
                      (:game/start-time game)
                      start-round-fn))))
 
-;; TODO Schedule active & active intermission games in the case
-;;      of system restart.
+;; TODO #349
+;; Schedule active & active intermission games
+;; in the case of system restart.
