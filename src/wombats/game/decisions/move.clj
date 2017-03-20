@@ -47,7 +47,7 @@
     decision-maker-contents))
 
 (defn- update-player-stats
-  [stats decision-maker-contents desired-space-contents]
+  [decision-maker-contents desired-space-contents]
   (update-in [:game/players (:uuid decision-maker-contents) :player/stats]
              (fn [stats]
                (condp = (:type desired-space-contents)
@@ -80,8 +80,7 @@
                                              decision-maker-coords
                                              (au/create-new-contents :open)))
         (cond->
-            is-player? (update-player-stats stats
-                                            decision-maker-contents
+            is-player? (update-player-stats decision-maker-contents
                                             desired-space-contents)))))
 
 (defn- apply-collision-damage

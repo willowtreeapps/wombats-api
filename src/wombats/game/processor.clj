@@ -64,7 +64,11 @@
 
 (defn- get-decision-maker-state
   [game-state decision-maker-type uuid]
-  (get (get-decision-maker game-state decision-maker-type uuid) :saved-state {}))
+  (get (get-decision-maker game-state
+                           decision-maker-type
+                           uuid)
+       :saved-state
+       {}))
 
 (defn- get-decision-maker-code
   [game-state decision-maker-type uuid]
@@ -164,6 +168,22 @@
            ch))
        initiative-order))
 
+(defn- update-decision-maker
+  [decision-maker
+   response-state
+   user-code-stacktrace
+   response-command]
+  (assoc decision-maker
+         :state
+         (-> {}
+             (merge (:state decision-maker))
+             (merge {;; Note: Saved state should not be updated
+                     ;;       to nil on error
+                     :saved-state (or response-state
+                                      (:saved-state decision-maker))
+                     :error user-code-stacktrace
+                     :command response-command}))))
+
 (defn- source-decision
   [game-state-acc
    {:keys [uuid response channel-error type]}
@@ -181,15 +201,10 @@
                   response
 
                   decision-maker-update
-                  (assoc decision-maker :state
-                         (-> {}
-                             (merge (:state decision-maker))
-                             (merge {;; Note: Saved state should not be updated
-                                     ;;       to nil on error
-                                     :saved-state (or response-state
-                                                      (:saved-state decision-maker))
-                                     :error user-code-stacktrace
-                                     :command response-command})))]
+                  (update-decision-maker decision-maker
+                                         response-state
+                                         user-code-stacktrace
+                                         response-command)]
               (merge decision-makers {uuid decision-maker-update})))))
 
 (defn source-decisions

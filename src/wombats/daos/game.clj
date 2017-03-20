@@ -53,6 +53,14 @@
                     {:player/stats [*]}]}
     {:game/frame [*]}])
 
+(defn- merge-player
+  [player-map player additional-state]
+  (assoc player-map
+         (:player/id player)
+         (if additional-state
+           (merge player additional-state)
+           player)))
+
 (defn- format-players
   ([game]
    (format-players game nil))
@@ -61,12 +69,7 @@
            (fn [players]
              (if players
                (reduce
-                (fn [player-map player]
-                  (assoc player-map
-                         (:player/id player)
-                         (if additional-player-state
-                           (merge player additional-player-state)
-                           player)))
+                #(merge-player %1 %2 additional-player-state)
                 {} players)
                {})))))
 
