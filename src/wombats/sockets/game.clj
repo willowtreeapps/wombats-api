@@ -135,8 +135,8 @@
   game-state)
 
 (defn broadcast-game-info
-  [{:keys [:game/game-id] :as game-state}]
-  (broadcast-to-viewers game-id
+  [{:keys [:game/id] :as game-state}]
+  (broadcast-to-viewers id
                         (m/game-info-message game-state))
   game-state)
 
