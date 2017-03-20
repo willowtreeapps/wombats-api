@@ -39,14 +39,16 @@
 (defn- set-initiative-order
   "Sets the initial initiative order"
   [game-state]
-  (let [decision-makers
+  (let [flattened-arena (flatten
+                         (get-in game-state [:game/frame
+                                             :frame/arena]))
+        decision-makers
         (reduce
          (fn [order item]
            (if (is-decision-maker? item)
              (conj order (select-keys (:contents item) [:uuid :type]))
              order))
-         [] (flatten (get-in game-state [:game/frame
-                                         :frame/arena])))]
+         [] flattened-arena)]
 
     (assoc game-state
            :game/initiative-order

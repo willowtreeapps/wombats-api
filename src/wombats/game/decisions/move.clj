@@ -46,6 +46,19 @@
     :poison (apply-poison-effects decision-maker-contents)
     decision-maker-contents))
 
+(defn- update-player-stats
+  [stats decision-maker-contents desired-space-contents]
+  (update-in [:game/players (:uuid decision-maker-contents) :player/stats]
+             (fn [stats]
+               (condp = (:type desired-space-contents)
+                 :food (-> stats
+                           (update :stats/food-collected inc)
+                           ;; TODO 333 Pull from config
+                           (update :stats/score + 5))
+                 :poison (-> stats
+                             (update :stats/poison-collected inc))
+                 stats))))
+
 (defn- move-into-cell
   [game-state
    {:keys [desired-space-coords
@@ -67,16 +80,9 @@
                                              decision-maker-coords
                                              (au/create-new-contents :open)))
         (cond->
-            is-player? (update-in [:game/players (:uuid decision-maker-contents) :player/stats]
-                                  (fn [stats]
-                                    (condp = (:type desired-space-contents)
-                                      :food (-> stats
-                                                (update :stats/food-collected inc)
-                                                ;; TODO Pull from config
-                                                (update :stats/score + 5))
-                                      :poison (-> stats
-                                                  (update :stats/poison-collected inc))
-                                      stats)))))))
+            is-player? (update-player-stats stats
+                                            decision-maker-contents
+                                            desired-space-contents)))))
 
 (defn- apply-collision-damage
   [contents damage]
@@ -100,22 +106,26 @@
                                                        collision-damage)
         take-space? (can-safely-occupy-space? updated-desired-space)]
     (cond-> game-state
-      take-space? (update-in [:game/frame :frame/arena]
-                             #(au/update-cell-contents %
-                                                       desired-space-coords
-                                                       updated-decision-maker))
-      take-space? (update-in [:game/frame :frame/arena]
-                             #(au/update-cell-contents %
-                                                       decision-maker-coords
-                                                       (au/create-new-contents :open)))
-      (not take-space?) (update-in [:game/frame :frame/arena]
-                                   #(au/update-cell-contents %
-                                                             desired-space-coords
-                                                             updated-desired-space))
-      (not take-space?) (update-in [:game/frame :frame/arena]
-                                   #(au/update-cell-contents %
-                                                             decision-maker-coords
-                                                             updated-decision-maker)))))
+      take-space?
+      (update-in [:game/frame :frame/arena]
+                 #(au/update-cell-contents %
+                                           desired-space-coords
+                                           updated-decision-maker))
+      take-space?
+      (update-in [:game/frame :frame/arena]
+                 #(au/update-cell-contents %
+                                           decision-maker-coords
+                                           (au/create-new-contents :open)))
+      (not take-space?)
+      (update-in [:game/frame :frame/arena]
+                 #(au/update-cell-contents %
+                                           desired-space-coords
+                                           updated-desired-space))
+      (not take-space?)
+      (update-in [:game/frame :frame/arena]
+                 #(au/update-cell-contents %
+                                           decision-maker-coords
+                                           updated-decision-maker)))))
 
 (defn move
   [game-state

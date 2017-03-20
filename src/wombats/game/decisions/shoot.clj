@@ -68,11 +68,11 @@
                                            (conj cell-metadata
                                                  (get-explosion-metadata))))
 
-      ;; If the effected cell was another player, updated messages
+      ;; If the affected cell was another player, updated messages
       wombat-victim?
       (update-in [:game/players (:uuid cell-contents)]
                  (fn [player]
-                   ;; TODO Update how many times i've been hit / killed
+                   ;; TODO #76 Update how many times i've been hit / killed
                    player))
 
       ;; If the shooter hit something, update their stats
@@ -84,19 +84,19 @@
                        ;; Update wombat hit stats
                        (= item-hit :wombat)
                        (-> (update :stats/wombats-hit inc)
-                           ;; TODO Pull from config
+                           ;; TODO #333 Pull from config
                            (update :stats/score + 3))
 
                        ;; Update zakano hit stats
                        (= item-hit :zakano)
                        (-> (update :stats/zakano-hit inc)
-                           ;; TODO Pull from config
+                           ;; TODO #333 Pull from config
                            (update :stats/score + 2))
 
                        ;; Update wood-barrier hit stats
                        (= item-hit :wood-barrier)
                        (-> (update :stats/wood-barriers-hit inc)
-                           ;; TODO Pull from config
+                           ;; TODO #333 Pull from config
                            (update :stats/score inc))))))
 
       ;; If the shooter was a player and they destroyed something, update their stats
@@ -106,15 +106,15 @@
                    (case (:type cell-contents)
                      :wombat (-> stats
                                  (update :stats/wombats-destroyed inc)
-                                 ;; TODO Pull from config
+                                 ;; TODO #333 Pull from config
                                  (update :stats/score + 15))
                      :zakano (-> stats
                                  (update :stats/zakano-destroyed inc)
-                                 ;; TODO Pull from config
+                                 ;; TODO #333 Pull from config
                                  (update :stats/score + 10))
                      :wood-barrier (-> stats
                                        (update :stats/wood-barriers-destroyed inc)
-                                       ;; TODO Pull from config
+                                       ;; TODO #333 Pull from config
                                        (update :stats/score + 2))
                      stats))))))
 
@@ -153,7 +153,7 @@
         shoot-coords (gu/draw-line-from-point (get-in game-state [:game/frame :frame/arena])
                                               decision-maker-coords
                                               direction
-                                              ;; TODO Add to config
+                                              ;; TODO #333 Add to config
                                               (or shot-distance 5))]
     (cond-> (:game-state
              (reduce process-shot
