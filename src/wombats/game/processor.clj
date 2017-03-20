@@ -147,15 +147,15 @@
          (let [ch (async/chan 1)]
            (async/go
              (try
-               (let [lambda-resp @(lambda-request (calculate-decision-maker-state game-state
-                                                                                  type
-                                                                                  uuid)
-                                                  (get-decision-maker-code game-state
-                                                                           type
-                                                                           uuid)
-                                                  aws-credentials
-                                                  lambda-settings)]
-
+               (let [lambda-resp
+                     @(lambda-request (calculate-decision-maker-state game-state
+                                                                      type
+                                                                      uuid)
+                                      (get-decision-maker-code game-state
+                                                               type
+                                                               uuid)
+                                      aws-credentials
+                                      lambda-settings)]
                  (async/>! ch {:uuid uuid
                                :response lambda-resp
                                :channel-error nil

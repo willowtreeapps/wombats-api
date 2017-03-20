@@ -1,6 +1,19 @@
-(ns wombats.game.zakano-code)
+(ns wombats.game.zakano-code
+  (:refer-clojure :exclude [fn])
+  (:require [serializable.fn :refer :all]))
 
-(defn get-arena-dimensions
+(defmacro defsource
+  "Similar to clojure.core/defn, but saves the function's definition in the var's
+   :source meta-data.
+
+  http://stackoverflow.com/questions/3782970/how-can-i-display-the-definition-of-a-function-in-clojure-at-the-repl"
+  {:arglists (:arglists (meta (var defn)))}
+  [fn-name & defn-stuff]
+  `(do (defn ~fn-name ~@defn-stuff)
+       (alter-meta! (var ~fn-name) assoc :source (quote ~&form))
+       (var ~fn-name)))
+
+(defsource get-arena-dimensions
   "returns the dimensions of a given arena (NOTE: NOT 0 indexed)"
   {:added "1.0"
    :defined-in "wombats.arena.utils"}
@@ -9,13 +22,13 @@
         y (count arena)]
     [x y]))
 
-(defn get-in-arena
+(defsource get-in-arena
   "pulls the cell contents out of an arena at given coords"
   {:added "1.0"}
   [[x y] arena]
   (get-in arena [y x]))
 
-(defn modify-orientation
+(defsource modify-orientation
   "Return a new orientation based off a provided orientation and the direction
   you want to turn"
   {:added "1.0"
@@ -33,7 +46,7 @@
         current-orientation)
       current-orientation)))
 
-(defn calculate-turn-frontiers
+(defsource calculate-turn-frontiers
   [{:keys [orientation coords weight action-sequence]}]
   (map (fn [next-direction]
          {:orientation (modify-orientation orientation next-direction)
@@ -43,7 +56,7 @@
                                                   :metadata {:direction next-direction}})})
        [:right :left :about-face]))
 
-(defn get-move-coords
+(defsource get-move-coords
   "Gets the updated coords for moving.
 
   :Note wrapping not assumed."
@@ -55,7 +68,7 @@
     :s [x (inc y)]
     :w [(dec x) y]))
 
-(defn get-move-frontier-coords
+(defsource get-move-frontier-coords
   "Returns the coords from the move command"
   {:added "1.0"}
   ([coords orientation dimensions]
@@ -74,7 +87,7 @@
          :e (if (> new-x (dec dim-x)) nil new-coords)
          :s (if (> new-y (dec dim-y)) nil new-coords))))))
 
-(defn calculate-move-frontier
+(defsource calculate-move-frontier
   [{:keys [orientation coords weight action-sequence]}
    arena-dimensions
    wrap?]
@@ -85,14 +98,14 @@
        :weight (inc weight)
        :action-sequence (conj action-sequence {:action :move})})))
 
-(defn can-safely-occupy-space?
+(defsource can-safely-occupy-space?
   "Predicate used to determine what cells can pass as frontiers"
   {:added "1.0"}
   [cell]
-  (not (contains? #{:wood-barrier :steel-barrier :fog}
+  (not (contains? #{"wood-barrier" "steel-barrier" "fog"}
                   (get-in cell [:contents :type]))))
 
-(defn filter-frontiers
+(defsource filter-frontiers
   "Filters all the possible frontiers, returning only explore-able frontiers"
   {:added "1.0"}
   [frontiers arena explored]
@@ -103,7 +116,7 @@
                   (and (nil? (get explored uuid))
                        (can-safely-occupy-space? cell))))) frontiers))
 
-(defn calculate-frontier
+(defsource calculate-frontier
   "Caclulates the new frontier set based off of the provided frontier."
   {:added "1.0"}
   ([frontier arena explored]
@@ -119,7 +132,7 @@
     arena
     explored)))
 
-(defn add-to-sorted-arena
+(defsource add-to-sorted-arena
   "Adds a frontier node to the sorted arena"
   {:added "1.0"}
   [sorted-arena
@@ -139,7 +152,7 @@
                    (conj coll formatted-frontier)
                    [formatted-frontier])))))
 
-(defn to-global-coords
+(defsource to-global-coords
   "Converts local coordinates passed by the partially occluded arena
   to their corresponding global coordinates"
   {:added "1.0"}
@@ -153,7 +166,7 @@
           new-y (mod (+ global-y delta-y) dim-y)]
       [new-x new-y])))
 
-(defn get-first-frontier
+(defsource get-first-frontier
   [{:keys [local-coords arena]}]
   (let [{{orientation-str :orientation
           uuid :uuid} :contents} (get-in-arena local-coords arena)]
@@ -163,7 +176,7 @@
      :weight 0
      :action-sequence []}))
 
-(defn sort-arena-by-distance-then-type
+(defsource sort-arena-by-distance-then-type
   "sorts an arena by distance then type"
   {:added "1.0"}
   [{:keys [arena] :as enriched-state}]
@@ -190,17 +203,19 @@
                                               :coords
                                               update-global-coords-fn))))))))
 
-(defn remove-self
+(defsource remove-self
   [uuid]
   (fn [{:keys [wombat] :as weight-map}]
     (if wombat
-      (let [filtered-list (vec (filter #(not= uuid (:uuid %)) wombat))]
+      (let [filtered-list (vec (filter (fn [wombat]
+                                         (not= uuid (:uuid wombat)))
+                                       wombat))]
         (if (empty? filtered-list)
           (dissoc weight-map :wombat)
           (assoc weight-map :wombat filtered-list)))
       weight-map)))
 
-(defn remove-self-from-sorted-arena
+(defsource remove-self-from-sorted-arena
   "removes current user from the sorted arena"
   {:added "1.0"}
   [{:keys [local-coords arena self] :as enriched-state}]
@@ -212,21 +227,21 @@
          (update 0 (remove-self (:uuid self)))
          (update 1 (remove-self (:uuid self)))))))
 
-(defn update-in-global-arena
+(defsource update-in-global-arena
   [global-arena [x y] {{cell-type :type} :contents}]
   (update-in global-arena
-            [y x]
-            (fn [current-cell]
-              (if (nil? current-cell)
-                {:type (name cell-type)
-                 :explored? false}
-                (merge current-cell {:type (name cell-type)})))))
+             [y x]
+             (fn [current-cell]
+               (if (nil? current-cell)
+                 {:type (name cell-type)
+                  :explored? false}
+                 (merge current-cell {:type (name cell-type)})))))
 
-(defn track-able-cell?
+(defsource track-able-cell?
   [{{type :type} :contents}]
   (not (contains? #{"fog"} type)))
 
-(defn add-to-global-arena
+(defsource add-to-global-arena
   [global-arena partial-arena update-global-coords-fn]
   (:global-arena
    (reduce
@@ -247,17 +262,17 @@
     {:y-idx 0
      :global-arena global-arena} partial-arena)))
 
-(defn get-current-global-arena
+(defsource get-current-global-arena
   [global-arena [dim-x dim-y]]
   (if global-arena
     global-arena
     (vec (repeat dim-y (vec (repeat dim-x nil))))))
 
-(defn add-explored-to-global-arena
+(defsource add-explored-to-global-arena
   [global-arena [global-x global-y]]
   (assoc-in global-arena [global-y global-x :explored?] true))
 
-(defn update-global-view
+(defsource update-global-view
   "updates what your bot has seen historically."
   {:added "1.0"}
   [{:keys [saved-state arena global-dimensions global-coords] :as enriched-state}]
@@ -267,19 +282,47 @@
              (add-to-global-arena arena (to-global-coords enriched-state))
              (add-explored-to-global-arena global-coords))))
 
-(defn add-self
+(defsource add-self
   [{:keys [local-coords arena] :as enriched-state}]
   (let [self (get-in-arena local-coords arena)]
     (assoc enriched-state :self self)))
 
-(defn update-frame-number
+(defsource update-frame-number
   [{:keys [saved-state] :as enriched-state}]
   (let [frame-number (:frame-number saved-state)]
     (assoc enriched-state
            :frame-number
            (if frame-number (inc frame-number) 0))))
 
-(defn get-first-of
+(defsource get-look-ahead-items
+  "Get n numnber of cells in front of slef"
+  [{:keys [self
+           current-coords
+           global-coords
+           global-dimensions
+           global-arena]}
+   look-ahead-distance]
+  (let [orientation
+        (get-in self [:contents :orientation])
+
+        look-ahead-coords
+        (loop [coords []
+               current-coords global-coords]
+          (if (= (count coords) look-ahead-distance)
+            coords
+            (let [next-coords (get-move-frontier-coords current-coords
+                                                        orientation
+                                                        global-dimensions
+                                                        true)]
+
+              (recur (conj coords next-coords)
+                     next-coords))))]
+    (vec
+     (map (fn [coords]
+            (:type (get-in-arena coords global-arena)))
+          look-ahead-coords))))
+
+(defsource get-first-of
   "Returns the closest item's command sequence that matches the item-type"
   [sorted-arena item-type weight-coll-fn]
   (let [{action-sequence :action-sequence
@@ -296,55 +339,46 @@
       {:action-sequence action-sequence
        :metadata {:coords coords}})))
 
-(defn closest-food-action
+(defsource closest-food-action
   [{:keys [sorted-arena]}]
   (get-first-of sorted-arena :food first))
 
-(defn closest-food-validation
+(defsource closest-food-validation
   [{{[x y] :coords} :metadata} global-arena]
   (= "food" (get-in global-arena [y x :type])))
 
-(defn food-equality
+(defsource food-equality
   [prev-command next-command]
   ;; TODO check to see it the sequence in next-command is more efficient
   next-command)
 
-(defn get-look-ahead-items
-  "Get n numnber of cells in front of slef"
-  [])
-
-(defn pathfinding-action
-  [{:keys [global-arena global-coords self global-dimensions] :as enriched-state}]
-  (let [orientation (get-in self [:contents :orientation])
-        look-ahead 3 ;; TODO This should be passed in based off a l.o.s.
-        look-ahead-coords (loop [coords []
-                                 current-coords global-coords]
-                            (if (= (count coords) look-ahead)
-                              coords
-                              (let [next-coords (get-move-frontier-coords current-coords
-                                                                          orientation
-                                                                          global-dimensions
-                                                                          true)]
-
-                                (recur (conj coords next-coords)
-                                       next-coords))))
-        look-ahead-items (set (map #(:type (get-in-arena % global-arena)) look-ahead-coords))
-        should-shoot? (some #(contains? look-ahead-items %) ["steel-barrier"
-                                                             "wood-barrier"
-                                                             "wombat"
-                                                             "zakano"])
-        should-turn? (contains? look-ahead-items "poison")]
-
+(defsource pathfinding-action
+  [enriched-state]
+  (let [look-ahead-items (set (get-look-ahead-items enriched-state 3))
+        should-shoot? (some (fn [element]
+                              (contains? look-ahead-items element))
+                            ["wood-barrier"
+                             "wombat"
+                             "zakano"])
+        should-turn? (some (fn [element]
+                              (contains? look-ahead-items element))
+                           ["poison"
+                            "steel-barrier"])]
     {:action-sequence [(cond
                          should-shoot? {:action :shoot}
                          should-turn? {:action :turn
                                        :metadata {:direction :right}}
                          :else {:action :move})]}))
 
-(defn fire-action
-  [])
+(defsource fire-action
+  [enriched-state]
+  (let [look-ahead-items (set (get-look-ahead-items enriched-state 3))
+        should-shoot? (some (fn [element]
+                              (contains? look-ahead-items element))
+                            ["zakano"
+                             "wombat"])]))
 
-(defn clueless-action
+(defsource clueless-action
   ;; if the zakano doesn't know what to do next, it's
   ;; defense mechanism is to spin and shoot.
   [_]
@@ -352,7 +386,7 @@
                       :metadata {:direction :right}}
                      {:action :shoot}]})
 
-(defn format-command
+(defsource format-command
   ([action-name action-sequence]
    (format-command action-name action-sequence {}))
   ([action-name action-sequence metadata]
@@ -361,18 +395,19 @@
     :remaining-action-seq (vec (rest action-sequence))
     :metadata metadata}))
 
-(defn xform-command
+(defsource xform-command
   [enriched-state action-name action-fn]
   (let [{action-sequence :action-sequence
          metadata :metadata} (action-fn enriched-state)]
     (when action-sequence (format-command action-name action-sequence metadata))))
 
-(defn format-prev-command
+(defsource format-prev-command
   [{:keys [action-name remaining-action-seq metadata] :as prev-command}]
   (when (and prev-command (not (empty? remaining-action-seq)))
     (format-command action-name remaining-action-seq metadata)))
 
-(def command-priority
+(defsource get-command-priority
+  []
   [{:name "fire!"
     :fn fire-action
     :validate-command (fn [] true)
@@ -390,15 +425,19 @@
     :validate-command (fn [] true)
     :equality-command (fn [prev next] prev)}])
 
-(defn calculate-next-command
+(defsource calculate-next-command
   [enriched-state]
-  (first (filter #(not (nil? %))
-                 (map #(xform-command enriched-state (:name %) (:fn %))
-                      command-priority))))
+  (first (filter (fn [command] (not (nil? command)))
+                 (map (fn [command]
+                        (xform-command enriched-state
+                                       (:name command)
+                                       (:fn command)))
+                      (get-command-priority)))))
 
-(defn calculate-optimal-command
+(defsource calculate-optimal-command
   [prev-command next-command global-arena]
-  (let [commands (map #(:name %) command-priority)
+  (let [command-priority (get-command-priority)
+        commands (map (fn [{:keys [name]}] name) command-priority)
         prev-weight (.indexOf commands (:action-name prev-command))
         next-weight (.indexOf commands (:action-name next-command))
         prev-command-check (get-in command-priority [prev-weight :validate-command])
@@ -410,7 +449,7 @@
            (prev-command-check prev-command global-arena)) prev-command
       :else next-command)))
 
-(defn choose-command
+(defsource choose-command
   [{:keys [saved-state sorted-arena global-arena] :as enriched-state}]
   (let [prev-command (format-prev-command (:prev-command saved-state))
         next-command (calculate-next-command enriched-state)
@@ -421,19 +460,21 @@
                            next-command)]
     (assoc enriched-state :next-command selected-command)))
 
-(defn format-response
+(defsource format-response
   "formats the final response object"
   {:added "1.0"}
   [{global-arena :global-arena
     next-command :next-command
-    frame-number :frame-number}]
+    frame-number :frame-number}
+   time-left]
 
   {:command (:command next-command)
    :state {:global-arena global-arena
            :prev-command next-command
-           :frame-number frame-number}})
+           :frame-number frame-number
+           :time-left (str (time-left))}})
 
-(defn enrich-state
+(defsource enrich-state
   "Adds additional information to the given state used to improve
    the decision-making process"
   {:added "1.0"}
@@ -445,29 +486,65 @@
       (update-global-view)
       (update-frame-number)))
 
-(defn main-fn
+(defsource main-fn
   [state time-left]
   (-> (enrich-state state)
       (choose-command)
-      (format-response)))
+      (format-response time-left)))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; End local Bot Testing
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Format Zakano Response
+(def zakano-fns
+  [#'get-arena-dimensions
+   #'get-in-arena
+   #'modify-orientation
+   #'calculate-turn-frontiers
+   #'get-move-coords
+   #'get-move-frontier-coords
+   #'calculate-move-frontier
+   #'can-safely-occupy-space?
+   #'filter-frontiers
+   #'calculate-frontier
+   #'add-to-sorted-arena
+   #'to-global-coords
+   #'get-first-frontier
+   #'sort-arena-by-distance-then-type
+   #'remove-self
+   #'remove-self-from-sorted-arena
+   #'update-in-global-arena
+   #'track-able-cell?
+   #'add-to-global-arena
+   #'get-current-global-arena
+   #'add-explored-to-global-arena
+   #'update-global-view
+   #'add-self
+   #'update-frame-number
+   #'get-look-ahead-items
+   #'get-first-of
+   #'closest-food-action
+   #'closest-food-validation
+   #'food-equality
+   #'pathfinding-action
+   #'fire-action
+   #'clueless-action
+   #'format-command
+   #'xform-command
+   #'format-prev-command
+   #'get-command-priority
+   #'calculate-next-command
+   #'calculate-optimal-command
+   #'choose-command
+   #'format-response
+   #'enrich-state
+   #'main-fn])
+
+(defn get-definition [v]
+  (clojure.string/replace (:source (meta v))
+                          #"defsource"
+                          "defn"))
 
 (def zakano-fn
-  "(fn [state time-left]
-     (def turn-directions [:right :left :about-face])
-     (def smoke-directions [:forward :backward :left :right :drop])
-     (let [command-options [(repeat 10 {:action :move
-                                        :metadata {}})
-                            (repeat 4 {:action :turn
-                                       :metadata {:direction (rand-nth turn-directions)}})
-                            (repeat 2 {:action :shoot
-                                       :metadata {}})
-                            (repeat 1 {:action :smoke
-                                       :metadata {:direction (rand-nth smoke-directions)}})]]
-      {:command (rand-nth (flatten command-options))
-       :state {}}))")
+  (format "(fn [state time-left] %s (main-fn state time-left))"
+          (clojure.string/join ""
+                               (map get-definition zakano-fns))))
 
 (defn get-zakano-code [] zakano-fn)

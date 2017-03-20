@@ -34,14 +34,6 @@
       (is (= [16 1] (to-global-coords-fn-wrap [1 6])))
       (is (= [1 1] (to-global-coords-fn-wrap [6 6]))))))
 
-(deftest has-next-action?
-  (testing "returns true if there is an action inside of the remaining-action-seq prop"
-    (is (= true (zc/has-next-action? {:remaining-action-seq [{:action :move}]}))))
-  (testing "returns false if there remaining-action-seq is nil"
-    (is (= false (zc/has-next-action? {:remaining-action-seq nil}))))
-  (testing "returns false when remaining-action-seq is empty"
-    (is (= false (zc/has-next-action? {:remaining-action-seq []})))))
-
 (deftest get-first-frontier
   (testing "returns the correct \"first\" frontier"
     (is (= {:coords [3 3]
@@ -114,6 +106,11 @@
     (is (= :e (zc/modify-orientation :w :about-face)))
     (is (= :n (zc/modify-orientation :s :about-face)))))
 
+(deftest get-look-ahead-items
+  (testing "returns the next n items in front of the character"
+    (is (= ["open" "open" "open"]
+           (zc/get-look-ahead-items (zc/enrich-state sample-state)
+                                    3)))))
 
 (benchmark #(zc/main-fn (assoc sample-state
                                :saved-state
