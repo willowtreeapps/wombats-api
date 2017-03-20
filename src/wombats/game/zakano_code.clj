@@ -309,8 +309,12 @@
   ;; TODO check to see it the sequence in next-command is more efficient
   next-command)
 
+(defn get-look-ahead-items
+  "Get n numnber of cells in front of slef"
+  [])
+
 (defn pathfinding-action
-  [{:keys [global-arena global-coords self global-dimensions]}]
+  [{:keys [global-arena global-coords self global-dimensions] :as enriched-state}]
   (let [orientation (get-in self [:contents :orientation])
         look-ahead 3 ;; TODO This should be passed in based off a l.o.s.
         look-ahead-coords (loop [coords []
@@ -336,6 +340,9 @@
                          should-turn? {:action :turn
                                        :metadata {:direction :right}}
                          :else {:action :move})]}))
+
+(defn fire-action
+  [])
 
 (defn clueless-action
   ;; if the zakano doesn't know what to do next, it's
@@ -366,7 +373,11 @@
     (format-command action-name remaining-action-seq metadata)))
 
 (def command-priority
-  [{:name "food"
+  [{:name "fire!"
+    :fn fire-action
+    :validate-command (fn [] true)
+    :equality-command (fn [prev next] next)}
+   {:name "food"
     :fn closest-food-action
     :validate-command closest-food-validation
     :equality-command food-equality}
