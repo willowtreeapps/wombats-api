@@ -288,6 +288,12 @@
   :db/doc         "A players wombat reference"}
 
  {:db/id          #db/id [:db.part/db]
+  :db/ident       :player/stats
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A players stats reference"}
+
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :player/color
   :db/valueType   :db.type/string
   :db/cardinality :db.cardinality/one
@@ -386,12 +392,6 @@
   :db/doc         "Players enrolled in a game"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :game/stats
-  :db/valueType   :db.type/ref
-  :db/cardinality :db.cardinality/many
-  :db/doc         "Player / AI scores"}
-
- {:db/id          #db/id [:db.part/db]
   :db/ident       :game/created-by
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
@@ -468,13 +468,7 @@
   :db/ident       :stats/player
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
-  :db/doc         "The player associated with the stats"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/game
-  :db/valueType   :db.type/ref
-  :db/cardinality :db.cardinality/one
-  :db/doc         "The game these stats are associated with"}
+  :db/doc         "A stats player reference"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :stats/frame-number

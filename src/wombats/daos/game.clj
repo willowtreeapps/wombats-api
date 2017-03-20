@@ -34,53 +34,89 @@
 ;; 2 → ↑
 
 (def game-projection
+  ;; This is what is exposed to the client
   '[*
+    {:game/arena [:db/id *]}
     {:game/players [*
                     {:player/user [:user/github-username]}
-                    {:player/wombat [*]}]}
-    {:game/stats [*]}])
+                    {:player/wombat [*]}]}])
+
+(def game-state-projection
+  ;; This is what our API uses internally
+  '[*
+    {:game/arena [:db/id *]}
+    {:game/players [*
+                    {:player/user [:db/id
+                                   :user/github-username
+                                   :user/github-access-token]}
+                    {:player/wombat [*]}
+                    {:player/stats [*]}]}
+    {:game/frame [*]}])
+
+(defn- merge-player
+  [player-map player additional-state]
+  (assoc player-map
+         (:player/id player)
+         (if additional-state
+           (merge player additional-state)
+           player)))
+
+(defn- format-players
+  ([game]
+   (format-players game nil))
+  ([game additional-player-state]
+   (update game :game/players
+           (fn [players]
+             (if players
+               (reduce
+                #(merge-player %1 %2 additional-player-state)
+                {} players)
+               {})))))
+
+(defn filter-game-password
+  [conn]
+  (d/filter (d/db conn)
+            (fn [db datom]
+              (not= (d/entid db :game/password)
+                    (.a datom)))))
 
 (defn get-games-by-eids
   [conn]
   (fn [game-eids]
-    (d/pull-many
-     (d/db conn) '[*
-                   {:game/arena [:db/id *]}
-                   {:game/players [:db/id :player/color
-                                   {:player/user [:db/id :user/github-username]}
-                                   {:player/wombat [:db/id :wombat/name]}]}]
-     game-eids)))
+    (map
+     format-players
+     (-> (d/pull-many
+          (filter-game-password conn)
+          game-projection
+          game-eids)))))
 
 (defn get-game-eids-by-status
   [conn]
   (fn [status]
-    (let [db (d/db conn)
-          formatted-status (if (vector? status)
+    (let [formatted-status (if (vector? status)
                              (map keyword status)
-                             [(keyword status)])
-          game-eids (apply concat
-                           (d/q '[:find ?games
-                                  :in $ [?status ...]
-                                  :where [?games :game/status ?status]]
-                                db
-                                formatted-status))]
-      game-eids)))
+                             [(keyword status)])]
+      (apply concat
+             (d/q '[:find ?games
+                    :in $ [?status ...]
+                    :where [?games :game/status ?status]]
+                  (d/db conn)
+                  formatted-status)))))
 
 (defn get-game-eids-by-player
   [conn]
   (fn [user-id]
     (let [user-ids (if (vector? user-id)
                      user-id
-                     [user-id])
-          game-eids (apply concat
-                           (d/q '[:find ?games
-                                  :in $ [?user-ids ...]
-                                  :where [?users :user/id ?user-ids]
-                                         [?players :player/user ?users]
-                                         [?games :game/players ?players]]
-                                (d/db conn)
-                                user-ids))]
-      game-eids)))
+                     [user-id])]
+      (apply concat
+             (d/q '[:find ?games
+                    :in $ [?user-ids ...]
+                    :where [?users :user/id ?user-ids]
+                    [?players :player/user ?users]
+                    [?games :game/players ?players]]
+                  (d/db conn)
+                  user-ids)))))
 
 (defn get-all-game-eids
   [conn]
@@ -106,48 +142,19 @@
 (defn get-game-by-id
   [conn]
   (fn [game-id]
-    (get-entity-by-prop conn :game/id game-id game-projection)))
-
-(defn- format-player-map
-  [{players :game/players
-    stats :game/stats}]
-  (reduce
-   (fn [player-map player]
-     (assoc player-map (:player/id player) {:player (dissoc player :player/user
-                                                                   :player/wombat)
-                                            :stats (first (filter #(= (get-in % [:stats/player
-                                                                                 :player/id])
-                                                                      (:player/id player)) stats))
-                                            :user (:player/user player)
-                                            :wombat (:player/wombat player)
-                                            :state decision-maker-state}))
-   {}
-   players))
+    (-> (get-entity-by-prop conn :game/id game-id game-projection)
+        format-players)))
 
 (defn get-game-state-by-id
   [conn]
   (fn [game-id]
-    (let [raw-game-state (get-entity-by-prop conn
-                                             :game/id
-                                             game-id
-                                             '[*
-                                               {:game/players [*
-                                                               {:player/wombat [*]}
-                                                               {:player/user [:db/id
-                                                                              :user/github-username
-                                                                              :user/github-access-token]}]}
-                                               {:game/stats [*
-                                                             {:stats/player [:player/id]}]}
-                                               {:game/frame [*]}
-                                               {:game/arena [*]}])]
-      {:game-id (:game/id raw-game-state)
-       :frame (update (:game/frame raw-game-state) :frame/arena nippy/thaw)
-       :arena-config (:game/arena raw-game-state)
-       :game-config (dissoc raw-game-state :game/arena
-                                           :game/frame
-                                           :game/players
-                                           :game/stats)
-       :players (format-player-map raw-game-state)})))
+    (let [game-state (get-entity-by-prop conn
+                                         :game/id
+                                         game-id
+                                         game-state-projection)]
+      (-> game-state
+          (update-in [:game/frame :frame/arena] nippy/thaw)
+          (format-players {:state decision-maker-state})))))
 
 (defn add-game
   "Adds a new game entity to Datomic"
@@ -189,13 +196,11 @@
 
     (game-sockets/broadcast-game-info ((get-game-state-by-id conn) game-id))))
 
-(defn- update-frame-state
+(defn- update-frame
   [conn]
-  (fn [frame
-      players]
-
+  (fn [frame players]
     (let [frame-trx (-> frame (update :frame/arena nippy/freeze))
-          stats-trxs (vec (map (fn [[_ {stats :stats}]]
+          stats-trxs (vec (map (fn [[_ {stats :player/stats}]]
                                  (assoc stats
                                         :stats/frame-number
                                         (:frame/frame-number frame)))
@@ -208,20 +213,21 @@
 
 (defn- close-round
   [conn]
-  (fn [{:keys [frame game-config]}]
+  (fn [{:keys [:game/id :game/frame :game/status]}]
 
     (let [frame-trx (-> frame (update :frame/arena nippy/freeze))
-          game-trx game-config]
+          game-trx {:game/id id
+                    :game/status status}]
 
       (d/transact-async conn [frame-trx game-trx]))))
 
-(defn- close-game-state
+(defn- close-game
   [conn]
-  (fn [{:keys [game-id game-config]}]
+  (fn [{:keys [:game/id :game/end-time]}]
 
-    (d/transact-async conn [{:game/id game-id
+    (d/transact-async conn [{:game/id id
                              :game/status :closed
-                             :game/end-time (:game/end-time game-config)}])))
+                             :game/end-time end-time}])))
 
 (defn start-game
   "Transitions the game status to active"
@@ -230,7 +236,7 @@
     (let [game-state ((get-game-state-by-id conn) game-id)
           {game-eid :db/id} game-state]
 
-      (when (= 0 (count (:players game-state)))
+      (when (= 0 (count (:game/players game-state)))
         (wombat-error {:code 101006
                        :details {:game-id game-id}}))
 
@@ -238,9 +244,9 @@
       (future
         (try
           (game/start-round game-state
-                            {:update-frame (update-frame-state conn)
+                            {:update-frame (update-frame conn)
                              :close-round (close-round conn)
-                             :close-game (close-game-state conn)
+                             :close-game (close-game conn)
                              :round-start-fn (start-game conn aws-credentials lambda-settings)}
                             aws-credentials
                             lambda-settings)

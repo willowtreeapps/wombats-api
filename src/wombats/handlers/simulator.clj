@@ -106,22 +106,26 @@
          (wombat-error {:code :handlers.simulator.initialize-simulator/missing-wombat
                         :params [wombat-id]}))
 
-       (let [game-state {:arena-config (:simulator-template/arena-template simulator-template)
-                         :players {(dao/gen-id) {:player {:player/color "gray"}
-                                                 :stats initial-stats
-                                                 :user {:user/github-username (:user/github-username user)
-                                                        :user/github-access-token (:user/github-access-token user)}
-                                                 :wombat {:wombat/id (:wombat/id wombat)
-                                                          :wombat/name (:wombat/name wombat)
-                                                          :wombat/url (:wombat/url wombat)}
-                                                 :state {:code nil
-                                                         :command nil
-                                                         :error nil
-                                                         :saved-state {}}}}
-                         :frame {:frame/frame-number 0
-                                 :frame/round-number 1
-                                 :frame/round-start-time nil
-                                 :frame/arena (:simulator-template/arena simulator-template)}}]
+       (let [player-id (dao/gen-id)
+             game-state {:game/arena (:simulator-template/arena-template simulator-template)
+                         :game/players
+                         {player-id
+                          {:player/id player-id
+                           :player/color "gray"
+                           :player/stats initial-stats
+                           :player/user {:user/github-username (:user/github-username user)
+                                         :user/github-access-token (:user/github-access-token user)}
+                           :player/wombat {:wombat/id (:wombat/id wombat)
+                                           :wombat/name (:wombat/name wombat)
+                                           :wombat/url (:wombat/url wombat)}
+                           :state {:code nil
+                                   :command nil
+                                   :error nil
+                                   :saved-state {}}}}
+                         :game/frame {:frame/frame-number 0
+                                      :frame/round-number 1
+                                      :frame/round-start-time nil
+                                      :frame/arena (:simulator-template/arena simulator-template)}}]
 
          (assoc context
                 :response

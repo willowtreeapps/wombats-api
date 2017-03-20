@@ -30,13 +30,13 @@
       (vec (subvec padded-vec stop-one (inc calculated-stop))))))
 
 (defn get-partial-arena
-  [{:keys [frame arena-config] :as game-state}
+  [game-state
    coords
    decision-maker-type]
-  (let [arena (:frame/arena frame)
+  (let [arena (get-in game-state [:game/frame :frame/arena])
         {x :arena/width
          y :arena/height
-         radius :arena/player-radius} arena-config
+         radius :arena/player-radius} (:game/arena game-state)
         ;; TODO move radius into config
         safe-radius (calculate-safe-radius [x y] 3)
         [x1 y1 x2 y2] (calculate-box-coords coords [x y] safe-radius)

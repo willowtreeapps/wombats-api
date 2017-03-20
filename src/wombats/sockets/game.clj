@@ -130,14 +130,13 @@
 ;; Broadcast/send functions
 
 (defn broadcast-arena
-  [{:keys [game-id frame] :as game-state}]
-  (broadcast-to-viewers game-id
-                        (m/arena-message (:frame/arena frame)))
+  [{:keys [:game/id :game/frame] :as game-state}]
+  (broadcast-to-viewers id (m/arena-message (:frame/arena frame)))
   game-state)
 
 (defn broadcast-game-info
-  [{:keys [game-id] :as game-state}]
-  (broadcast-to-viewers game-id
+  [{:keys [:game/id] :as game-state}]
+  (broadcast-to-viewers id
                         (m/game-info-message game-state))
   game-state)
 
@@ -170,7 +169,7 @@
       {:keys [game-id]}]
     (let [player ((:get-player-from-game datomic) game-id id)
           game-state ((:get-game-state-by-id datomic) game-id)
-          arena (get-in game-state [:frame :frame/arena])]
+          arena (get-in game-state [:game/frame :frame/arena])]
 
       (swap! game-rooms
              assoc-in

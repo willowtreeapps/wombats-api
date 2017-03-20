@@ -4,17 +4,19 @@ CHANGELOG
 ## Develop
 **Enhancements**
 * Added new simulator template
-    [Matt O'Connell](https://github.com/oconn) *No Issue*
+    [Matt O'Connell][/oconn] *No Issue*
 * Add access keys
-    [Matt O'Connell](https://github.com/oconn) #[325](https://github.com/willowtreeapps/wombats-api/issues/325)
+    [Matt O'Connell][/oconn] #[325](https://github.com/willowtreeapps/wombats-api/issues/325)
 * Add Eric to the DB (Seed as admin)
-    [Matt O'Connell](https://github.com/oconn) *No Issue*
+    [Matt O'Connell][/oconn] *No Issue*
 * Add ability to update access keys
-    [Matt O'Connell](https://github.com/oconn) #[341](https://github.com/willowtreeapps/wombats-api/issues/341) #[332](https://github.com/willowtreeapps/wombats-api/issues/332)
+    [Matt O'Connell][/oconn] #[341](https://github.com/willowtreeapps/wombats-api/issues/341) #[332](https://github.com/willowtreeapps/wombats-api/issues/332)
+* Game State Refactor
+    [C.P. Dehli][/dehli], [Matt O'Connell][/oconn] #[305](https://github.com/willowtreeapps/wombats-api/issues/305)
 
 **Bug Fixes**
 * Simulator State Transfer
-    [Matt O'Connell](https://github.com/oconn) #[326](https://github.com/willowtreeapps/wombats-api/issues/326)
+    [Matt O'Connell][/oconn] #[326](https://github.com/willowtreeapps/wombats-api/issues/326)
 
 ## QA
 **Enhancements**
@@ -43,3 +45,7 @@ CHANGELOG
 
 **Bug Fixes**
 * None
+
+[/dehli]: https://github.com/dehli
+[/emily]: https://github.com/emilyseibert
+[/oconn]: https://github.com/oconn

@@ -26,12 +26,3 @@
              (assoc-in stats-acc [cell-uuid :hp] percent))
            stats-acc)))
      stats (flatten arena))))
-
-(defn get-player-stats
-  "Returns stats from game-state"
-  [{:keys [players frame arena-config]}]
-  (-> {}
-      (add-player-scores players)
-      (add-player-hp (:frame/arena frame)
-                     (:arena/wombat-hp arena-config))
-      vals))

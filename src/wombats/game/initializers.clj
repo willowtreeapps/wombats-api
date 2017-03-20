@@ -11,18 +11,20 @@
 
 (defn- add-players-to-game
   "Adds players to random cells in the arena"
-  [{:keys [players frame arena-config] :as game-state}]
+  [{:keys [:game/players
+           :game/frame] :as game-state}]
 
   (update-in
    game-state
-   [:frame :frame/arena]
+   [:game/frame :frame/arena]
    (fn [arena]
      (reduce
-      (fn [new-arena [player-uuid {:keys [player]}]]
+      (fn [new-arena [player-uuid {:keys [:player/color]}]]
         (let [formatted-player (-> (:wombat a-utils/arena-items)
                                    (merge {:uuid player-uuid
-                                           :color (:player/color player)
-                                           :hp (:arena/wombat-hp arena-config)
+                                           :color color
+                                           :hp (get-in game-state [:game/arena
+                                                                   :arena/wombat-hp])
                                            :orientation (g-utils/rand-orientation)}))]
           (a-utils/sprinkle new-arena formatted-player)))
       arena
@@ -36,32 +38,38 @@
 
 (defn- set-initiative-order
   "Sets the initial initiative order"
-  [{:keys [frame] :as game-state}]
-  (let [decision-makers (reduce
-                         (fn [order item]
-                           (if (is-decision-maker? item)
-                             (conj order (select-keys (:contents item) [:uuid :type]))
-                             order))
-                         [] (flatten (:frame/arena frame)))]
+  [game-state]
+  (let [flattened-arena (flatten
+                         (get-in game-state [:game/frame
+                                             :frame/arena]))
+        decision-makers
+        (reduce
+         (fn [order item]
+           (if (is-decision-maker? item)
+             (conj order (select-keys (:contents item) [:uuid :type]))
+             order))
+         [] flattened-arena)]
 
     (assoc game-state
-           :initiative-order
+           :game/initiative-order
            (shuffle decision-makers))))
 
 (defn- set-zakano-state
   [game-state]
-  (reduce (fn [game-state-acc {:keys [uuid type]}]
-            (if (= :zakano type)
-              (assoc-in game-state-acc
-                        [:zakano uuid]
-                        {:state g-utils/decision-maker-state})
-              game-state-acc))
-          game-state (:initiative-order game-state)))
+  (reduce
+   (fn [game-state-acc {:keys [uuid type]}]
+     (if (= :zakano type)
+       (assoc-in game-state-acc
+                 [:game/zakano uuid]
+                 {:state g-utils/decision-maker-state})
+       game-state-acc))
+   game-state
+   (:game/initiative-order game-state)))
 
 (defn- get-player-channels
   "Returns a seq of channels that are responsible for fetching user code"
   [players]
-  (map (fn [[player-eid {:keys [wombat user]}]]
+  (map (fn [[player-id {:keys [:player/wombat :player/user]}]]
          (let [url (str github-repo-api-base (:wombat/url wombat))
                auth-headers {:headers {"Accept" "application/json"
                                        "Authorization" (str "token "
@@ -69,7 +77,7 @@
                ch (async/chan 1)]
            (async/go
              (let [resp @(http/get url auth-headers)]
-               (async/>! ch {:player-eid player-eid
+               (async/>! ch {:player-id player-id
                              :resp resp})))
            ch))
        players))
@@ -89,19 +97,19 @@
 (defn- parse-player-channels
   "If the network request succeeded, attaches a users code to game-state"
   [players responses]
-  (reduce (fn [player-acc {:keys [player-eid resp] :as player}]
+  (reduce (fn [player-acc {:keys [player-id resp] :as player}]
             (if (= 200 (:status resp))
-              (assoc-in player-acc [player-eid :state :code] (parse-github-code resp))
+              (assoc-in player-acc [player-id :state :code] (parse-github-code resp))
               player-acc))
           players
           responses))
 
 (defn- source-player-code
   "Kicks off the code source process"
-  [{:keys [players] :as game-state}]
+  [{:keys [:game/players] :as game-state}]
   (let [bot-chans (get-player-channels players)
         responses (async/<!! (async/map vector bot-chans))]
-    (update game-state :players parse-player-channels responses)))
+    (update game-state :game/players parse-player-channels responses)))
 
 (defn- source-zakano-code
   "Sources a bot to run as the zakano"
@@ -112,12 +120,13 @@
         ;; code (parse-github-code response)
         code {:code (get-zakano-code)
               :path "zakano.clj"}]
-    (update game-state :zakano (fn [zakano]
-                                 (reduce (fn [zakano-acc [zakano-id zakano-state]]
-                                           (assoc zakano-acc
-                                                  zakano-id
-                                                  (assoc-in zakano-state [:state :code] code)))
-                                         {} zakano)))))
+    (update game-state :game/zakano
+            (fn [zakano]
+              (reduce (fn [zakano-acc [zakano-id zakano-state]]
+                        (assoc zakano-acc
+                               zakano-id
+                               (assoc-in zakano-state [:state :code] code)))
+                      {} zakano)))))
 
 (defn initialize-game-state
   "Prepares the raw built up game state for the frame processor by adding required
@@ -133,14 +142,15 @@
 (defn- set-round-start-time
   "Sets the round start time"
   [game-state]
-  (assoc-in game-state [:frame :frame/round-start-time] (->> (t/now)
-                                                             (format "#inst \"%s\"")
-                                                             (read-string))))
+  (assoc-in game-state [:game/frame :frame/round-start-time]
+            (->> (t/now)
+                 (format "#inst \"%s\"")
+                 (read-string))))
 
 (defn- set-round-status
   "Sets the round status"
   [game-state]
-  (assoc-in game-state [:game-config :game/status] :active))
+  (assoc game-state :game/status :active))
 
 (defn initialize-round
   "Adds round metadata to game state"
@@ -159,5 +169,5 @@
   "Adds frame metadata to game state"
   [game-state]
   (-> game-state
-      (update-in [:frame :frame/frame-number] inc)
-      (update :initiative-order update-initiative-order)))
+      (update-in [:game/frame :frame/frame-number] inc)
+      (update :game/initiative-order update-initiative-order)))

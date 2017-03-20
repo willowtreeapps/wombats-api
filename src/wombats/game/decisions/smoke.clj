@@ -23,7 +23,7 @@
 
 (defn- get-smoke-metadata
   "determines the metadata to display in the arena"
-  [{{smoke-duration :arena/smoke-duration} :arena-config}
+  [{{smoke-duration :arena/smoke-duration} :game/arena}
    decision-maker-state]
   (let [decision-maker (dh/get-decision-maker-contents decision-maker-state)]
     {:type :smoke
@@ -52,7 +52,7 @@
 
   (reduce (fn [game-state-acc smoke-coord]
             (update-in game-state-acc
-                       [:frame :frame/arena]
+                       [:game/frame :frame/arena]
                        #(au/update-cell-metadata-with %
                                                       smoke-coord
                                                       (fn [existing-metadata]
@@ -68,7 +68,7 @@
   (let [decision-maker (dh/get-decision-maker-contents decision-maker-state)]
     (if (= (:type decision-maker) :wombat)
       (-> game-state
-          (update-in [:players (:uuid decision-maker) :stats]
+          (update-in [:game/players (:uuid decision-maker) :player/stats]
                      (fn [stats]
                        (update stats :stats/smoke-bombs-thrown inc))))
       game-state)))
