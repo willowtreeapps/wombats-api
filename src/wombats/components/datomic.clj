@@ -13,6 +13,8 @@
        "?aws_access_key_id=" access-key-id
        "&aws_secret_key=" secret-key))
 
+(def db-conn (atom nil))
+
 (defn- create-db-connection
   [config]
   (let [{conn-uri :uri
@@ -27,6 +29,8 @@
 
     (log/info (str "Connecting to Datomic at: " conn-uri))
 
+    (when conn
+      (reset! db-conn conn))
     {:conn conn}))
 
 ;; Component

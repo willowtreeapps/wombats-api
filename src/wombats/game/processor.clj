@@ -1,6 +1,7 @@
 (ns wombats.game.processor
   (:require [cheshire.core :as cheshire]
             [clojure.core.async :as async]
+            [taoensso.timbre :as log]
             [clj-time.core :as t]
             [clj-time.coerce :as c]
             [wombats.game.partial :refer [get-partial-arena]]
@@ -30,7 +31,7 @@
   [decision-maker-state game-state]
   (assoc decision-maker-state
          :global-dimensions
-         (au/get-arena-dimensions (get-in game-state [:frame :frame/arena]))))
+         (au/get-arena-dimensions (get-in game-state [:game/frame :frame/arena]))))
 
 (defn- add-partial-view
   "Creates a partial view for a decision maker"
@@ -44,42 +45,59 @@
 (defn- add-occlusion-view
   "Adds occlusion to a decision makers partial view"
   [{:keys [arena local-coords] :as state}
-   {:keys [arena-config] :as game-state}
+   game-state
    decision-maker-type]
 
   (assoc state
          :arena
          (get-occluded-arena arena
                              local-coords
-                             arena-config
+                             (:game/arena game-state)
                              decision-maker-type)))
+
+(defn- get-decision-maker
+  [game-state decision-maker-type uuid]
+  (let [accessor
+        (case decision-maker-type
+          :wombat :game/players
+          :zakano :game/zakano)]
+    (get-in game-state [accessor uuid :state])))
+
+(defn- get-decision-maker-state
+  [game-state decision-maker-type uuid]
+  (get (get-decision-maker game-state
+                           decision-maker-type
+                           uuid)
+       :saved-state
+       {}))
+
+(defn- get-decision-maker-code
+  [game-state decision-maker-type uuid]
+  (:code (get-decision-maker game-state decision-maker-type uuid)))
 
 (defn- add-custom-state
   "Adds the custom state from the previous frame"
-  [state
-   game-state
-   uuid
-   decision-maker-type]
-
-  (let [decision-maker-lookup (if (= decision-maker-type :wombat) :players :zakano)
-        custom-state (get-in game-state [decision-maker-lookup uuid :state :saved-state] {})]
-    (assoc state :saved-state custom-state)))
+  [state game-state decision-maker-type uuid]
+  (assoc state :saved-state (get-decision-maker-state game-state
+                                                      decision-maker-type
+                                                      uuid)))
 
 (defn- add-decision-maker
-  [state {:keys [frame] :as game-state} uuid]
-  (assoc state :decision-maker (gu/get-item-and-coords (:frame/arena frame)
-                                                       uuid)))
+  [state game-state uuid]
+  (assoc state :decision-maker (gu/get-item-and-coords
+                                (get-in game-state [:game/frame :frame/arena])
+                                uuid)))
 
 (defn- calculate-decision-maker-state
-  [game-state uuid type]
-  (let [global-coords (gu/get-item-coords (get-in game-state [:frame :frame/arena]) uuid)]
+  [game-state type uuid]
+  (let [global-coords (gu/get-item-coords (get-in game-state [:game/frame :frame/arena]) uuid)]
     (if global-coords
       (-> {:global-coords global-coords}
           (add-partial-view game-state type)
           (add-local-coords uuid)
           (add-global-dimensions game-state)
           (add-occlusion-view game-state type)
-          (add-custom-state game-state uuid type))
+          (add-custom-state game-state type uuid))
       game-state)))
 
 (defn- lambda-client
@@ -121,29 +139,24 @@
 
     (future response-parsed)))
 
-(defn- get-decision-maker-code
-  [game-state uuid type]
-  (let [key-name (if (= type :wombat) :players type)]
-    (get-in game-state [key-name uuid :state :code])))
-
 (defn- get-lambda-channels
   "Kicks off the AWS Lambda process"
-  [{:keys [initiative-order] :as game-state}
+  [{:keys [:game/initiative-order] :as game-state}
    aws-credentials
    lambda-settings]
   (map (fn [{:keys [uuid type]}]
          (let [ch (async/chan 1)]
            (async/go
              (try
-               (let [lambda-resp @(lambda-request (calculate-decision-maker-state game-state
-                                                                                  uuid
-                                                                                  type)
-                                                  (get-decision-maker-code game-state
-                                                                           uuid
-                                                                           type)
-                                                  aws-credentials
-                                                  lambda-settings)]
-
+               (let [lambda-resp
+                     @(lambda-request (calculate-decision-maker-state game-state
+                                                                      type
+                                                                      uuid)
+                                      (get-decision-maker-code game-state
+                                                               type
+                                                               uuid)
+                                      aws-credentials
+                                      lambda-settings)]
                  (async/>! ch {:uuid uuid
                                :response lambda-resp
                                :channel-error nil
@@ -155,6 +168,53 @@
                                :type type}))))
            ch))
        initiative-order))
+
+(defn- update-decision-maker
+  [decision-maker
+   response-state
+   user-code-stacktrace
+   response-command
+   type]
+
+  ;; Log any issues with the AI bots
+  (when (and (= type :zakano)
+             user-code-stacktrace)
+    (log/error user-code-stacktrace))
+
+  (assoc decision-maker
+         :state
+         (-> {}
+             (merge (:state decision-maker))
+             (merge {;; Note: Saved state should not be updated
+                     ;;       to nil on error
+                     :saved-state (or response-state
+                                      (:saved-state decision-maker))
+                     :error user-code-stacktrace
+                     :command response-command}))))
+
+(defn- source-decision
+  [game-state-acc
+   {:keys [uuid response channel-error type]}
+   decision-maker-key]
+  (update game-state-acc
+          decision-maker-key
+          (fn [decision-makers]
+            (let [decision-maker
+                  (get decision-makers uuid)
+
+                  {{response-command :command
+                    response-state :state} :response
+                   user-code-stacktrace :error
+                   lambda-error :errorMessage}
+                  response
+
+                  decision-maker-update
+                  (update-decision-maker decision-maker
+                                         response-state
+                                         user-code-stacktrace
+                                         response-command
+                                         type)]
+              (merge decision-makers {uuid decision-maker-update})))))
 
 (defn source-decisions
   "Source decisions by running their code through AWS Lambda"
@@ -177,30 +237,12 @@
         (Thread/sleep time-remaining)))
 
     (reduce
-     (fn [game-state-acc {:keys [uuid response channel-error type]}]
-       (update game-state-acc
-               (if (= type :wombat) :players :zakano)
-               (fn [decision-makers]
-                 (let [decision-maker
-                       (get decision-makers uuid)
-
-                       {{response-command :command
-                         response-state :state} :response
-                        user-code-stacktrace :error
-                        lambda-error :errorMessage}
-                       response
-
-                       decision-maker-update
-                       (assoc decision-maker :state
-                              (-> {}
-                                  (merge (:state decision-maker))
-                                  (merge {;; Note: Saved state should not be updated
-                                          ;;       to nil on error
-                                          :saved-state (or response-state
-                                                           (:saved-state decision-maker))
-                                          :error user-code-stacktrace
-                                          :command response-command})))]
-                   (merge decision-makers {uuid decision-maker-update})))))
+     (fn [game-state-acc {:keys [type] :as response}]
+       (source-decision game-state-acc
+                        response
+                        (if (= type :wombat)
+                          :game/players
+                          :game/zakano)))
      game-state
      lambda-responses)))
 
@@ -212,7 +254,7 @@
 (defn- remove-from-initiative-order
   [game-state uuid]
   (update game-state
-          :initiative-order
+          :game/initiative-order
           (fn [initiative-order]
             (filter (fn [{active-uuid :uuid}]
                       (not= active-uuid uuid))
@@ -239,8 +281,8 @@
           metadata :metadata}
          :command} (get-in game-state
                            [(if (= decision-maker-type :wombat)
-                              :players
-                              :zakano)
+                              :game/players
+                              :game/zakano)
                             decision-maker-uuid
                             :state]
                            {})
@@ -259,7 +301,7 @@
   [game-state]
   (reduce process-command
           game-state
-          (:initiative-order game-state)))
+          (:game/initiative-order game-state)))
 
 (defn frame-processor
   [game-state frame-processor-settings lambda-settings]

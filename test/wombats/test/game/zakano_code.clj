@@ -34,21 +34,13 @@
       (is (= [16 1] (to-global-coords-fn-wrap [1 6])))
       (is (= [1 1] (to-global-coords-fn-wrap [6 6]))))))
 
-(deftest has-next-action?
-  (testing "returns true if there is an action inside of the remaining-action-seq prop"
-    (is (= true (zc/has-next-action? {:remaining-action-seq [{:action :move}]}))))
-  (testing "returns false if there remaining-action-seq is nil"
-    (is (= false (zc/has-next-action? {:remaining-action-seq nil}))))
-  (testing "returns false when remaining-action-seq is empty"
-    (is (= false (zc/has-next-action? {:remaining-action-seq []})))))
-
 (deftest get-first-frontier
   (testing "returns the correct \"first\" frontier"
     (is (= {:coords [3 3]
             :orientation :e
             :uuid "2d0e8172-d47b-4b48-8825-8e3326e1a3d7"
             :weight 0
-            :cmd-sequence []}
+            :action-sequence []}
            (zc/get-first-frontier sample-state)))))
 
 (deftest caclulate-turn-frontiers
@@ -70,11 +62,11 @@
     (is (= nil (zc/get-move-frontier-coords [0 0] :w [7 7] false)))))
 
 (deftest caclulate-move-frontier
-  (testing "returns a new frontier with updated coords, weight, and cmd-sequence"
+  (testing "returns a new frontier with updated coords, weight, and action-sequence"
     (is (= {:orientation :e
             :coords [4 3]
             :weight 1
-            :cmd-sequence [{:action :move}]}
+            :action-sequence [{:action :move}]}
            (zc/calculate-move-frontier (zc/get-first-frontier sample-state)
                                        [7 7]
                                        false))))
@@ -114,23 +106,15 @@
     (is (= :e (zc/modify-orientation :w :about-face)))
     (is (= :n (zc/modify-orientation :s :about-face)))))
 
-
-(clojure.pprint/pprint (zc/calculate-frontier (zc/get-first-frontier sample-state)
-                                              (:arena sample-state)
-                                              {}))
-
-(print-arena sample-partial-arena-1)
-(clojure.pprint/pprint sample-partial-arena-1)
-
-(clojure.pprint/pprint
- (zc/sort-arena-by-distance-then-type sample-state))
-(benchmark #(zc/sort-arena-by-distance-then-type sample-state))
-
-
+(deftest get-look-ahead-items
+  (testing "returns the next n items in front of the character"
+    (is (= ["open" "open" "open"]
+           (zc/get-look-ahead-items (zc/enrich-state sample-state)
+                                    3)))))
 
 (benchmark #(zc/main-fn (assoc sample-state
                                :saved-state
-                               (:state (zc/main-fn sample-state
-                                                   (fn []))))
-                        (fn [])))
+                               (:state
+                                (zc/main-fn sample-state (fn [])))) (fn [])))
 (clojure.pprint/pprint (zc/main-fn sample-state (fn [])))
+(benchmark #(zc/main-fn sample-state (fn [])))

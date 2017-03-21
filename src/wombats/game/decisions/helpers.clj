@@ -15,5 +15,5 @@
 (defn get-arena-dimensions
   [game-state]
   (let [{width :arena/width
-         height :arena/height} (:arena-config game-state)]
+         height :arena/height} (:game/arena game-state)]
     [width height]))
