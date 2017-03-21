@@ -1,6 +1,7 @@
 (ns wombats.game.processor
   (:require [cheshire.core :as cheshire]
             [clojure.core.async :as async]
+            [taoensso.timbre :as log]
             [clj-time.core :as t]
             [clj-time.coerce :as c]
             [wombats.game.partial :refer [get-partial-arena]]
@@ -172,7 +173,14 @@
   [decision-maker
    response-state
    user-code-stacktrace
-   response-command]
+   response-command
+   type]
+
+  ;; Log any issues with the AI bots
+  (when (and (= type :zakano)
+             user-code-stacktrace)
+    (log/error user-code-stacktrace))
+
   (assoc decision-maker
          :state
          (-> {}
@@ -204,7 +212,8 @@
                   (update-decision-maker decision-maker
                                          response-state
                                          user-code-stacktrace
-                                         response-command)]
+                                         response-command
+                                         type)]
               (merge decision-makers {uuid decision-maker-update})))))
 
 (defn source-decisions

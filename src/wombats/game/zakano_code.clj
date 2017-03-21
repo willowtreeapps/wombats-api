@@ -294,33 +294,32 @@
            :frame-number
            (if frame-number (inc frame-number) 0))))
 
+(defsource get-look-ahead-coords
+  "Returns the coordinates for all look-ahead cells"
+  [{:keys [global-coords global-dimensions self]}
+   look-ahead-distance]
+  (let [orientation (get-in self [:contents :orientation])]
+    (loop [coords []
+           current-coords global-coords]
+      (if (= (count coords) look-ahead-distance)
+        coords
+        (let [next-coords
+              (get-move-frontier-coords current-coords
+                                        orientation
+                                        global-dimensions
+                                        true)]
+
+          (recur (conj coords next-coords)
+                 next-coords))))))
+
 (defsource get-look-ahead-items
   "Get n numnber of cells in front of slef"
-  [{:keys [self
-           current-coords
-           global-coords
-           global-dimensions
-           global-arena]}
+  [{:keys [global-arena] :as enriched-state}
    look-ahead-distance]
-  (let [orientation
-        (get-in self [:contents :orientation])
-
-        look-ahead-coords
-        (loop [coords []
-               current-coords global-coords]
-          (if (= (count coords) look-ahead-distance)
-            coords
-            (let [next-coords (get-move-frontier-coords current-coords
-                                                        orientation
-                                                        global-dimensions
-                                                        true)]
-
-              (recur (conj coords next-coords)
-                     next-coords))))]
-    (vec
-     (map (fn [coords]
-            (:type (get-in-arena coords global-arena)))
-          look-ahead-coords))))
+  (vec
+   (map (fn [coords]
+          (:type (get-in-arena coords global-arena)))
+        (get-look-ahead-coords enriched-state look-ahead-distance))))
 
 (defsource get-first-of
   "Returns the closest item's command sequence that matches the item-type"
@@ -355,28 +354,28 @@
 (defsource pathfinding-action
   [enriched-state]
   (let [look-ahead-items (set (get-look-ahead-items enriched-state 3))
-        should-shoot? (some (fn [element]
-                              (contains? look-ahead-items element))
-                            ["wood-barrier"
-                             "wombat"
-                             "zakano"])
-        should-turn? (some (fn [element]
-                              (contains? look-ahead-items element))
-                           ["poison"
-                            "steel-barrier"])]
+        should-shoot (some (fn [element]
+                             (contains? look-ahead-items element))
+                           ["wood-barrier"
+                            "wombat"
+                            "zakano"])
+        should-turn (some (fn [element]
+                            (contains? look-ahead-items element))
+                          ["poison"
+                           "steel-barrier"])]
     {:action-sequence [(cond
-                         should-shoot? {:action :shoot}
-                         should-turn? {:action :turn
-                                       :metadata {:direction :right}}
+                         should-shoot {:action :shoot}
+                         should-turn {:action :turn
+                                      :metadata {:direction :right}}
                          :else {:action :move})]}))
 
 (defsource fire-action
   [enriched-state]
   (let [look-ahead-items (set (get-look-ahead-items enriched-state 3))
-        should-shoot? (some (fn [element]
-                              (contains? look-ahead-items element))
-                            ["zakano"
-                             "wombat"])]))
+        should-shoot (some (fn [element]
+                             (contains? look-ahead-items element))
+                           ["zakano"
+                            "wombat"])]))
 
 (defsource clueless-action
   ;; if the zakano doesn't know what to do next, it's
@@ -518,6 +517,7 @@
    #'update-global-view
    #'add-self
    #'update-frame-number
+   #'get-look-ahead-coords
    #'get-look-ahead-items
    #'get-first-of
    #'closest-food-action
