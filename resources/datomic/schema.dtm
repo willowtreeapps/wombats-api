@@ -495,40 +495,16 @@
   :db/doc         "Amount of poison collected"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/wombats-destroyed
+  :db/ident       :stats/number-of-moves
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Number of wombats destroyed"}
+  :db/doc         "Number of moves"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/wombats-hit
+  :db/ident       :stats/smoke-bombs-thrown
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Number of wombats hit"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/zakano-destroyed
-  :db/valueType   :db.type/long
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Number of zakano destroyed"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/zakano-hit
-  :db/valueType   :db.type/long
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Number of zakano hit"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/wood-barriers-destroyed
-  :db/valueType   :db.type/long
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Number of wood-barriers destroyed"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/wood-barriers-hit
-  :db/valueType   :db.type/long
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Number of wood-barriers hit"}
+  :db/doc         "Number of smoke bombs thrown"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :stats/shots-fired
@@ -543,13 +519,91 @@
   :db/doc         "Number of shots that found target"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/smoke-bombs-thrown
+  :db/ident       :stats/wombats-destroyed
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Number of smoke bombs thrown"}
+  :db/doc         "Number of wombats destroyed"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/number-of-moves
+  :db/ident       :stats/zakano-destroyed
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Number of moves"}]
+  :db/doc         "Number of zakano destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wombats-shot
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wombats hit"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/zakano-shot
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of zakano hit"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wood-barriers-destroyed
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wood barriers destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/steel-barriers-destroyed
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of steel barriers destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wood-barriers-shot
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wood barriers shot"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/steel-barriers-shot
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of steel barriers shot"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/deaths
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of total deaths in a game"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wood-barrier-collisions
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wood barriers collisions"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/steel-barrier-collisions
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of steel barriers collisions"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/zakano-collisions
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of zakano collisions"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wombat-collisions
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wombat collisions"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/frames-blinded
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of frames a wombat has been blinded for"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/frames-played
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of frames a wombat played"}]

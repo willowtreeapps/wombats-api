@@ -1,7 +1,8 @@
 (ns wombats.game.decisions.shoot
   (:require [wombats.game.decisions.helpers :as dh]
             [wombats.arena.utils :as au]
-            [wombats.game.utils :as gu]))
+            [wombats.game.utils :as gu]
+            [wombats.constants :refer [game-parameters]]))
 
 (defn- shot-should-progress?
   "Returns a boolean indicating if a shot should continue down it's path"
@@ -83,21 +84,27 @@
                      (cond-> (update stats :stats/shots-hit inc)
                        ;; Update wombat hit stats
                        (= item-hit :wombat)
-                       (-> (update :stats/wombats-hit inc)
-                           ;; TODO #333 Pull from config
-                           (update :stats/score + 3))
+                       (-> (update :stats/wombats-shot inc)
+                           (update :stats/score +
+                                   (:wombat-hit-bonus game-parameters)))
 
                        ;; Update zakano hit stats
                        (= item-hit :zakano)
-                       (-> (update :stats/zakano-hit inc)
-                           ;; TODO #333 Pull from config
-                           (update :stats/score + 2))
+                       (-> (update :stats/zakano-shot inc)
+                           (update :stats/score +
+                                   (:zakano-hit-bonus game-parameters)))
 
                        ;; Update wood-barrier hit stats
                        (= item-hit :wood-barrier)
-                       (-> (update :stats/wood-barriers-hit inc)
-                           ;; TODO #333 Pull from config
-                           (update :stats/score inc))))))
+                       (-> (update :stats/wood-barriers-shot inc)
+                           (update :stats/score +
+                                   (:wood-barrier-hit-bonus game-parameters)))
+
+                       ;; Update steel-barrier hit stats
+                       (= item-hit :steel-barrier)
+                       (-> (update :stats/steel-barriers-shot inc)
+                           (update :stats/score +
+                                   (:steel-barrier-hit-bonus game-parameters)))))))
 
       ;; If the shooter was a player and they destroyed something, update their stats
       (and destroyed? wombat-shooter?)
@@ -106,16 +113,20 @@
                    (case (:type cell-contents)
                      :wombat (-> stats
                                  (update :stats/wombats-destroyed inc)
-                                 ;; TODO #333 Pull from config
-                                 (update :stats/score + 15))
+                                 (update :stats/score +
+                                         (:wombat-destroyed-bonus game-parameters)))
                      :zakano (-> stats
                                  (update :stats/zakano-destroyed inc)
-                                 ;; TODO #333 Pull from config
-                                 (update :stats/score + 10))
+                                 (update :stats/score +
+                                         (:zakano-destroyed-bonus game-parameters)))
                      :wood-barrier (-> stats
                                        (update :stats/wood-barriers-destroyed inc)
-                                       ;; TODO #333 Pull from config
-                                       (update :stats/score + 2))
+                                       (update :stats/score +
+                                               (:wood-barrier-destroyed-bonus game-parameters)))
+                     :steel-barrier (-> stats
+                                        (update :stats/steel-barriers-destroyed inc)
+                                        (update :stats/score +
+                                                (:steel-barrier-destroyed-bonus game-parameters)))
                      stats))))))
 
 (defn- process-shot
@@ -153,8 +164,7 @@
         shoot-coords (gu/draw-line-from-point (get-in game-state [:game/frame :frame/arena])
                                               decision-maker-coords
                                               direction
-                                              ;; TODO #333 Add to config
-                                              (or shot-distance 5))]
+                                              (or shot-distance (:shot-distance game-parameters)))]
     (cond-> (:game-state
              (reduce process-shot
                      {:game-state game-state
