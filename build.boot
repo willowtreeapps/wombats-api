@@ -18,6 +18,9 @@
                             ;; Extended core library for Clojure
                             [com.taoensso/encore "2.89.0"]
 
+                            ;; Stringify-ing code
+                            [serializable-fn "1.1.4"]
+
                             ;; JSON Parsing
                             [cheshire "5.7.0"]
 

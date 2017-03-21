@@ -13,6 +13,9 @@ CHANGELOG
     [Matt O'Connell][/oconn] #[341](https://github.com/willowtreeapps/wombats-api/issues/341) #[332](https://github.com/willowtreeapps/wombats-api/issues/332)
 * Game State Refactor
     [C.P. Dehli][/dehli], [Matt O'Connell][/oconn] #[305](https://github.com/willowtreeapps/wombats-api/issues/305)
+* Zakano Code
+    [Matt O'Connell][/oconn] #[330](https://github.com/willowtreeapps/wombats-api/issues/330))
+
 
 **Bug Fixes**
 * Simulator State Transfer
