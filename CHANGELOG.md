@@ -3,6 +3,13 @@ CHANGELOG
 
 ## Develop
 **Enhancements**
+* None
+
+**Bug Fixes**
+* None
+
+## QA (3.21.2017)
+**Enhancements**
 * Added new simulator template
     [Matt O'Connell][/oconn] *No Issue*
 * Add access keys
@@ -16,17 +23,9 @@ CHANGELOG
 * Zakano Code
     [Matt O'Connell][/oconn] #[330](https://github.com/willowtreeapps/wombats-api/issues/330))
 
-
 **Bug Fixes**
 * Simulator State Transfer
     [Matt O'Connell][/oconn] #[326](https://github.com/willowtreeapps/wombats-api/issues/326)
-
-## QA
-**Enhancements**
-* None
-
-**Bug Fixes**
-* None
 
 ## Master
 **Enhancements**
