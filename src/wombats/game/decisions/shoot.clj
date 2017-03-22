@@ -39,13 +39,13 @@
    damage
    shooter]
 
-  (let [wombat-victim? (= (:type cell-contents) :wombat)
-        contains-hp? (boolean (:hp cell-contents))
-        cell-update (when contains-hp?
+  (let [wombat-victim (= (:type cell-contents) :wombat)
+        contains-hp (boolean (:hp cell-contents))
+        cell-update (when contains-hp
                       (damage-cell cell-contents damage))
-        destroyed? (and contains-hp?
-                        (= (:type cell-update) :open))
-        wombat-shooter? (= (:type shooter) :wombat)]
+        destroyed (and contains-hp
+                       (= (:type cell-update) :open))
+        wombat-shooter (= (:type shooter) :wombat)]
 
     ;; Always update the cell metadata to attach the shot
     (cond-> (update-in game-state [:game/frame :frame/arena]
@@ -55,29 +55,28 @@
                                                        (get-shot-metadata shooter))))
 
       ;; If the cell is able to be damaged, apply damage and update the arena
-      contains-hp?
+      contains-hp
       (update-in [:game/frame :frame/arena]
                  #(au/update-cell-contents %
                                            cell-coords
                                            cell-update))
 
       ;; If the cell was destroyed, attach explosion metadata
-      destroyed?
+      destroyed
       (update-in [:game/frame :frame/arena]
                  #(au/update-cell-metadata %
                                            cell-coords
                                            (conj cell-metadata
                                                  (get-explosion-metadata))))
 
-      ;; If the affected cell was another player, updated messages
-      wombat-victim?
-      (update-in [:game/players (:uuid cell-contents)]
-                 (fn [player]
-                   ;; TODO #76 Update how many times i've been hit / killed
-                   player))
+      ;; If the affected cell was another player, updated stats
+      wombat-victim
+      (update-in [:game/players (:uuid cell-contents) :player/stats]
+                 (fn [stats]
+                   (update stats :stats/have-been-shot inc)))
 
       ;; If the shooter hit something, update their stats
-      (and contains-hp? wombat-shooter?)
+      (and contains-hp wombat-shooter)
       (update-in [:game/players (:uuid shooter) :player/stats]
                  (fn [stats]
                    (let [item-hit (:type cell-contents)]
@@ -107,27 +106,39 @@
                                    (:steel-barrier-hit-bonus game-parameters)))))))
 
       ;; If the shooter was a player and they destroyed something, update their stats
-      (and destroyed? wombat-shooter?)
+      (and destroyed wombat-shooter)
       (update-in [:game/players (:uuid shooter) :player/stats]
                  (fn [stats]
                    (case (:type cell-contents)
-                     :wombat (-> stats
-                                 (update :stats/wombats-destroyed inc)
-                                 (update :stats/score +
-                                         (:wombat-destroyed-bonus game-parameters)))
-                     :zakano (-> stats
-                                 (update :stats/zakano-destroyed inc)
-                                 (update :stats/score +
-                                         (:zakano-destroyed-bonus game-parameters)))
-                     :wood-barrier (-> stats
-                                       (update :stats/wood-barriers-destroyed inc)
-                                       (update :stats/score +
-                                               (:wood-barrier-destroyed-bonus game-parameters)))
-                     :steel-barrier (-> stats
-                                        (update :stats/steel-barriers-destroyed inc)
-                                        (update :stats/score +
-                                                (:steel-barrier-destroyed-bonus game-parameters)))
-                     stats))))))
+                     :wombat
+                     (-> stats
+                         (update :stats/wombats-destroyed inc)
+                         (update :stats/score +
+                                 (:wombat-destroyed-bonus game-parameters)))
+                     :zakano
+                     (-> stats
+                         (update :stats/zakano-destroyed inc)
+                         (update :stats/score +
+                                 (:zakano-destroyed-bonus game-parameters)))
+                     :wood-barrier
+                     (-> stats
+                         (update :stats/wood-barriers-destroyed inc)
+                         (update :stats/score +
+                                 (:wood-barrier-destroyed-bonus game-parameters)))
+                     :steel-barrier
+                     (-> stats
+                         (update :stats/steel-barriers-destroyed inc)
+                         (update :stats/score +
+                                 (:steel-barrier-destroyed-bonus game-parameters)))
+                     stats)))
+
+      ;; If the victum was a wombat and they were destroyed, update stats
+      (and destroyed wombat-victim)
+      (update-in [:game/players (:uuid cell-contents) :player/stats]
+                 (fn [stats]
+                   (-> stats
+                       (update :stats/deaths inc)
+                       (update :stats/deaths-by-shot inc)))))))
 
 (defn- process-shot
   "Process a cell that a shot passes through"
