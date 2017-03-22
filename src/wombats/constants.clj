@@ -48,6 +48,7 @@
    :stats/smoke-bombs-thrown 0
    :stats/shots-fired 0
    :stats/shots-hit 0
+   :stats/have-been-shot 0
    :stats/wombats-destroyed 0
    :stats/zakano-destroyed 0
    :stats/wombats-shot 0
@@ -57,6 +58,12 @@
    :stats/wood-barriers-shot 0
    :stats/steel-barriers-shot 0
    :stats/deaths 0
+   :stats/deaths-by-shot 0
+   :stats/deaths-by-wood-barrier-collision 0
+   :stats/deaths-by-steel-barrier-collision 0
+   :stats/deaths-by-wombat-collision 0
+   :stats/deaths-by-zakano-collision 0
+   :stats/deaths-by-poison 0
    :stats/wood-barrier-collisions 0
    :stats/steel-barrier-collisions 0
    :stats/zakano-collisions 0
