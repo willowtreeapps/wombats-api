@@ -4,7 +4,7 @@ CHANGELOG
 ## Develop
 **Enhancements**
 * AWS Lambda Mock
-	[Eric Rochester][/erochest] #[329](https://github.com/willowtreeapps/wombats-api/issues/329)
+    [Eric Rochester][/erochest] #[329](https://github.com/willowtreeapps/wombats-api/issues/329)
 * Non Arbitrary Point System
     [Matt O'Connell][/oconn] #[324](https://github.com/willowtreeapps/wombats-api/issues/324)
 
@@ -14,7 +14,7 @@ CHANGELOG
 ## QA (3.21.2017)
 **Enhancements**
 * Added new simulator template
-	[Matt O'Connell][/oconn] *No Issue*
+    [Matt O'Connell][/oconn] *No Issue*
 * Add access keys
     [Matt O'Connell][/oconn] #[325](https://github.com/willowtreeapps/wombats-api/issues/325)
 * Add Eric to the DB (Seed as admin)
