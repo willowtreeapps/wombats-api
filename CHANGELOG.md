@@ -7,8 +7,7 @@ CHANGELOG
 	[Eric Rochester](https://github.com/erochest) #[329](https://github.com/willowtreeapps/wombats-api/issues/329)
 
 **Bug Fixes**
-* Fixed minimap view in Simulator
-    [C.P. Dehli][/dehli] #[317](https://github.com/willowtreeapps/wombats-api/issues/317)
+* None
 
 ## QA (3.21.2017)
 **Enhancements**
@@ -28,6 +27,8 @@ CHANGELOG
 **Bug Fixes**
 * Simulator State Transfer
     [Matt O'Connell][/oconn] #[326](https://github.com/willowtreeapps/wombats-api/issues/326)
+* Fixed minimap view in Simulator
+    [C.P. Dehli][/dehli] #[317](https://github.com/willowtreeapps/wombats-api/issues/317)
 
 ## Master
 **Enhancements**
