@@ -83,7 +83,7 @@
                          [:game/players player-id :state :mini-map]
                          (vec
                           (map #(vec %)
-                               (:arena (calculate-decision-maker-state-fn game-state player-id :wombat))))))
+                               (:arena (calculate-decision-maker-state-fn game-state :wombat player-id))))))
              game-state (:game/players game-state)))
 
 (defn finalize-frame
