@@ -46,6 +46,30 @@
                   (get-in game-state [:game/frame :frame/arena])))]
     (assoc-in game-state [:game/frame :frame/arena] updated-arena)))
 
+(defn- update-player-stats
+  [game-state]
+  (let [wombats (filter (fn [cell]
+                          (= :wombat (get-in cell [:contents :type])))
+                        (flatten (get-in game-state [:game/frame :frame/arena])))]
+    (reduce (fn [game-state-acc wombat]
+              (let [wombat-uuid (get-in wombat [:contents :uuid])
+                    mmm-smoked-wombat (some #(= :smoke (:type %))
+                                            (:meta wombat))]
+                ;; Always update the frames played stat if they are alive after the round
+                (cond-> (update-in game-state-acc
+                                   [:game/players
+                                    wombat-uuid
+                                    :player/stats
+                                    :stats/frames-played] inc)
+                  ;; If the wombat is blinded by smoke, update stats
+                  mmm-smoked-wombat
+                  (update-in [:game/players
+                              wombat-uuid
+                              :player/stats
+                              :stats/frames-blinded] inc))))
+            game-state
+            wombats)))
+
 (defn- round-type-game?
   [game-state]
   (= :high-score (:game/type game-state)))
@@ -66,7 +90,9 @@
   [game-state
    {attach-mini-maps :attach-mini-maps}
    calculate-decision-maker-state-fn]
-  (cond-> (update-arena-data game-state)
+  (cond-> (-> game-state
+              update-arena-data
+              update-player-stats)
     attach-mini-maps (add-mini-maps calculate-decision-maker-state-fn)))
 
 (defn- format-date
