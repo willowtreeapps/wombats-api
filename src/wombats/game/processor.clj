@@ -135,7 +135,7 @@
                      :path path
                      :path-ext path-ext}
           is-dev (or (empty? aws-credentials) (empty? lambda-settings))
-          ;; This is where it converts the state to the string. 
+          ;; This is where it converts the state to the string.
           request-body (lambda-request-body decision-maker-state code-path)
           response (if is-dev
                      (dev/request-handler code-path request-body)
