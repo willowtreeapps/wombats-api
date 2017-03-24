@@ -7,7 +7,8 @@ CHANGELOG
     [Matt O'Connell][/oconn] #[336](https://github.com/willowtreeapps/wombats-api/issues/336)
 
 **Bug Fixes**
-* None
+* Access key bug
+    [Matt O'Connell][/oconn] #[325](https://github.com/willowtreeapps/wombats-api/issues/325)
 
 ## QA (3.23.2017)
 **Enhancements**
