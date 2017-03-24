@@ -175,40 +175,45 @@
                                          :in $ ?access-key-key
                                          :where [?access-key :access-key/key ?access-key-key]]
                                        db access-key-key)))
-                 valid-access-key? (and
-                                    ;; Access key exists
-                                    access-key
-                                    ;; Access key has not reached max uses
-                                    (< (:access-key/number-of-uses access-key)
-                                       (:access-key/max-number-of-uses access-key))
-                                    ;; Access key has not expired
-                                    (< (.getTime (new java.util.Date))
-                                       (.getTime (:access-key/expiration-date access-key))))
+                 valid-access-key (and
+                                   ;; Access key exists
+                                   access-key
+                                   ;; Access key has not reached max uses
+                                   (< (:access-key/number-of-uses access-key)
+                                      (:access-key/max-number-of-uses access-key))
+                                   ;; Access key has not expired
+                                   (< (.getTime (new java.util.Date))
+                                      (.getTime (:access-key/expiration-date access-key))))
                  current-user (ffirst
                                (d/q '[:find ?user
                                       :in $ ?github-id
                                       :where [?user :user/github-id ?github-id]]
                                     db github-id))
                  current-user-id (get current-user :user/id)
-                 user-update (cond-> {:user/github-access-token github-access-token
-                                      :user/access-token user-access-token
-                                      :user/github-username github-username
-                                      :user/github-id github-id
-                                      :user/avatar-url avatar-url}
-                               (and access-key
-                                    (nil? (:user/access-key current-user)))
-                               (assoc :user/access-key (:db/id access-key)))]
+                 user-update {:db/id (d/tempid :db.part/user)
+                              :user/id (.toString (java.util.UUID/randomUUID))
+                              :user/roles [:user.roles/user]
+                              :user/github-access-token github-access-token
+                              :user/access-token user-access-token
+                              :user/github-username github-username
+                              :user/github-id github-id
+                              :user/avatar-url avatar-url}
+                 should-add-access-key (boolean (and valid-access-key
+                                                     (nil? (:user/access-key current-user))))]
+
              (cond-> []
-               (nil? current-user-id)
-               (conj (merge user-update
-                            {:db/id (d/tempid :db.part/user)
-                             :user/id (.toString (java.util.UUID/randomUUID))
-                             :user/roles [:user.roles/user]}))
+               (and (nil? current-user-id)
+                    should-add-access-key)
+               (conj (assoc user-update :user/access-key (:db/id access-key)))
+
+               (and (nil? current-user-id)
+                    (not should-add-access-key))
+               (conj user-update)
 
                (some? current-user-id)
                (conj (merge user-update {:user/id current-user-id}))
 
-               valid-access-key?
+               should-add-access-key
                (conj {:access-key/key (:access-key/key access-key)
                       :access-key/number-of-uses (inc (:access-key/number-of-uses access-key))})))}))
 
