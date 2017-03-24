@@ -1,6 +1,6 @@
 (ns wombats.handlers.helpers
   (:require [wombats.constants :refer [errors]]
-            [cemerick.url :refer [url]]))
+            [cemerick.url :refer [url url-encode]]))
 
 (defn wombat-error
   "Throws an error that will be caught by the exception interceptor."
@@ -60,14 +60,22 @@
           (clojure.string/split #",")
           (format-links)))))
 
-(defn- format-url
-  [base uri]
-  (fn [query]
-    (str base uri "?" (clojure.string/join
-                       "&"
-                       (map (fn [[k v]]
-                              (str (name k) "=" v))
-                            query)))))
+(defn- join-pair [k v] (str (name k) "=" (url-encode v)))
+
+(defn- format-query
+  [query]
+  (->> query
+   (map
+    (fn [[k v]]
+      (if (string? v)
+        (join-pair k v)
+        (map #(join-pair k %) v))))
+   (flatten)
+   (clojure.string/join "&")))
+
+(defn format-url
+  [base uri query]
+  (str base uri "?" (format-query query)))
 
 (defn- generate-link-headers
   [current-page last-page query url-formatter]
@@ -91,7 +99,7 @@
         link-headers (generate-link-headers current-page
                                             last-page
                                             query
-                                            (format-url origin uri))]
+                                            (partial format-url origin uri))]
     (->> link-headers
      (map (fn [{:keys [link rel]}]
             (str "<" link ">; rel=\"" rel "\"")))
