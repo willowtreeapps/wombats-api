@@ -11,6 +11,8 @@
 
 (defonce min-lambda-runtime 2000)
 
+(defonce games-per-page 10)
+
 (def errors
   {:handlers.simulator.initialize-simulator/missing-template "Simulator template '%s' not found."
    :handlers.simulator.initialize-simulator/missing-user "User with id '%s' not found."
