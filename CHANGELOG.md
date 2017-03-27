@@ -3,6 +3,13 @@ CHANGELOG
 
 ## Develop
 **Enhancements**
+* None
+
+**Bug Fixes**
+* None
+
+## QA (3.23.2017)
+**Enhancements**
 * Pagination Support
     [Matt O'Connell][/oconn] #[336](https://github.com/willowtreeapps/wombats-api/issues/336)
 * CORS Fixed
@@ -11,13 +18,6 @@ CHANGELOG
 **Bug Fixes**
 * Access key bug
     [Matt O'Connell][/oconn] #[325](https://github.com/willowtreeapps/wombats-api/issues/325)
-
-## QA (3.23.2017)
-**Enhancements**
-* None
-
-**Bug Fixes**
-* None
 
 ## Master (3.27.2017)
 **Enhancements**
