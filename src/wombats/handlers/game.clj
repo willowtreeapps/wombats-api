@@ -1,10 +1,12 @@
 (ns wombats.handlers.game
   (:require [io.pedestal.interceptor.helpers :as interceptor]
             [clojure.spec :as s]
-            [wombats.constants :refer [max-players]]
+            [wombats.constants :refer [max-players
+                                       games-per-page]]
             [clj-time.core :as t]
             [wombats.interceptors.current-user :refer [get-current-user]]
-            [wombats.handlers.helpers :refer [wombat-error]]
+            [wombats.handlers.helpers :refer [wombat-error
+                                              paginate-response]]
             [wombats.daos.helpers :as dao]
             [wombats.specs.utils :as sutils]
             [wombats.arena.core :refer [generate-arena]]
@@ -27,11 +29,23 @@
          #:game{:password ""}))
 
 ;; Swagger Parameters
+(def ^:private pagination-header-params
+  {:name "Link"
+   :in "header"
+   :description "Pagination header"
+   :required false})
+
 (def ^:private game-id-path-param
   {:name "game-id"
    :in "path"
    :description "id belonging to a game"
    :required true})
+
+(def ^:private pagination-query-param
+  {:name "page"
+   :in "query"
+   :description "pagination query param"
+   :required false})
 
 (def ^:private arena-id-query-param
   {:name "arena-id"
@@ -75,8 +89,17 @@
           :tags ["game"]
           :operationId "get-games"
           :parameters [game-status-query-param
-                       game-user-query-param]
+                       game-user-query-param
+                       pagination-query-param]
           :responses {:200 {:description "get-games response"}}}}})
+
+(defn- get-game-sort-method
+  "Depending on the game status query, we either want to sort
+  games by when they will start, or when they have finished"
+  [status]
+  (if (contains? (set status) "closed")
+    #(sort-by :game/end-time %)
+    #(sort-by :game/start-time %)))
 
 (def get-games
   (interceptor/before
@@ -87,8 +110,9 @@
            get-games-by-player (dao/get-fn :get-game-eids-by-player context)
            get-games-by-eids (dao/get-fn :get-games-by-eids context)
            {status :status
-            user :user} (get request :query-params {})
-           games (if (empty? (:query-params request))
+            user :user
+            page :page} (get request :query-params {})
+           games (if-not (or status user)
                    (get-all-games)
                    (get-games-by-eids (->> (cond-> []
                                              ((complement nil?) status)
@@ -98,9 +122,15 @@
                                              (conj (set (get-games-by-player user))))
                                            (apply clojure.set/intersection)
                                            (into []))))]
-       (assoc context :response (assoc response
-                                       :status 200
-                                       :body games))))))
+
+       (assoc context
+              :response
+              (paginate-response {:request request
+                                  :response response
+                                  :page-number page
+                                  :per-page games-per-page
+                                  :data games
+                                  :data-pred (get-game-sort-method status)}))))))
 
 (def ^:swagger-spec get-game-by-id-spec
   {"/api/v1/games/{game-id}"
