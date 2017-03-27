@@ -170,35 +170,34 @@
 (defn frame-debugger
   "This is a debugger that will print out a ton of additional
   information in between each frame"
-  [{:keys [frame] :as game-state} interval]
+  [game-state interval]
 
   ;; Pretty print the arena
-  #_(au/print-arena (:frame/arena frame))
+  #_(au/print-arena (get-in game-state [:game/frame :frame/arena]))
 
   ;; Pretty print the full arena state
-  #_(clojure.pprint/pprint (:frame/arena frame))
+  #_(clojure.pprint/pprint (get-in game-state [:game/frame :frame/arena]))
 
   ;; Pretty print everything but the arena
-  (clojure.pprint/pprint
-   (update-in game-state [:frame] dissoc :frame/arena))
+  #_(clojure.pprint/pprint
+   (update-in game-state [:game/frame] dissoc :frame/arena))
 
   ;; Pretty print everything
   #_(clojure.pprint/pprint game-state)
 
   ;; Print frame number
-  (prn (format "Round Number: %d"
-               (get-in game-state [:frame :frame/round-number])))
+  #_(prn (format "Round Number: %d"
+               (get-in game-state [:game/frame :frame/round-number])))
 
   ;; Print frame number
-  (prn (format "Frame Number: %d"
-               (get-in game-state [:frame :frame/frame-number])))
+  #_(prn (format "Frame Number: %d"
+               (get-in game-state [:game/frame :frame/frame-number])))
 
   ;; Print number of players
-  #_(prn (str "Player Count: " (count (keys (:players game-state)))))
+  #_(prn (str "Player Count: " (count (keys (:game/players game-state)))))
 
   ;; Print game status
-  (prn (format "Game Status: %s"
-               (get-in game-state [:game-config :game/status])))
+  #_(prn (format "Game Status: %s" (:game/status game-state)))
 
   ;; Sleep before next frame
   (Thread/sleep interval)

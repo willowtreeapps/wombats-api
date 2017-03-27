@@ -1,0 +1,7 @@
+[{:db/id #db/id [:db.part/user]
+  :access-key/id "97995b16-5e3c-4b27-b900-d3de070412d7"
+  :access-key/key "wt-alpha-user"
+  :access-key/max-number-of-uses 200
+  :access-key/number-of-uses 0
+  :access-key/expiration-date #inst "2018-01-01T00:00:00.000-00:00"
+  :access-key/description "Access key for WillowTree early adoptors. These are the OG alpha users."}]

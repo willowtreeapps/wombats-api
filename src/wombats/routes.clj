@@ -15,6 +15,7 @@
             [wombats.handlers.echo :as echo]
             [wombats.handlers.game :as game]
             [wombats.handlers.user :as user]
+            [wombats.handlers.access-key :as access-key]
             [wombats.handlers.auth :as auth]
             [wombats.handlers.arena :as arena]
             [wombats.handlers.simulator :as simulator]
@@ -73,10 +74,16 @@
            :delete arena/delete-arena}]]
 
         ["/simulator"
+         ^:interceptors [(authorize #{:user.roles/user})]
          ["/templates"
           {:get simulator/get-simulator-arena-templates}
           ["/:template-id"
-           {:get simulator/get-simulator-arena-template-by-id}]]]
+           {:get simulator/get-simulator-arena-template-by-id}]]
+         ["/initialize"
+          {:post simulator/initialize-simulator}]
+         ["/process_frame"
+          {:post (simulator/process-simulation-frame aws-credentials
+                                                     lambda-settings)}]]
 
         ["/games"
          {:get [:get-games
@@ -86,13 +93,29 @@
                  game/add-game
                  ^:interceptors [(authorize #{:user.roles/admin})]]}
          ["/:game-id"
-          ^:interceptors [(authorize #{:user.roles/user})]
-          {:get game/get-game-by-id
-           :delete game/delete-game}
+          {:get [:get-game
+                 game/get-game-by-id
+                 ^:interceptors [(authorize #{:user.roles/user})]]
+           :delete [:delete-game
+                    game/delete-game
+                    ^:interceptors [(authorize #{:user.roles/admin})]]}
           ["/join"
            {:put game/join-game}]
           ["/start"
            {:put game/start-game}]]]
+
+        ["/access_keys"
+         {:get [:get-access-keys
+                access-key/get-access-keys
+                ^:interceptors [(authorize #{:user.roles/coordinator})]]
+          :post [:add-access-key
+                 access-key/add-access-key
+                 ^:interceptors [(authorize #{:user.roles/coordinator})]]}
+         ["/:access-key-id"
+          ^:interceptors [(authorize #{:user.roles/admin})]
+          {:get access-key/get-access-key
+           :delete access-key/delete-access-key
+           :put access-key/update-access-key}]]
 
         ["/auth"
          ["/github"
@@ -112,4 +135,4 @@
         aws-credentials (:aws services)
         lambda-settings (get-in services [:api-settings :lambda])
         dao-map (dao/init-dao-map datomic aws-credentials lambda-settings)]
-    {"/ws/game" (game-ws/in-game-ws dao-map aws-credentials lambda-settings)}))
+    {"/ws/game" (game-ws/in-game-ws dao-map aws-credentials)}))

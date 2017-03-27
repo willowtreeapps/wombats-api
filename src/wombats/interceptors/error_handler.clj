@@ -3,10 +3,20 @@
 
 (defn- get-exception-data
   [exception]
-  (-> exception
-      ex-data
-      :exception
-      ex-data))
+  (or (-> exception
+          ex-data
+          :exception
+          ex-data)
+      ;; Handle wrapped exceptions throw by Datomic's
+      ;; transactor functions
+      (try
+        (-> exception
+            ex-data
+            :exception
+            .getCause
+            ex-data)
+        (catch Exception e
+          nil))))
 
 (defn- get-exception-type
   [exception]

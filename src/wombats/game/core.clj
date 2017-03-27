@@ -10,9 +10,9 @@
             [wombats.sockets.game :as game-sockets]))
 
 (defn- round-over?
-  [{:keys [game-config frame initiative-order]}]
-  (let [{round-length :game/round-length} game-config
-        {round-start-time :frame/round-start-time} frame
+  [{:keys [:game/initiative-order
+           :game/round-length] :as game-state}]
+  (let [round-start-time (get-in game-state [:game/frame :frame/round-start-time])
         end-time (t/plus (c/from-date round-start-time)
                          (t/millis round-length))]
     ;; Check to see if all players / ai are dead, or the
@@ -22,7 +22,7 @@
                end-time))))
 
 (defn- push-frame-to-datomic
-  [{:keys [frame players] :as game-state} update-frame]
+  [{:keys [:game/frame :game/players] :as game-state} update-frame]
   (update-frame frame players)
   game-state)
 
@@ -30,10 +30,10 @@
   "Game loop"
   [game-state update-frame close-round close-game aws-credentials lambda-settings]
   (loop [current-game-state game-state]
-    (let [round-is-over? (round-over? current-game-state)]
+    (let [round-is-over (round-over? current-game-state)]
       (cond-> current-game-state
         ;; Check if the round is over
-        round-is-over?
+        round-is-over
         (f/finalize-round close-round)
 
         ;; Check if the game is over
@@ -41,7 +41,7 @@
         (f/finalize-game close-game)
 
         ;; Process the frame if the round isn't over
-        (not round-is-over?)
+        (not round-is-over)
         (-> (p/frame-processor {:aws-credentials aws-credentials
                                 :minimum-frame-time min-lambda-runtime
                                 :attach-mini-maps false}

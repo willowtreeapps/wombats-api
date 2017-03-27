@@ -59,13 +59,59 @@
   :db/doc         "All the wombats that belong to a user"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :user/created-by
+  :db/ident       :user/access-key
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "If the user was a part of beta / alpha they require an access key to login"}
+
+ ;; Access key entities
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/id
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An access key's public id"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/key
+  :db/valueType   :db.type/string
+  :db/unique      :db.unique/identity
+  :db/cardinality :db.cardinality/one
+  :db/doc         "An access key's key value"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/max-number-of-uses
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The max number of times an access key may be used"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/number-of-uses
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The number of times an access key had been used"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/expiration-date
+  :db/valueType   :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The date that the access key will no longer work for new enrollments"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/description
+  :db/valueType   :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/doc         "How the access key is planned to be used"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :access-key/created-by
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
   :db/doc         "Created by metadata"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :user/updated-by
+  :db/ident       :access-key/updated-by
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
   :db/doc         "Updated by metadata"}
@@ -242,6 +288,12 @@
   :db/doc         "A players wombat reference"}
 
  {:db/id          #db/id [:db.part/db]
+  :db/ident       :player/stats
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "A players stats reference"}
+
+ {:db/id          #db/id [:db.part/db]
   :db/ident       :player/color
   :db/valueType   :db.type/string
   :db/cardinality :db.cardinality/one
@@ -340,12 +392,6 @@
   :db/doc         "Players enrolled in a game"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :game/stats
-  :db/valueType   :db.type/ref
-  :db/cardinality :db.cardinality/many
-  :db/doc         "Player / AI scores"}
-
- {:db/id          #db/id [:db.part/db]
   :db/ident       :game/created-by
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
@@ -422,13 +468,7 @@
   :db/ident       :stats/player
   :db/valueType   :db.type/ref
   :db/cardinality :db.cardinality/one
-  :db/doc         "The player associated with the stats"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/game
-  :db/valueType   :db.type/ref
-  :db/cardinality :db.cardinality/one
-  :db/doc         "The game these stats are associated with"}
+  :db/doc         "A stats player reference"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :stats/frame-number
@@ -455,40 +495,16 @@
   :db/doc         "Amount of poison collected"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/wombats-destroyed
+  :db/ident       :stats/number-of-moves
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Number of wombats destroyed"}
+  :db/doc         "Number of moves"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/wombats-hit
+  :db/ident       :stats/smoke-bombs-thrown
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Number of wombats hit"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/zakano-destroyed
-  :db/valueType   :db.type/long
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Number of zakano destroyed"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/zakano-hit
-  :db/valueType   :db.type/long
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Number of zakano hit"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/wood-barriers-destroyed
-  :db/valueType   :db.type/long
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Number of wood-barriers destroyed"}
-
- {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/wood-barriers-hit
-  :db/valueType   :db.type/long
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Number of wood-barriers hit"}
+  :db/doc         "Number of smoke bombs thrown"}
 
  {:db/id          #db/id [:db.part/db]
   :db/ident       :stats/shots-fired
@@ -503,13 +519,133 @@
   :db/doc         "Number of shots that found target"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/smoke-bombs-thrown
+  :db/ident       :stats/have-been-shot
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Number of smoke bombs thrown"}
+  :db/doc         "Number of times you have been hit"}
 
  {:db/id          #db/id [:db.part/db]
-  :db/ident       :stats/number-of-moves
+  :db/ident       :stats/wombats-destroyed
   :db/valueType   :db.type/long
   :db/cardinality :db.cardinality/one
-  :db/doc         "Number of moves"}]
+  :db/doc         "Number of wombats destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/zakano-destroyed
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of zakano destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wombats-shot
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wombats hit"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/zakano-shot
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of zakano hit"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wood-barriers-destroyed
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wood barriers destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/steel-barriers-destroyed
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of steel barriers destroyed"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wood-barriers-shot
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wood barriers shot"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/steel-barriers-shot
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of steel barriers shot"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/deaths
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of total deaths in a game"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/deaths-by-shot
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of total deaths in a game cause by getting shot"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/deaths-by-wood-barrier-collision
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of total deaths in a game cause by colliding with a wood barrier"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/deaths-by-steel-barrier-collision
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of total deaths in a game cause by colliding with a steel barrier"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/deaths-by-wombat-collision
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of total deaths in a game cause by colliding with a wombat"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/deaths-by-zakano-collision
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of total deaths in a game cause by colliding with a zakano"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/deaths-by-poison
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of total deaths in a game cause by poison"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wood-barrier-collisions
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wood barriers collisions"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/steel-barrier-collisions
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of steel barriers collisions"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/zakano-collisions
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of zakano collisions"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/wombat-collisions
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of wombat collisions"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/frames-blinded
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of frames a wombat has been blinded for"}
+
+ {:db/id          #db/id [:db.part/db]
+  :db/ident       :stats/frames-played
+  :db/valueType   :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Number of frames a wombat played"}]

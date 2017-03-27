@@ -37,18 +37,42 @@
 
 (defn- update-arena-data
   "Maps over each cell updating attributes like metadata decay and damage levels"
-  [{:keys [arena-config] :as game-state}]
+  [game-state]
   (let [updated-arena
         (vec (map (fn [row]
                     (vec (map #(-> %
                                    (update-cell-metadata)
-                                   (update-cell-deterioration-level arena-config)) row)))
-                  (get-in game-state [:frame :frame/arena])))]
-    (assoc-in game-state [:frame :frame/arena] updated-arena)))
+                                   (update-cell-deterioration-level (:game/arena game-state))) row)))
+                  (get-in game-state [:game/frame :frame/arena])))]
+    (assoc-in game-state [:game/frame :frame/arena] updated-arena)))
+
+(defn- update-player-stats
+  [game-state]
+  (let [wombats (filter (fn [cell]
+                          (= :wombat (get-in cell [:contents :type])))
+                        (flatten (get-in game-state [:game/frame :frame/arena])))]
+    (reduce (fn [game-state-acc wombat]
+              (let [wombat-uuid (get-in wombat [:contents :uuid])
+                    mmm-smoked-wombat (some #(= :smoke (:type %))
+                                            (:meta wombat))]
+                ;; Always update the frames played stat if they are alive after the round
+                (cond-> (update-in game-state-acc
+                                   [:game/players
+                                    wombat-uuid
+                                    :player/stats
+                                    :stats/frames-played] inc)
+                  ;; If the wombat is blinded by smoke, update stats
+                  mmm-smoked-wombat
+                  (update-in [:game/players
+                              wombat-uuid
+                              :player/stats
+                              :stats/frames-blinded] inc))))
+            game-state
+            wombats)))
 
 (defn- round-type-game?
   [game-state]
-  (= :high-score (get-in game-state [:game-config :game/type])))
+  (= :high-score (:game/type game-state)))
 
 (defn- add-mini-maps
   "This function is primarily used to support the minimap used
@@ -56,18 +80,19 @@
   [game-state calculate-decision-maker-state-fn]
   (reduce-kv (fn [game-state player-id player]
                (assoc-in game-state
-                         [:players player-id :state :mini-map]
+                         [:game/players player-id :state :mini-map]
                          (vec
                           (map #(vec %)
-                               (:arena (calculate-decision-maker-state-fn game-state player-id :wombat))))))
-             game-state (:players game-state)))
+                               (:arena (calculate-decision-maker-state-fn game-state :wombat player-id))))))
+             game-state (:game/players game-state)))
 
 (defn finalize-frame
   [game-state
    {attach-mini-maps :attach-mini-maps}
    calculate-decision-maker-state-fn]
-  (cond-> game-state
-    true (update-arena-data)
+  (cond-> (-> game-state
+              update-arena-data
+              update-player-stats)
     attach-mini-maps (add-mini-maps calculate-decision-maker-state-fn)))
 
 (defn- format-date
@@ -79,25 +104,24 @@
 (defn finalize-round
   [game-state close-round]
   ;; Add intermission to current time
-  (let [intermission (get-in game-state [:game-config :game/round-intermission])
-        new-start-time (t/plus (t/now) (t/millis intermission))
+  (let [new-start-time (t/plus (t/now) (t/millis (:game/round-intermission game-state)))
         updated-game-state (-> game-state
-                               (assoc-in [:frame :frame/round-start-time] (format-date new-start-time))
-                               (update-in [:frame :frame/round-number] inc)
-                               (assoc-in [:game-config :game/status] :active-intermission)
-                               (assoc-in [:frame :frame/arena] (generate-arena (:arena-config game-state))))]
+                               (assoc-in [:game/frame :frame/round-start-time] (format-date new-start-time))
+                               (update-in [:game/frame :frame/round-number] inc)
+                               (assoc :game/status :active-intermission)
+                               (assoc-in [:game/frame :frame/arena] (generate-arena (:game/arena game-state))))]
     (close-round updated-game-state)
     updated-game-state))
 
 (defn- is-end-of-game-type-round?
-  [{:keys [game-config frame]}]
-  (> (:frame/round-number frame)
-     (:game/num-rounds game-config)))
+  [game-state]
+  (> (get-in game-state [:game/frame :frame/round-number])
+     (:game/num-rounds game-state)))
 
 (defn- game-over?
   "End game condition"
   [game-state]
-  (case (get-in game-state [:game-config :game/type])
+  (case (:game/type game-state)
     :high-score (is-end-of-game-type-round? game-state)))
 
 (defn finalize-game
@@ -105,11 +129,11 @@
   (if (game-over? game-state)
     (let [updated-game-state (-> game-state
                                  ;; Decrement the round-number so it stores the last processed round
-                                 (update-in [:frame :frame/round-number] dec)
-                                 (update :frame dissoc :frame/round-start-time)
-                                 (update :frame dissoc :frame/arena)
-                                 (assoc-in [:game-config :game/end-time] (format-date (t/now)))
-                                 (assoc-in [:game-config :game/status] :closed))]
+                                 (update-in [:game/frame :frame/round-number] dec)
+                                 (update :game/frame dissoc :frame/round-start-time)
+                                 (update :game/frame dissoc :frame/arena)
+                                 (assoc :game/end-time (format-date (t/now)))
+                                 (assoc :game/status :closed))]
 
       (close-game updated-game-state)
       updated-game-state)
