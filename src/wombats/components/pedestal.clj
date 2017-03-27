@@ -24,10 +24,9 @@
     {::env env
      ::http/resource-path "/public"
      ::http/file-path "/public"
-     ::http/allowed-origins (fn [origin]
-                              ;; TODO #177
-                              ;; allowed-origins
-                              true)
+     ::http/allowed-origins (if (contains? #{:dev :dev-ddb} env)
+                              (fn [origin] true)
+                              #(re-find #"\.wombats\.io$|\/\/wombats\.io$" %))
      ::http/routes api-routes
      ::http/port port
      ::http/type type
