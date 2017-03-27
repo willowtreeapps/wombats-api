@@ -26,7 +26,7 @@
      ::http/file-path "/public"
      ::http/allowed-origins (if (contains? #{:dev :dev-ddb} env)
                               (fn [origin] true)
-                              #(re-find #"\.wombats\.io|\/\/wombats.io" %))
+                              #(re-find #"\.wombats\.io$|\/\/wombats\.io$" %))
      ::http/routes api-routes
      ::http/port port
      ::http/type type
