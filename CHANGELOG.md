@@ -10,6 +10,13 @@ CHANGELOG
 
 ## QA (3.23.2017)
 **Enhancements**
+* None
+
+**Bug Fixes**
+* None
+
+## Master (3.27.2017)
+**Enhancements**
 * AWS Lambda Mock
     [Eric Rochester][/erochest] #[329](https://github.com/willowtreeapps/wombats-api/issues/329)
 * Non Arbitrary Point System
@@ -32,13 +39,6 @@ CHANGELOG
     [Matt O'Connell][/oconn] #[326](https://github.com/willowtreeapps/wombats-api/issues/326)
 * Fixed minimap view in Simulator
     [C.P. Dehli][/dehli] #[317](https://github.com/willowtreeapps/wombats-api/issues/317)
-
-## Master
-**Enhancements**
-* None
-
-**Bug Fixes**
-* None
 
 ## 1.0.0-alpha1 (3.14.2017)
 **Enhancements**
