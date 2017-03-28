@@ -31,7 +31,7 @@
     {::env env
      ::http/resource-path "/public"
      ::http/file-path "/public"
-     ::http/allowed-origins (if (contains? #{:dev-ddb} env) ;; TODO: #368 Add back :dev once we do testing
+     ::http/allowed-origins (if (contains? #{:dev} env) ;; TODO: #368 Add back :dev-ddb once we do testing
                               (fn [origin] true)
                               allowed-origin?)
      ::http/routes api-routes
