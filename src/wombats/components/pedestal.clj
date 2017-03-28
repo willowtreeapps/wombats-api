@@ -18,8 +18,9 @@
   [origin]
   ;; TODO: #368 Remove this once we do some testing
   (log/info origin)
-  (let [match (re-find #"^$|\.wombats\.io$|\/\/wombats\.io$" origin)]
-    (some? match)))
+  (if origin
+    (some? (re-find #"^$|\.wombats\.io$|\/\/wombats\.io$" origin))
+    true))
 
 (defn- create-service-map
   [config service]
