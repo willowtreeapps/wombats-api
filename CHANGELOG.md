@@ -18,6 +18,8 @@ CHANGELOG
 **Bug Fixes**
 * Access key bug
     [Matt O'Connell][/oconn] #[325](https://github.com/willowtreeapps/wombats-api/issues/325)
+* Allowed origins bug
+    [C.P. Dehli][/dehli] #[368](https://github.com/willowtreeapps/wombats-api/issues/368)
 
 ## Master (3.27.2017)
 **Enhancements**
