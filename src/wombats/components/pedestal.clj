@@ -14,6 +14,13 @@
 
 ;; Private helper functions
 
+(defn- allowed-origin?
+  [origin]
+  ;; TODO: #368 Remove this once we do some testing
+  (log/info origin)
+  (let [match (re-find #"^$|\.wombats\.io$|\/\/wombats\.io$" origin)]
+    (some? match)))
+
 (defn- create-service-map
   [config service]
   (let [env (:env config)
@@ -24,9 +31,9 @@
     {::env env
      ::http/resource-path "/public"
      ::http/file-path "/public"
-     ::http/allowed-origins (if (contains? #{:dev :dev-ddb} env)
+     ::http/allowed-origins (if (contains? #{:dev-ddb} env) ;; TODO: #368 Add back :dev once we do testing
                               (fn [origin] true)
-                              #(re-find #"\.wombats\.io$|\/\/wombats\.io$" %))
+                              allowed-origin?)
      ::http/routes api-routes
      ::http/port port
      ::http/type type
