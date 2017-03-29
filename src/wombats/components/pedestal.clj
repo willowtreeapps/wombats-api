@@ -14,6 +14,14 @@
 
 ;; Private helper functions
 
+(defn- allowed-origin?
+  "When the origin is nil, that means you've navigated to the
+  API itself (which should always be allowed)"
+  [origin]
+  (if origin
+    (some? (re-find #"\.wombats\.io$|\/\/wombats\.io$" origin))
+    true))
+
 (defn- create-service-map
   [config service]
   (let [env (:env config)
@@ -24,10 +32,9 @@
     {::env env
      ::http/resource-path "/public"
      ::http/file-path "/public"
-     ::http/allowed-origins (fn [origin]
-                              ;; TODO #177
-                              ;; allowed-origins
-                              true)
+     ::http/allowed-origins (if (contains? #{:dev :dev-ddb} env)
+                              (fn [_] true)
+                              allowed-origin?)
      ::http/routes api-routes
      ::http/port port
      ::http/type type

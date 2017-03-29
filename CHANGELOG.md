@@ -15,7 +15,7 @@ CHANGELOG
 **Bug Fixes**
 * None
 
-## Master (3.27.2017)
+## Master (3.29.2017)
 **Enhancements**
 * AWS Lambda Mock
     [Eric Rochester][/erochest] #[329](https://github.com/willowtreeapps/wombats-api/issues/329)
@@ -33,12 +33,20 @@ CHANGELOG
     [C.P. Dehli][/dehli], [Matt O'Connell][/oconn] #[305](https://github.com/willowtreeapps/wombats-api/issues/305)
 * Zakano Code
     [Matt O'Connell][/oconn] #[330](https://github.com/willowtreeapps/wombats-api/issues/330))
+* Pagination Support
+    [Matt O'Connell][/oconn] #[336](https://github.com/willowtreeapps/wombats-api/issues/336)
+* CORS Fixed
+    [Matt O'Connell][/oconn] #[177](https://github.com/willowtreeapps/wombats-api/issues/177)
 
 **Bug Fixes**
 * Simulator State Transfer
     [Matt O'Connell][/oconn] #[326](https://github.com/willowtreeapps/wombats-api/issues/326)
 * Fixed minimap view in Simulator
     [C.P. Dehli][/dehli] #[317](https://github.com/willowtreeapps/wombats-api/issues/317)
+* Access key bug
+    [Matt O'Connell][/oconn] #[325](https://github.com/willowtreeapps/wombats-api/issues/325)
+* Allowed origins bug
+    [C.P. Dehli][/dehli] #[368](https://github.com/willowtreeapps/wombats-api/issues/368)
 
 ## 1.0.0-alpha1 (3.14.2017)
 **Enhancements**
