@@ -6,7 +6,8 @@ CHANGELOG
 * None
 
 **Bug Fixes**
-* None
+* Remove Swagger schema (so that Swagger site works)
+    [C.P. Dehli][/dehli] *No Issue*
 
 ## QA (3.23.2017)
 **Enhancements**
