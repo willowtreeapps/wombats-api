@@ -8,14 +8,14 @@ CHANGELOG
 **Bug Fixes**
 * None
 
-## QA (3.23.2017)
+## QA (4.11.2017)
 **Enhancements**
 * None
 
 **Bug Fixes**
 * None
 
-## Master (3.29.2017)
+## Master (4.11.2017)
 **Enhancements**
 * AWS Lambda Mock
     [Eric Rochester][/erochest] #[329](https://github.com/willowtreeapps/wombats-api/issues/329)
@@ -47,6 +47,10 @@ CHANGELOG
     [Matt O'Connell][/oconn] #[325](https://github.com/willowtreeapps/wombats-api/issues/325)
 * Allowed origins bug
     [C.P. Dehli][/dehli] #[368](https://github.com/willowtreeapps/wombats-api/issues/368)
+* Strict-Transport-Security remove includeSubdomains
+    [C.P. Dehli][/dehli] *No Issue*
+* Remove Swagger schema (so that Swagger site works)
+    [C.P. Dehli][/dehli] *No Issue*
 
 ## 1.0.0-alpha1 (3.14.2017)
 **Enhancements**

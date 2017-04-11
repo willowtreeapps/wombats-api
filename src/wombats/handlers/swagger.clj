@@ -15,7 +15,6 @@
                                                              :name "Authorization"
                                                              :in "header"}}
                               :basePath ""
-                              :schemas ["http"]
                               :host ""
                               :swagger "2.0"
                               :consumes ["application/edn"]

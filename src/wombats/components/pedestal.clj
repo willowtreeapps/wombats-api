@@ -37,6 +37,7 @@
                               allowed-origin?)
      ::http/routes api-routes
      ::http/port port
+     ::http/secure-headers {:hsts-settings (sec-headers/hsts-header 31536000)}
      ::http/type type
      ::http/join? join?
      ::http/container-options (merge container-options
