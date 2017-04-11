@@ -6,17 +6,17 @@ CHANGELOG
 * None
 
 **Bug Fixes**
-* Strict-Transport-Security remove includeSubdomains
-    [C.P. Dehli][/dehli] *No Issue*
-* Remove Swagger schema (so that Swagger site works)
-    [C.P. Dehli][/dehli] *No Issue*
+* None
 
-## QA (3.23.2017)
+## QA (4.11.2017)
 **Enhancements**
 * None
 
 **Bug Fixes**
-* None
+* Strict-Transport-Security remove includeSubdomains
+    [C.P. Dehli][/dehli] *No Issue*
+* Remove Swagger schema (so that Swagger site works)
+    [C.P. Dehli][/dehli] *No Issue*
 
 ## Master (3.29.2017)
 **Enhancements**
