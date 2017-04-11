@@ -8,6 +8,8 @@ CHANGELOG
 **Bug Fixes**
 * Strict-Transport-Security remove includeSubdomains
     [C.P. Dehli][/dehli] *No Issue*
+* Remove Swagger schema (so that Swagger site works)
+    [C.P. Dehli][/dehli] *No Issue*
 
 ## QA (3.23.2017)
 **Enhancements**
