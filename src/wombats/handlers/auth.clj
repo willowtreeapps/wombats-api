@@ -119,21 +119,15 @@
      (let [{:keys [client-id
                    client-secret
                    signing-secret]} (get-github-settings context)
-           {:keys [code referer state]} (:query-params request)
+           {:keys [code referer state error_description]} (:query-params request)
            create-or-update-user (dao/get-fn :create-or-update-user context)
            get-user-by-github-id (dao/get-fn :get-user-by-github-id context)
            failed-redirect #(redirect-home context (str referer "?login-error=" (url-encode %)))
            {signing-secret-check :signing-secret
             access-key-key :access-key} (read-string (url-decode state))]
 
-       (log/error (str "github-settings: "
-                       (get-github-settings context)))
-
-       (log/error (str "request-params: "
-                       (:query-params request)))
-
-       (log/error (str "state-decode: "
-                       (read-string (url-decode state))))
+       (when error_description
+         (log/error "GitHub Callback Error: " error_description))
 
        ;; Check to see if the request is originating from the correct user
        (if (= signing-secret-check signing-secret)
