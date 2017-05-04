@@ -126,6 +126,15 @@
            {signing-secret-check :signing-secret
             access-key-key :access-key} (read-string (url-decode state))]
 
+       (log/error (str "github-settings: "
+                       (get-github-settings context)))
+
+       (log/error (str "request-params: "
+                       (:query-params request)))
+
+       (log/error (str "state-decode: "
+                       (read-string (url-decode state))))
+
        ;; Check to see if the request is originating from the correct user
        (if (= signing-secret-check signing-secret)
          (let [github-access-token @(get-access-token {:client_id client-id
