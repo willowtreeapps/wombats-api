@@ -39,6 +39,8 @@ CHANGELOG
     [Matt O'Connell][/oconn] #[177](https://github.com/willowtreeapps/wombats-api/issues/177)
 
 **Bug Fixes**
+* Additional Error Logging in OAuth2 Response
+    [Matt O'Connell][/oconn] Hotfix
 * Simulator State Transfer
     [Matt O'Connell][/oconn] #[326](https://github.com/willowtreeapps/wombats-api/issues/326)
 * Fixed minimap view in Simulator
