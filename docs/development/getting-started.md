@@ -66,6 +66,8 @@ This guide is responsible for getting your development environment setup to work
    - `$ boot repl`
 1. Start the dev task
    - `boot.user => (boot "dev")`
+1. Seed the database
+    - `boot.user => (refresh-local)`
 1. Start the Wombats system
    - `boot.user => (reloaded.repl/go)`
 
