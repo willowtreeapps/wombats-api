@@ -18,6 +18,8 @@ TODO: Basic info
 
 Want to contribute? [See how](./CONTRIBUTING.md) you can get involved.
 
+[Getting Started Guide](./docs/development/getting-started.md)
+
 [Development Documentation](./docs/development/README.md)
 
 ### Decision Log
