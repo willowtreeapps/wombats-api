@@ -142,15 +142,10 @@
 
 (defn get-dependencies
   []
-  (let [env (System/getProperty "APP_ENV")]
+  (let [env (System/getenv "WOMBATS_ENV")]
     (if (= env "dev")
-      (do
-        (println "loaded datomic-free")
-        dev-dependencies
-        )
-      (do
-        (println "loaded datomic-pro")
-        prod-dependencies)
+      dev-dependencies
+      prod-dependencies
       )
     ))
 
