@@ -41,9 +41,9 @@
 
 (defn- get-private-config-file
   []
-  (let [file-location ("/config/credentials.edn")]
-    (when (.exists (io/as-file file-location))
-      file-location)))
+  (let [file-location (str (System/getProperty "user.dir") "/config/credentials.edn")]
+      (when (.exists (io/as-file file-location))
+        file-location)))
 
 (defn- get-config-files
   "Determins the files that should be used for configuration.
@@ -53,7 +53,7 @@
          system. immuconf uses slup under the hood which lets you
          specify the ~ user dir.
 
-   Defaults -> [config/base.edn, ~/.wombats/config.edn,  config/{env}.edn]"
+   Defaults -> [config/base.edn, ~/.wombats/config."
   [env]
   (let [base-config (io/resource "base.edn")
         private-config-envs (get-private-envs)
