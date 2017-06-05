@@ -1,9 +1,10 @@
 CHANGELOG
 =========
 
-## Develop
+## Develop (6.01.2017)
 **Enhancements**
-* None
+* Updated Docs/Development getting-started.md
+    [Eli Bosley][/elibosley] *No Issue*
 
 **Bug Fixes**
 * None
@@ -72,3 +73,4 @@ CHANGELOG
 [/emily]: https://github.com/emilyseibert
 [/oconn]: https://github.com/oconn
 [/erochest]: https://github.com/erochest
+[/elibosley]: http://github.com/elibosley
