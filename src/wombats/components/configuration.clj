@@ -41,7 +41,7 @@
 
 (defn- get-private-config-file
   []
-  (let [file-location (str (System/getProperty "user.home") "/.wombats/config.edn")]
+  (let [file-location ("/config/credentials.edn")]
     (when (.exists (io/as-file file-location))
       file-location)))
 
