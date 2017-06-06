@@ -1,3 +1,9 @@
+(def boot-constants
+  {:task-confirm "Are you sure you want to %s the %s database?
+Type \"Yes\" to confirm."
+   :task-block "You cannot run %s on the %s database."
+   :task-cancel "Did not %s the %s database."})
+
 (def main-dependencies
   '[;; Core Clojure libs
    [org.clojure/clojure   "1.9.0-alpha14" :scope "provided"]
@@ -100,7 +106,7 @@
       "dev" ["refresh" "delete" "seed" "refresh-db-functions"]
       "dev-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
       "qa-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
-      "prod-ddb" ["seed"])))
+      "prod-ddb" [])))
 
 (defn can-run-command?
   "Uses environment to check whether a command string can be run"
@@ -119,16 +125,38 @@
       (into main-dependencies datomic-pro)
       )))
 
+(defn is-dev?
+  "Check if current env is dev or dev-ddb for loading user"
+  []
+  (if (or (= (get-wombats-env) "dev") (= (get-wombats-env) "dev-ddb"))
+    true
+    false))
+
+(defn get-source-paths
+  "Build source path based on whether running in dev or qa/prod"
+  []
+  (if (is-dev?)
+    (conj #{"src" "test"} "dev/src")
+    #{"src" "test"}))
+
+(defn load-user
+  "If loading in dev, load user as well"
+  []
+  (if is-dev?
+    (require 'user))
+  )
 
 (set-env! :project 'wombats
           :version "1.0.0-alpha1"
-          :source-paths #{"src" "test"}
+          :source-paths (get-source-paths)
           :resource-paths #{"src" "resources" "config"}
           :dependencies (get-dependencies)
           :repositories #(conj % ["my-datomic" {:url "https://my.datomic.com/repo"
                                                 :username (System/getenv "DATOMIC_USERNAME")
                                                 :password (System/getenv "DATOMIC_PASSWORD")}])
           :target-path "target")
+
+(load-user)
 
 (task-options!
  pom {:project (get-env :project)
@@ -169,18 +197,6 @@
   (doseq [txd (read-all f)]
     @(d/transact conn txd))
   :done)
-
-(deftask dev []
-  (set-env! :source-paths #(conj % "dev/src"))
-
-  (require 'user))
-
-(deftask dev-ddb
-  []
-  (set-env! :source-paths #(conj % "dev/src"))
-  (System/setProperty "APP_ENV" "dev-ddb")
-
-  (require 'user))
 
 (defn- get-datomic-uri
   [{{uri :uri
@@ -258,79 +274,47 @@
       create-db!
       seed-db!))
 
+(defn task-constructor
+  [task-name func]
+  (let [db (get-wombats-db-name)]
+    (if (can-run-command? task-name)
+      (do
+        (println (format (boot-constants :task-confirm) task-name db))
+        (let [input (read-line)]
+          (if (= input "Yes")
+            (func)
+            (println (format (boot-constants :task-cancel) task-name db)))))
+      (println (format (boot-constants :task-block) task-name db)))))
+
 (deftask refresh-db-functions
   "resets the transactors in the db"
   []
-  (if (can-run-command? "refresh-db-functions")
-    (do
-      (-> (build-connection-string)
-          (d/connect)
-          (db-fns/seed-database-functions)))
-    (println "You cannot run refresh-db-functions with this environment.")))
+  (task-constructor "refresh-db-functions"
+                    #(-> (build-connection-string)
+                         (d/connect)
+                         (db-fns/seed-database-functions))))
 
 (deftask seed
   "Seed the current database set through WOMBATS_ENV"
   []
-  (let [db (get-wombats-db-name)]
-    (if (can-run-command? "seed")
-      (do
-        (println (str "Are you sure you want to seed the " db " database?
-Type \"Yes\" to confirm.") )
-
-        (let [input (read-line)]
-          (if (= input "Yes")
-            (do
-              ( -> (build-connection-string)
-               create-db!
-               seed-db!))
-            (println "Did not seed database.")
-            )))
-      (println (str "You cannot run seed on " db ".")))))
+  (task-constructor "seed"
+                    #(-> (build-connection-string)
+                         create-db!
+                         seed-db!)))
 
 (deftask refresh
   "Refresh the current database set through WOMBATS_ENV"
   []
-  (let [db (get-wombats-db-name)]
-    (if (can-run-command? "refresh")
-      (do
-        (println (str "Are you sure you want to refresh the " db " database?
-Type \"Yes\" to confirm.") )
-
-        (let [input (read-line)]
-          (if (= input "Yes")
-            (do
-              ( -> (build-connection-string)
-               refresh-db!))
-            (println "Did not refresh database.")
-            )))
-      (println (str "You cannot run refresh on " db ".")))))
+  (task-constructor "refresh"
+                    #( -> (build-connection-string)
+                      refresh-db!)))
 
 (deftask delete
   "Deletes the current database set through WOMBATS_ENV"
   []
-  (let [db (get-wombats-db-name)]
-    (if (can-run-command? "delete")
-      (do
-        (println (str "Are you sure you want to delete the " db " database?
- Type \"Yes\" to confirm.") )
-
-        (let [input (read-line)]
-          (if (= input "Yes")
-            (do
-              ( -> (build-connection-string)
-               delete-db!))
-            (println "Did not delete database.")
-            )))
-      (println (str "You cannot run delete on " db ".")))))
-
-#_(deftask seed-prod
-  "Seeds the prod dynamo db"
-  []
-  (System/setProperty "APP_ENV" "prod-ddb")
-
-  (-> (build-connection-string)
-      create-db!
-      seed-db!))
+  (task-constructor "delete"
+                    #( -> (build-connection-string)
+                      delete-db!)))
 
 (deftask build
   "Creates a new build"
