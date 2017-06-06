@@ -92,17 +92,26 @@
       "qa-ddb" "qa"
       "prod-ddb" "production")))
 
-(defn is-protected-environment?
-  "Gets whether environment shoudn't be allowed to refresh or delete the database"
+(defn get-env-permissions
+  "Used by can-run-command to determine if various functions can be called on the specified db"
   []
   (let [wombats-env (get-wombats-env)]
     (case wombats-env
-      "dev" false
-      "dev-ddb" false
-      "qa-ddb" false
-      "prod-ddb" true)))
+      "dev" ["refresh" "delete" "seed" "refresh-db-functions"]
+      "dev-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
+      "qa-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
+      "prod-ddb" ["seed"])))
+
+(defn can-run-command?
+  "Uses environment to check whether a command string can be run"
+  [cmdstring]
+  (if (not= (some #(= cmdstring %) (get-env-permissions)) nil)
+    true
+    false)
+  )
 
 (defn get-dependencies
+  "Checks environment to determine whether to load datomic free or pro"
   []
   (let [env (get-wombats-env)]
     (if (= env "dev")
@@ -252,7 +261,7 @@
 (deftask refresh-db-functions
   "resets the transactors in the db"
   []
-  (if (= (get-wombats-env) "dev")
+  (if (can-run-command? "refresh-db-functions")
     (do
       (-> (build-connection-string)
           (d/connect)
@@ -263,23 +272,26 @@
   "Seed the current database set through WOMBATS_ENV"
   []
   (let [db (get-wombats-db-name)]
-    (println (str "Are you sure you want to seed the " db " database? Type \"Yes\" to confirm.") )
-    )
-  (let [input (read-line)]
-    (if (= input "Yes")
+    (if (can-run-command? "seed")
       (do
-        ( -> (build-connection-string)
-         create-db!
-         seed-db!))
-      (println "Did not seed database.")
-      )))
+        (println (str "Are you sure you want to seed the " db " database?
+Type \"Yes\" to confirm.") )
+
+        (let [input (read-line)]
+          (if (= input "Yes")
+            (do
+              ( -> (build-connection-string)
+               create-db!
+               seed-db!))
+            (println "Did not seed database.")
+            )))
+      (println (str "You cannot run seed on " db ".")))))
 
 (deftask refresh
   "Refresh the current database set through WOMBATS_ENV"
   []
   (let [db (get-wombats-db-name)]
-    (if (is-protected-environment?)
-      (println (str "You cannot run refresh on " db "."))
+    (if (can-run-command? "refresh")
       (do
         (println (str "Are you sure you want to refresh the " db " database?
 Type \"Yes\" to confirm.") )
@@ -290,14 +302,14 @@ Type \"Yes\" to confirm.") )
               ( -> (build-connection-string)
                refresh-db!))
             (println "Did not refresh database.")
-            ))))))
+            )))
+      (println (str "You cannot run refresh on " db ".")))))
 
 (deftask delete
   "Deletes the current database set through WOMBATS_ENV"
   []
   (let [db (get-wombats-db-name)]
-    (if (is-protected-environment?)
-      (println (str "You cannot run delete on " db "."))
+    (if (can-run-command? "delete")
       (do
         (println (str "Are you sure you want to delete the " db " database?
  Type \"Yes\" to confirm.") )
@@ -308,7 +320,8 @@ Type \"Yes\" to confirm.") )
               ( -> (build-connection-string)
                delete-db!))
             (println "Did not delete database.")
-            ))))))
+            )))
+      (println (str "You cannot run delete on " db ".")))))
 
 #_(deftask seed-prod
   "Seeds the prod dynamo db"
