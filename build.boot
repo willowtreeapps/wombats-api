@@ -79,7 +79,7 @@ Type \"Yes\" to confirm."
 (def datomic-pro
   '[[com.datomic/datomic-pro "0.9.5554"]])
 
-(defn get-wombats-env
+(defn- get-wombats-env
   "Gets the user defined wombats environment to determine dependencies"
   []
   (let [env (System/getenv "WOMBATS_ENV")]
@@ -88,7 +88,7 @@ Type \"Yes\" to confirm."
       "dev"
       env)))
 
-(defn get-wombats-db-name
+(defn- get-wombats-db-name
   "Gets the user readable name of the database that various tasks will be performed on"
   []
   (let [wombats-env (get-wombats-env)]
@@ -98,7 +98,7 @@ Type \"Yes\" to confirm."
       "qa-ddb" "qa"
       "prod-ddb" "production")))
 
-(defn get-env-permissions
+(defn- get-env-permissions
   "Used by can-run-command to determine if various functions can be called on the specified db"
   []
   (let [wombats-env (get-wombats-env)]
@@ -108,7 +108,7 @@ Type \"Yes\" to confirm."
       "qa-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
       "prod-ddb" [])))
 
-(defn can-run-command?
+(defn- can-run-command?
   "Uses environment to check whether a command string can be run"
   [cmdstring]
   (if (not= (some #(= cmdstring %) (get-env-permissions)) nil)
@@ -116,7 +116,7 @@ Type \"Yes\" to confirm."
     false)
   )
 
-(defn get-dependencies
+(defn- get-dependencies
   "Checks environment to determine whether to load datomic free or pro"
   []
   (let [env (get-wombats-env)]
@@ -125,21 +125,21 @@ Type \"Yes\" to confirm."
       (into main-dependencies datomic-pro)
       )))
 
-(defn is-dev?
+(defn- is-dev?
   "Check if current env is dev or dev-ddb for loading user"
   []
   (if (or (= (get-wombats-env) "dev") (= (get-wombats-env) "dev-ddb"))
     true
     false))
 
-(defn get-source-paths
+(defn- get-source-paths
   "Build source path based on whether running in dev or qa/prod"
   []
   (if (is-dev?)
     (conj #{"src" "test"} "dev/src")
     #{"src" "test"}))
 
-(defn load-user
+(defn- load-user
   "If loading in dev, load user as well"
   []
   (if is-dev?
@@ -274,7 +274,7 @@ Type \"Yes\" to confirm."
       create-db!
       seed-db!))
 
-(defn task-constructor
+(defn- task-constructor
   [task-name func]
   (let [db (get-wombats-db-name)]
     (if (can-run-command? task-name)

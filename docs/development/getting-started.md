@@ -63,10 +63,10 @@ This guide is responsible for getting your development environment setup to work
 1. To run on another environment than local, create an environment variable called `WOMBATS_ENV`. 
 
     Possible values for `WOMBATS_ENV` are:
-    - dev (local)
-    - dev-ddb (development database)
-    - qa-ddb (qa database)
-    - prod-ddb (production database)
+    - `dev` (local)
+    - `dev-ddb` (development database)
+    - `qa-ddb` (qa database)
+    - `prod-ddb` (production database)
 1. Create a GitHub OAuth Application [here](https://github.com/settings/applications/new).
    - Name can be anything
    - Homepage URL is `localhost:3449`
@@ -97,3 +97,10 @@ Check out Stuart Sierra's [reloaded workflow](http://thinkrelevance.com/blog/201
 - `reloaded.repl/reset-all`
 - `reloaded.repl/start`
 - `reloaded.repl/stop`
+
+#### boot tasks (run from repl)
+
+- `seed`
+- `refresh`
+- `refresh-db-functions`
+- `delete`
