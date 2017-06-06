@@ -252,10 +252,12 @@
 (deftask refresh-db-functions
   "resets the transactors in the db"
   []
-  (System/setProperty "APP_ENV" "dev")
-  (-> (build-connection-string)
-      (d/connect)
-      (db-fns/seed-database-functions)))
+  (if (= (get-wombats-env) "dev")
+    (do
+      (-> (build-connection-string)
+          (d/connect)
+          (db-fns/seed-database-functions)))
+    (println "You cannot run refresh-db-functions with this environment.")))
 
 (deftask seed
   "Seed the current database set through WOMBATS_ENV"
