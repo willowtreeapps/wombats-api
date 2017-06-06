@@ -73,14 +73,43 @@
 (def datomic-pro
   '[[com.datomic/datomic-pro "0.9.5554"]])
 
-(defn get-dependencies
+(defn get-wombats-env
+  "Gets the user defined wombats environment to determine dependencies"
   []
   (let [env (System/getenv "WOMBATS_ENV")]
+    (if (or (= env "")
+            (nil? env))
+      "dev"
+      env)))
+
+(defn get-wombats-db-name
+  "Gets the user readable name of the database that various tasks will be performed on"
+  []
+  (let [wombats-env (get-wombats-env)]
+    (case wombats-env
+      "dev" "local"
+      "dev-ddb" "development"
+      "qa-ddb" "qa"
+      "prod-ddb" "production")))
+
+(defn is-protected-environment?
+  "Gets whether environment shoudn't be allowed to refresh or delete the database"
+  []
+  (let [wombats-env (get-wombats-env)]
+    (case wombats-env
+      "dev" false
+      "dev-ddb" false
+      "qa-ddb" false
+      "prod-ddb" true)))
+
+(defn get-dependencies
+  []
+  (let [env (get-wombats-env)]
     (if (= env "dev")
       (into main-dependencies datomic-free)
       (into main-dependencies datomic-pro)
-      )
-    ))
+      )))
+
 
 (set-env! :project 'wombats
           :version "1.0.0-alpha1"
@@ -156,7 +185,7 @@
 
 (defn- build-connection-string
   []
-  (let [env (System/getProperty "APP_ENV")
+  (let [env (get-wombats-env)
         env-settings (-> (str env ".edn")
                          (clojure.java.io/resource)
                          (clojure.java.io/file)
@@ -228,78 +257,56 @@
       (d/connect)
       (db-fns/seed-database-functions)))
 
-(deftask seed-local
-  "Seeds the dev dynamo db"
+(deftask seed
+  "Seed the current database set through WOMBATS_ENV"
   []
-  (System/setProperty "APP_ENV" "dev")
+  (let [db (get-wombats-db-name)]
+    (println (str "Are you sure you want to seed the " db " database? Type \"Yes\" to confirm.") )
+    )
+  (let [input (read-line)]
+    (if (= input "Yes")
+      (do
+        ( -> (build-connection-string)
+         create-db!
+         seed-db!))
+      (println "Did not seed database.")
+      )))
 
-  (-> (build-connection-string)
-      create-db!
-      seed-db!))
-
-(deftask refresh-local
-  "resets the database"
+(deftask refresh
+  "Refresh the current database set through WOMBATS_ENV"
   []
-  (System/setProperty "APP_ENV" "dev")
+  (let [db (get-wombats-db-name)]
+    (if (is-protected-environment?)
+      (println (str "You cannot run refresh on " db "."))
+      (do
+        (println (str "Are you sure you want to refresh the " db " database?
+Type \"Yes\" to confirm.") )
 
-  (-> (build-connection-string)
-      refresh-db!))
+        (let [input (read-line)]
+          (if (= input "Yes")
+            (do
+              ( -> (build-connection-string)
+               refresh-db!))
+            (println "Did not refresh database.")
+            ))))))
 
-(deftask delete-local
-  "deletes the local db"
+(deftask delete
+  "Deletes the current database set through WOMBATS_ENV"
   []
-  (System/setProperty "APP_ENV" "dev")
+  (let [db (get-wombats-db-name)]
+    (if (is-protected-environment?)
+      (println (str "You cannot run delete on " db "."))
+      (do
+        (println (str "Are you sure you want to delete the " db " database?
+ Type \"Yes\" to confirm.") )
 
-  (-> (build-connection-string)
-      delete-db!))
-
-(deftask seed-dev
-  "Seeds the dev dynamo db"
-  []
-  (System/setProperty "APP_ENV" "dev-ddb")
-
-  (-> (build-connection-string)
-      create-db!
-      seed-db!))
-
-(deftask refresh-dev
-  "Resets the dev dynamo db"
-  []
-  (System/setProperty "APP_ENV" "dev-ddb")
-
-  (-> (build-connection-string)
-      refresh-db!))
-
-(deftask delete-dev
-  []
-  (System/setProperty "APP_ENV" "dev-ddb")
-
-  (-> (build-connection-string)
-      delete-db!))
-
-(deftask seed-qa
-  "Seeds the dev dynamo db"
-  []
-  (System/setProperty "APP_ENV" "qa-ddb")
-
-  (-> (build-connection-string)
-      create-db!
-      seed-db!))
-
-(deftask refresh-qa-ddb
-  "Resets the qa dynamo db"
-  []
-  (System/setProperty "APP_ENV" "qa-ddb")
-
-  (-> (build-connection-string)
-      refresh-db!))
-
-(deftask delete-qa
-  []
-  (System/setProperty "APP_ENV" "qa-ddb")
-
-  (-> (build-connection-string)
-      delete-db!))
+        (let [input (read-line)]
+          (if (= input "Yes")
+            (do
+              ( -> (build-connection-string)
+               delete-db!))
+            (println "Did not delete database.")
+            ))))))
 
 #_(deftask seed-prod
   "Seeds the prod dynamo db"
