@@ -90,6 +90,8 @@
                                        :status (if user 200 401)
                                        :body user))))))
 
+
+
 (def ^:swagger-spec get-user-wombats-spec
   {"/api/v1/users/{user-id}/wombats"
    {:get {:description "Returns a vector of wombats that belong to a user"
@@ -161,6 +163,36 @@
            (wombat-error {:code 001001
                           :params [(:wombat/name new-wombat)
                                    (:wombat/url new-wombat)]})))))))
+
+(def ^:swagger-spec get-user-repositories-spec
+  {"/api/vi/users/{user-id}/repositories"
+   {:get {:description "Returns a vector of repositories that belong to a user"
+          :tags ["user"]
+          :operationId "get-user-repositories"
+          :parameters []
+          :responses {:200 {:description "get-user-repositories response"}}}}})
+
+
+(def get-user-repositories
+  "Return a list of the users repositories"
+  (interceptor/before
+     ::get-user-repositories
+     (fn [{:keys [response request] :as context}]
+       (let [;;get-user-repositories (dao/get-fn :get-user-repositories context)
+             get-entire-user-by-id (dao/get-fn :get-entire-user-by-id context)
+             user-id (get-in request [:path-params :user-id])
+             user (get-entire-user-by-id user-id)]
+         (when-not user
+           (wombat-error {:code 001000
+                          :details {:user-id user-id}}))
+         (let [url (:constants/github-repositories-by-id (:user/github-username user))
+               auth-headers {:headers {"Accept" "application/json"
+                                       "Authorization" (str "token "
+                                                            (:user/github-access-token user))}}
+               {status :status} @(http/get url auth-headers)])))))
+
+
+;; Use the github user-id
 
 (defn- user-owns-wombat?
   "Determines if a user owns a wombat"

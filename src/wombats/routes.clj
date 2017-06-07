@@ -62,7 +62,11 @@
             :post user/add-user-wombat}
            ["/:wombat-id"
             {:delete user/delete-wombat
-             :put user/update-wombat}]]]]
+             :put user/update-wombat}]]
+          ["/repositories"
+           ^:interceptors [(authorize #{:user.roles/user})]
+           {:get user/get-user-repositories}
+           ]]]
 
         ["/arenas"
          ^:interceptors [(authorize #{:user.roles/admin})]

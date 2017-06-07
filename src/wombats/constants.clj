@@ -7,6 +7,10 @@
 (defonce github-user-profile-url "https://api.github.com/user")
 (defonce github-repo-api-base "https://api.github.com/repos/")
 
+(defn github-repositories-by-id
+  [user-id]
+  (str "https://api.github.com/" user-id "/repos"))
+
 (defonce max-players 8)
 
 (defonce min-lambda-runtime 2000)
