@@ -9,7 +9,7 @@
 
 (defn github-repositories-by-id
   [user-id]
-  (str "https://api.github.com/" user-id "/repos"))
+  (str "https://api.github.com/users/" user-id "/repos"))
 
 (defonce max-players 8)
 

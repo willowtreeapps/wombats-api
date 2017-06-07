@@ -1,12 +1,14 @@
 (ns wombats.handlers.user
   (:require [io.pedestal.interceptor.helpers :as interceptor]
             [org.httpkit.client :as http]
+            [clojure.core.async :refer [chan go >!]]
             [clojure.spec :as s]
             [wombats.daos.helpers :as dao]
             [wombats.handlers.helpers :refer [wombat-error]]
             [wombats.interceptors.authorization :refer [authorization-error]]
             [wombats.specs.utils :as sutils]
-            [wombats.constants :refer [github-repo-api-base]]))
+            [wombats.constants :refer [github-repo-api-base
+                                       github-repositories-by-id]]))
 
 (def ^:private wombat-body-sample
   #:wombat{:name "Teddy"
@@ -178,18 +180,27 @@
   (interceptor/before
      ::get-user-repositories
      (fn [{:keys [response request] :as context}]
-       (let [;;get-user-repositories (dao/get-fn :get-user-repositories context)
-             get-entire-user-by-id (dao/get-fn :get-entire-user-by-id context)
+
+       (let [get-entire-user-by-id (dao/get-fn :get-entire-user-by-id context)
              user-id (get-in request [:path-params :user-id])
              user (get-entire-user-by-id user-id)]
          (when-not user
            (wombat-error {:code 001000
                           :details {:user-id user-id}}))
-         (let [url (:constants/github-repositories-by-id (:user/github-username user))
-               auth-headers {:headers {"Accept" "application/json"
-                                       "Authorization" (str "token "
-                                                            (:user/github-access-token user))}}
-               {status :status} @(http/get url auth-headers)])))))
+         (let [url (github-repositories-by-id (:user/github-username user))
+               auth-headers {:headers {"Authorization"
+                                       (str "token " (:user/github-access-token user))
+                                       "Accept" "application/json"}}
+               repositories (http/get url auth-headers)]
+           (let [{:keys [status headers body error] :as resp} @(http/get url auth-headers)]
+             (println url)
+
+             (println headers)
+
+             (assoc context :response (assoc response
+                                             :headers {"Content-Type" "application/json"}
+                                             :status status
+                                             :body body))))))))
 
 
 ;; Use the github user-id
