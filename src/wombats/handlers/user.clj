@@ -198,8 +198,8 @@
              (println headers)
 
              (assoc context :response (assoc response
-                                             :headers {"Content-Type" "application/json"}
                                              :status status
+                                             :headers {"Content-Type" "application/json"}
                                              :body body))))))))
 
 
