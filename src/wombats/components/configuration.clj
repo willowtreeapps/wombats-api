@@ -10,7 +10,7 @@
 ;; Private helper functions
 
 (defn- get-app-env
-  "Determins the environment that the application is running in.
+  "Determines the environment that the application is running in.
 
   Defaults to :dev"
   []
@@ -53,7 +53,7 @@
          system. immuconf uses slup under the hood which lets you
          specify the ~ user dir.
 
-   Defaults -> [config/base.edn, ~/.wombats/config."
+   Defaults -> [config/base.edn, /config/credentials.edn"
   [env]
   (let [base-config (io/resource "base.edn")
         private-config-envs (get-private-envs)

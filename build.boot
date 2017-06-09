@@ -74,10 +74,10 @@ Type \"Yes\" to confirm."
    [tolitius/boot-check "0.1.4" :scope "test"]]
 )
 (def datomic-free
-  '[[com.datomic/datomic-free "0.9.5554"]])
+  '[[com.datomic/datomic-free "0.9.5561.50"]])
 
 (def datomic-pro
-  '[[com.datomic/datomic-pro "0.9.5554"]])
+  '[[com.datomic/datomic-pro "0.9.5561.50"]])
 
 (defn- get-wombats-env
   "Gets the user defined wombats environment to determine dependencies"
@@ -101,50 +101,49 @@ Type \"Yes\" to confirm."
 (defn- get-env-permissions
   "Used by can-run-command to determine if various functions can be called on the specified db"
   []
-  (let [wombats-env (get-wombats-env)]
-    (case wombats-env
-      "dev" ["refresh" "delete" "seed" "refresh-db-functions"]
-      "dev-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
-      "qa-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
-      "prod-ddb" [])))
+  (case (get-wombats-env)
+    "dev" ["refresh" "delete" "seed" "refresh-db-functions"]
+    "dev-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
+    "qa-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
+    "prod-ddb" []))
 
 (defn- can-run-command?
   "Uses environment to check whether a command string can be run"
   [cmdstring]
-  (if (not= (some #(= cmdstring %) (get-env-permissions)) nil)
+  (if (not= (some #(= cmdstring %) (get-env-permissions))
+            nil)
     true
-    false)
-  )
+    false))
 
 (defn- get-dependencies
   "Checks environment to determine whether to load datomic free or pro"
   []
-  (let [env (get-wombats-env)]
-    (if (= env "dev")
-      (into main-dependencies datomic-free)
-      (into main-dependencies datomic-pro)
-      )))
+  (if (= (get-wombats-env) "dev")
+    (into main-dependencies datomic-free)
+    (into main-dependencies datomic-pro)))
 
 (defn- is-dev?
   "Check if current env is dev or dev-ddb for loading user"
   []
-  (if (or (= (get-wombats-env) "dev") (= (get-wombats-env) "dev-ddb"))
-    true
-    false))
+  (let [env (get-wombats-env)]
+    (if (or (= env "dev")
+            (= env "dev-ddb"))
+      true
+      false)))
 
 (defn- get-source-paths
   "Build source path based on whether running in dev or qa/prod"
   []
-  (if (is-dev?)
-    (conj #{"src" "test"} "dev/src")
-    #{"src" "test"}))
+  (let [src-test #{"src" "test"}]
+    (if (is-dev?)
+      (conj src-test "dev/src")
+      src-test)))
 
 (defn- load-user
   "If loading in dev, load user as well"
   []
-  (if is-dev?
-    (require 'user))
-  )
+  (when is-dev?
+    (require 'user)))
 
 (set-env! :project 'wombats
           :version "1.0.0-alpha1"
@@ -217,7 +216,7 @@ Type \"Yes\" to confirm."
                          (slurp)
                          (clojure.edn/read-string))
         config-settings (load-file
-                         (str (System/getProperty "user.home") "/.wombats/config.edn"))]
+                         (str (System/getProperty "user.dir") "/config/credentials.edn"))]
     (get-datomic-uri env-settings config-settings)))
 
 (defn- lookup-arena-ref
