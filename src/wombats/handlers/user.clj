@@ -3,6 +3,7 @@
             [org.httpkit.client :as http]
             [clojure.core.async :refer [chan go >!]]
             [clojure.spec :as s]
+            [cheshire.core :as cheshire]
             [wombats.daos.helpers :as dao]
             [wombats.handlers.helpers :refer [wombat-error]]
             [wombats.interceptors.authorization :refer [authorization-error]]
@@ -174,6 +175,18 @@
           :parameters []
           :responses {:200 {:description "get-user-repositories response"}}}}})
 
+(def get-github-string
+  (let [url (github-repositories-by-id "dehli")
+               auth-headers {:headers {"Accept" "application/json"}}
+               {:keys [status headers body error] :as resp} @(http/get url auth-headers)
+               repository-names (cheshire/parse-string body true)]
+    repository-names))
+
+(defn filter-hashmap-fields
+  "Function to remove fields from Github's API return.
+  Fields is a vector of keys and hashmap is the parsed map"
+  [hashmap fields]
+  (map #(select-keys % fields) hashmap))
 
 (def get-user-repositories
   "Return a list of the users repositories"
@@ -188,24 +201,15 @@
            (wombat-error {:code 001000
                           :details {:user-id user-id}}))
          (let [url (github-repositories-by-id (:user/github-username user))
-               auth-headers {:headers {"Authorization"
-                                       (str "token " (:user/github-access-token user))
-                                       "Accept" "application/json"}}
-               repositories (http/get url auth-headers)]
-           (let [{:keys [status headers body error] :as resp} @(http/get url auth-headers)]
-             (println url)
+               auth-headers {:headers {"Accept" "application/json"}}
+               {:keys [status headers body error] :as resp} @(http/get url auth-headers)
+               repository-names (filter-hashmap-fields (cheshire/parse-string body true) [:name :updated_at :description :url] )]
+           (assoc context :response (assoc response
+                                           :status status
+                                           :headers {"Content-Type" "application/edn"}
+                                           :body repository-names)))))))
 
-             (println headers)
-
-             (assoc context :response (assoc response
-                                             :status status
-                                             :headers {"Content-Type" "application/json"}
-                                             :body body))))))))
-
-
-;; Use the github user-id
-
-(defn- user-owns-wombat?
+     (defn- user-owns-wombat?
   "Determines if a user owns a wombat"
   [user-id wombat-id context]
   (let [get-owner-id (dao/get-fn :get-wombat-owner-id context)
