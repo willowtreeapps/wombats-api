@@ -110,10 +110,8 @@ Type \"Yes\" to confirm."
 (defn- can-run-command?
   "Uses environment to check whether a command string can be run"
   [cmdstring]
-  (if (not= (some #(= cmdstring %) (get-env-permissions))
-            nil)
-    true
-    false))
+  (not= (some #(= cmdstring %) (get-env-permissions))
+            nil))
 
 (defn- get-dependencies
   "Checks environment to determine whether to load datomic free or pro"
@@ -126,10 +124,8 @@ Type \"Yes\" to confirm."
   "Check if current env is dev or dev-ddb for loading user"
   []
   (let [env (get-wombats-env)]
-    (if (or (= env "dev")
-            (= env "dev-ddb"))
-      true
-      false)))
+    (or (= env "dev")
+        (= env "dev-ddb"))))
 
 (defn- get-source-paths
   "Build source path based on whether running in dev or qa/prod"
@@ -279,10 +275,9 @@ Type \"Yes\" to confirm."
     (if (can-run-command? task-name)
       (do
         (println (format (boot-constants :task-confirm) task-name db))
-        (let [input (read-line)]
-          (if (= input "Yes")
-            (func)
-            (println (format (boot-constants :task-cancel) task-name db)))))
+        (if (= (read-line) "Yes")
+          (func)
+          (println (format (boot-constants :task-cancel) task-name db))))
       (println (format (boot-constants :task-block) task-name db)))))
 
 (deftask refresh-db-functions
@@ -306,14 +301,14 @@ Type \"Yes\" to confirm."
   []
   (task-constructor "refresh"
                     #( -> (build-connection-string)
-                      refresh-db!)))
+                          refresh-db!)))
 
 (deftask delete
   "Deletes the current database set through WOMBATS_ENV"
   []
   (task-constructor "delete"
                     #( -> (build-connection-string)
-                      delete-db!)))
+                          delete-db!)))
 
 (deftask build
   "Creates a new build"
