@@ -4,6 +4,12 @@ Type \"Yes\" to confirm."
    :task-block "You cannot run %s on the %s database."
    :task-cancel "Did not %s the %s database."})
 
+;; Environment Permission Variables
+(defonce refresh-perm "refresh")
+(defonce delete-perm "delete")
+(defonce seed-perm "seed")
+(defonce refresh-fn-perm "refresh-db-functions")
+
 (def main-dependencies
   '[;; Core Clojure libs
    [org.clojure/clojure   "1.9.0-alpha14" :scope "provided"]
@@ -102,9 +108,9 @@ Type \"Yes\" to confirm."
   "Used by can-run-command to determine if various functions can be called on the specified db"
   []
   (case (get-wombats-env)
-    "dev" ["refresh" "delete" "seed" "refresh-db-functions"]
-    "dev-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
-    "qa-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
+    "dev" [refresh-perm delete-perm seed-perm refresh-fn-perm]
+    "dev-ddb" [refresh-perm delete-perm seed-perm refresh-fn-perm]
+    "qa-ddb" [refresh-perm delete-perm seed-perm refresh-fn-perm]
     "prod-ddb" []))
 
 (defn- can-run-command?
@@ -147,8 +153,10 @@ Type \"Yes\" to confirm."
           :resource-paths #{"src" "resources" "config"}
           :dependencies (get-dependencies)
           :repositories #(conj % ["my-datomic" {:url "https://my.datomic.com/repo"
-                                                :username (System/getenv "DATOMIC_USERNAME")
-                                                :password (System/getenv "DATOMIC_PASSWORD")}])
+                                                :username
+                                                (System/getenv "DATOMIC_USERNAME")
+                                                :password
+                                                (System/getenv "DATOMIC_PASSWORD")}])
           :target-path "target")
 
 (load-user)
