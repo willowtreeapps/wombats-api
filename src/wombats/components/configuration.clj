@@ -10,7 +10,7 @@
 ;; Private helper functions
 
 (defn- get-app-env
-  "Determins the environment that the application is running in.
+  "Determines the environment that the application is running in.
 
   Defaults to :dev"
   []
@@ -41,19 +41,19 @@
 
 (defn- get-private-config-file
   []
-  (let [file-location (str (System/getProperty "user.home") "/.wombats/config.edn")]
-    (when (.exists (io/as-file file-location))
-      file-location)))
+  (let [file-location (str (System/getProperty "user.dir") "/config/credentials.edn")]
+      (when (.exists (io/as-file file-location))
+        file-location)))
 
 (defn- get-config-files
-  "Determins the files that should be used for configuration.
+  "Determines the files that should be used for configuration.
 
    Note: java.io/resource returns nil (if a file is not found) &
          searches for files on the classpate not within the file
          system. immuconf uses slup under the hood which lets you
          specify the ~ user dir.
 
-   Defaults -> [config/base.edn, ~/.wombats/config.edn,  config/{env}.edn]"
+   Defaults -> [config/base.edn, /config/credentials.edn"
   [env]
   (let [base-config (io/resource "base.edn")
         private-config-envs (get-private-envs)

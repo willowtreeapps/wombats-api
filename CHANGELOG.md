@@ -1,10 +1,12 @@
 CHANGELOG
 =========
 
-## Develop (6.01.2017)
+## Develop (6.06.2017)
 **Enhancements**
-* Updated Docs/Development getting-started.md
+* Simpler local develop setup
     [Eli Bosley][/elibosley] *No Issue*
+* Datomic-Pro optional based on environment [Eli Bosley][/elibosley] *No Issue*
+* Simplified calls to reset, seed, etc. database [Eli Bosley][/elibosley] *No Issue*
 
 **Bug Fixes**
 * None

@@ -1,79 +1,165 @@
+(def boot-constants
+  {:task-confirm "Are you sure you want to %s the %s database?
+Type \"Yes\" to confirm."
+   :task-block "You cannot run %s on the %s database."
+   :task-cancel "Did not %s the %s database."})
+
+;; Environment Permission Variables
+(defonce refresh-perm "refresh")
+(defonce delete-perm "delete")
+(defonce seed-perm "seed")
+(defonce refresh-fn-perm "refresh-db-functions")
+
+(def main-dependencies
+  '[;; Core Clojure libs
+   [org.clojure/clojure   "1.9.0-alpha14" :scope "provided"]
+   [org.clojure/data.json "0.2.6"]
+
+   ;; High-performance serialization library
+   [com.taoensso/nippy "2.12.2"]
+
+   ;; Logging
+   [com.taoensso/timbre "4.8.0"]
+   [org.slf4j/jul-to-slf4j     "1.7.21"]
+   [org.slf4j/jcl-over-slf4j   "1.7.21"]
+   [org.slf4j/log4j-over-slf4j "1.7.21"]
+
+   ;; Extended core library for Clojure
+   [com.taoensso/encore "2.89.0"]
+
+   ;; Stringify-ing code
+   [serializable-fn "1.1.4"]
+
+   ;; JSON Parsing
+   [cheshire "5.7.0"]
+
+   ;; Base64 Decoding
+   [base64-clj "0.1.1"]
+
+   ;; Working with time
+   [clj-time "0.13.0"]
+
+   ;; Scheduler
+   [jarohen/chime "0.2.0"]
+
+   ;; Token Support
+   [buddy "1.3.0"]
+
+   ;; Environment configuration
+   [environ         "1.1.0"]
+   [levand/immuconf "0.1.0"]
+
+   ;; Component lifecycle management
+   [com.stuartsierra/component   "0.3.2"]
+
+   ;; Database
+   [com.amazonaws/aws-java-sdk-dynamodb "1.11.6"]
+   [io.rkn/conformity "0.4.0"]
+
+   ;; Amazon SDK
+   [com.amazonaws/aws-java-sdk "1.11.6"]
+
+   ;; HTTP Server
+   [io.pedestal/pedestal.service "0.5.2"]
+   [io.pedestal/pedestal.jetty   "0.5.2"]
+   [io.pedestal/pedestal.interceptor "0.5.2"]
+
+   ;; HTTP Client
+   [http-kit "2.3.0-alpha1"]
+
+   ;; URL util lib
+   [com.cemerick/url "0.1.1"]
+
+   ;; Repl reloading
+   [reloaded.repl "0.2.3" :scope "test"]
+
+   ;; Testing
+   [adzerk/boot-test "1.1.2" :scope "test"]
+
+   ;; Code Analysis
+   [tolitius/boot-check "0.1.4" :scope "test"]]
+)
+(def datomic-free
+  '[[com.datomic/datomic-free "0.9.5561.50"]])
+
+(def datomic-pro
+  '[[com.datomic/datomic-pro "0.9.5561.50"]])
+
+(defn- get-wombats-env
+  "Gets the user defined wombats environment to determine dependencies"
+  []
+  (let [env (System/getenv "WOMBATS_ENV")]
+    (if (or (= env "")
+            (nil? env))
+      "dev"
+      env)))
+
+(defn- get-wombats-db-name
+  "Gets the user readable name of the database that various tasks will be performed on"
+  []
+  (let [wombats-env (get-wombats-env)]
+    (case wombats-env
+      "dev" "local"
+      "dev-ddb" "development"
+      "qa-ddb" "qa"
+      "prod-ddb" "production")))
+
+(defn- get-env-permissions
+  "Used by can-run-command to determine if various functions can be called on the specified db"
+  []
+  (case (get-wombats-env)
+    "dev" [refresh-perm delete-perm seed-perm refresh-fn-perm]
+    "dev-ddb" [refresh-perm delete-perm seed-perm refresh-fn-perm]
+    "qa-ddb" [refresh-perm delete-perm seed-perm refresh-fn-perm]
+    "prod-ddb" []))
+
+(defn- can-run-command?
+  "Uses environment to check whether a command string can be run"
+  [cmdstring]
+  (not= (some #(= cmdstring %) (get-env-permissions))
+            nil))
+
+(defn- get-dependencies
+  "Checks environment to determine whether to load datomic free or pro"
+  []
+  (if (= (get-wombats-env) "dev")
+    (into main-dependencies datomic-free)
+    (into main-dependencies datomic-pro)))
+
+(defn- is-dev?
+  "Check if current env is dev or dev-ddb for loading user"
+  []
+  (let [env (get-wombats-env)]
+    (or (= env "dev")
+        (= env "dev-ddb"))))
+
+(defn- get-source-paths
+  "Build source path based on whether running in dev or qa/prod"
+  []
+  (let [src-test #{"src" "test"}]
+    (if (is-dev?)
+      (conj src-test "dev/src")
+      src-test)))
+
+(defn- load-user
+  "If loading in dev, load user as well"
+  []
+  (when (is-dev?)
+    (require 'user)))
+
 (set-env! :project 'wombats
           :version "1.0.0-alpha1"
-          :source-paths #{"src" "test"}
+          :source-paths (get-source-paths)
           :resource-paths #{"src" "resources" "config"}
-          :dependencies   '[;; Core Clojure libs
-                            [org.clojure/clojure   "1.9.0-alpha14" :scope "provided"]
-                            [org.clojure/data.json "0.2.6"]
-
-                            ;; High-performance serialization library
-                            [com.taoensso/nippy "2.12.2"]
-
-                            ;; Logging
-                            [com.taoensso/timbre "4.8.0"]
-                            [org.slf4j/jul-to-slf4j     "1.7.21"]
-                            [org.slf4j/jcl-over-slf4j   "1.7.21"]
-                            [org.slf4j/log4j-over-slf4j "1.7.21"]
-
-                            ;; Extended core library for Clojure
-                            [com.taoensso/encore "2.89.0"]
-
-                            ;; Stringify-ing code
-                            [serializable-fn "1.1.4"]
-
-                            ;; JSON Parsing
-                            [cheshire "5.7.0"]
-
-                            ;; Base64 Decoding
-                            [base64-clj "0.1.1"]
-
-                            ;; Working with time
-                            [clj-time "0.13.0"]
-
-                            ;; Scheduler
-                            [jarohen/chime "0.2.0"]
-
-                            ;; Token Support
-                            [buddy "1.3.0"]
-
-                            ;; Environment configuration
-                            [environ         "1.1.0"]
-                            [levand/immuconf "0.1.0"]
-
-                            ;; Component lifecycle management
-                            [com.stuartsierra/component   "0.3.2"]
-
-                            ;; Database
-                            [com.datomic/datomic-pro "0.9.5554"]
-                            [com.amazonaws/aws-java-sdk-dynamodb "1.11.6"]
-                            [io.rkn/conformity "0.4.0"]
-
-                            ;; Amazon SDK
-                            [com.amazonaws/aws-java-sdk "1.11.6"]
-
-                            ;; HTTP Server
-                            [io.pedestal/pedestal.service "0.5.2"]
-                            [io.pedestal/pedestal.jetty   "0.5.2"]
-                            [io.pedestal/pedestal.interceptor "0.5.2"]
-
-                            ;; HTTP Client
-                            [http-kit "2.3.0-alpha1"]
-
-                            ;; URL util lib
-                            [com.cemerick/url "0.1.1"]
-
-                            ;; Repl reloading
-                            [reloaded.repl "0.2.3" :scope "test"]
-
-                            ;; Testing
-                            [adzerk/boot-test "1.1.2" :scope "test"]
-
-                            ;; Code Analysis
-                            [tolitius/boot-check "0.1.4" :scope "test"]]
+          :dependencies (get-dependencies)
           :repositories #(conj % ["my-datomic" {:url "https://my.datomic.com/repo"
-                                                :username (System/getenv "DATOMIC_USERNAME")
-                                                :password (System/getenv "DATOMIC_PASSWORD")}])
+                                                :username
+                                                (System/getenv "DATOMIC_USERNAME")
+                                                :password
+                                                (System/getenv "DATOMIC_PASSWORD")}])
           :target-path "target")
+
+(load-user)
 
 (task-options!
  pom {:project (get-env :project)
@@ -115,18 +201,6 @@
     @(d/transact conn txd))
   :done)
 
-(deftask dev []
-  (set-env! :source-paths #(conj % "dev/src"))
-
-  (require 'user))
-
-(deftask dev-ddb
-  []
-  (set-env! :source-paths #(conj % "dev/src"))
-  (System/setProperty "APP_ENV" "dev-ddb")
-
-  (require 'user))
-
 (defn- get-datomic-uri
   [{{uri :uri
      auth? :requires-auth} :datomic}
@@ -139,14 +213,14 @@
 
 (defn- build-connection-string
   []
-  (let [env (System/getProperty "APP_ENV")
+  (let [env (get-wombats-env)
         env-settings (-> (str env ".edn")
                          (clojure.java.io/resource)
                          (clojure.java.io/file)
                          (slurp)
                          (clojure.edn/read-string))
         config-settings (load-file
-                         (str (System/getProperty "user.home") "/.wombats/config.edn"))]
+                         (str (System/getProperty "user.dir") "/config/credentials.edn"))]
     (get-datomic-uri env-settings config-settings)))
 
 (defn- lookup-arena-ref
@@ -203,95 +277,46 @@
       create-db!
       seed-db!))
 
+(defn- task-constructor
+  [task-name func]
+  (let [db (get-wombats-db-name)]
+    (if (can-run-command? task-name)
+      (do
+        (println (format (boot-constants :task-confirm) task-name db))
+        (if (= (read-line) "Yes")
+          (func)
+          (println (format (boot-constants :task-cancel) task-name db))))
+      (println (format (boot-constants :task-block) task-name db)))))
+
 (deftask refresh-db-functions
   "resets the transactors in the db"
   []
-  (System/setProperty "APP_ENV" "dev")
-  (-> (build-connection-string)
-      (d/connect)
-      (db-fns/seed-database-functions)))
+  (task-constructor "refresh-db-functions"
+                    #(-> (build-connection-string)
+                         (d/connect)
+                         (db-fns/seed-database-functions))))
 
-(deftask seed-local
-  "Seeds the dev dynamo db"
+(deftask seed
+  "Seed the current database set through WOMBATS_ENV"
   []
-  (System/setProperty "APP_ENV" "dev")
+  (task-constructor "seed"
+                    #(-> (build-connection-string)
+                         create-db!
+                         seed-db!)))
 
-  (-> (build-connection-string)
-      create-db!
-      seed-db!))
-
-(deftask refresh-local
-  "resets the database"
+(deftask refresh
+  "Refresh the current database set through WOMBATS_ENV"
   []
-  (System/setProperty "APP_ENV" "dev")
+  (task-constructor "refresh"
+                    #(-> (build-connection-string)
+                          refresh-db!)))
 
-  (-> (build-connection-string)
-      refresh-db!))
-
-(deftask delete-local
-  "deletes the local db"
+(deftask delete
+  "Deletes the current database set through WOMBATS_ENV"
   []
-  (System/setProperty "APP_ENV" "dev")
-
-  (-> (build-connection-string)
-      delete-db!))
-
-(deftask seed-dev
-  "Seeds the dev dynamo db"
-  []
-  (System/setProperty "APP_ENV" "dev-ddb")
-
-  (-> (build-connection-string)
-      create-db!
-      seed-db!))
-
-(deftask refresh-dev
-  "Resets the dev dynamo db"
-  []
-  (System/setProperty "APP_ENV" "dev-ddb")
-
-  (-> (build-connection-string)
-      refresh-db!))
-
-(deftask delete-dev
-  []
-  (System/setProperty "APP_ENV" "dev-ddb")
-
-  (-> (build-connection-string)
-      delete-db!))
-
-(deftask seed-qa
-  "Seeds the dev dynamo db"
-  []
-  (System/setProperty "APP_ENV" "qa-ddb")
-
-  (-> (build-connection-string)
-      create-db!
-      seed-db!))
-
-(deftask refresh-qa-ddb
-  "Resets the qa dynamo db"
-  []
-  (System/setProperty "APP_ENV" "qa-ddb")
-
-  (-> (build-connection-string)
-      refresh-db!))
-
-(deftask delete-qa
-  []
-  (System/setProperty "APP_ENV" "qa-ddb")
-
-  (-> (build-connection-string)
-      delete-db!))
-
-#_(deftask seed-prod
-  "Seeds the prod dynamo db"
-  []
-  (System/setProperty "APP_ENV" "prod-ddb")
-
-  (-> (build-connection-string)
-      create-db!
-      seed-db!))
+  (task-constructor "delete"
+                    #(-> (build-connection-string)
+                          delete-db!)))
 
 (deftask build
   "Creates a new build"
