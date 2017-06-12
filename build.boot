@@ -4,6 +4,12 @@ Type \"Yes\" to confirm."
    :task-block "You cannot run %s on the %s database."
    :task-cancel "Did not %s the %s database."})
 
+;; Environment Permission Variables
+(defonce refresh-perm "refresh")
+(defonce delete-perm "delete")
+(defonce seed-perm "seed")
+(defonce refresh-fn-perm "refresh-db-functions")
+
 (def main-dependencies
   '[;; Core Clojure libs
    [org.clojure/clojure   "1.9.0-alpha14" :scope "provided"]
@@ -74,10 +80,10 @@ Type \"Yes\" to confirm."
    [tolitius/boot-check "0.1.4" :scope "test"]]
 )
 (def datomic-free
-  '[[com.datomic/datomic-free "0.9.5554"]])
+  '[[com.datomic/datomic-free "0.9.5561.50"]])
 
 (def datomic-pro
-  '[[com.datomic/datomic-pro "0.9.5554"]])
+  '[[com.datomic/datomic-pro "0.9.5561.50"]])
 
 (defn- get-wombats-env
   "Gets the user defined wombats environment to determine dependencies"
@@ -101,50 +107,45 @@ Type \"Yes\" to confirm."
 (defn- get-env-permissions
   "Used by can-run-command to determine if various functions can be called on the specified db"
   []
-  (let [wombats-env (get-wombats-env)]
-    (case wombats-env
-      "dev" ["refresh" "delete" "seed" "refresh-db-functions"]
-      "dev-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
-      "qa-ddb" ["refresh" "delete" "seed" "refresh-db-functions"]
-      "prod-ddb" [])))
+  (case (get-wombats-env)
+    "dev" [refresh-perm delete-perm seed-perm refresh-fn-perm]
+    "dev-ddb" [refresh-perm delete-perm seed-perm refresh-fn-perm]
+    "qa-ddb" [refresh-perm delete-perm seed-perm refresh-fn-perm]
+    "prod-ddb" []))
 
 (defn- can-run-command?
   "Uses environment to check whether a command string can be run"
   [cmdstring]
-  (if (not= (some #(= cmdstring %) (get-env-permissions)) nil)
-    true
-    false)
-  )
+  (not= (some #(= cmdstring %) (get-env-permissions))
+            nil))
 
 (defn- get-dependencies
   "Checks environment to determine whether to load datomic free or pro"
   []
-  (let [env (get-wombats-env)]
-    (if (= env "dev")
-      (into main-dependencies datomic-free)
-      (into main-dependencies datomic-pro)
-      )))
+  (if (= (get-wombats-env) "dev")
+    (into main-dependencies datomic-free)
+    (into main-dependencies datomic-pro)))
 
 (defn- is-dev?
   "Check if current env is dev or dev-ddb for loading user"
   []
-  (if (or (= (get-wombats-env) "dev") (= (get-wombats-env) "dev-ddb"))
-    true
-    false))
+  (let [env (get-wombats-env)]
+    (or (= env "dev")
+        (= env "dev-ddb"))))
 
 (defn- get-source-paths
   "Build source path based on whether running in dev or qa/prod"
   []
-  (if (is-dev?)
-    (conj #{"src" "test"} "dev/src")
-    #{"src" "test"}))
+  (let [src-test #{"src" "test"}]
+    (if (is-dev?)
+      (conj src-test "dev/src")
+      src-test)))
 
 (defn- load-user
   "If loading in dev, load user as well"
   []
-  (if is-dev?
-    (require 'user))
-  )
+  (when (is-dev?)
+    (require 'user)))
 
 (set-env! :project 'wombats
           :version "1.0.0-alpha1"
@@ -152,8 +153,10 @@ Type \"Yes\" to confirm."
           :resource-paths #{"src" "resources" "config"}
           :dependencies (get-dependencies)
           :repositories #(conj % ["my-datomic" {:url "https://my.datomic.com/repo"
-                                                :username (System/getenv "DATOMIC_USERNAME")
-                                                :password (System/getenv "DATOMIC_PASSWORD")}])
+                                                :username
+                                                (System/getenv "DATOMIC_USERNAME")
+                                                :password
+                                                (System/getenv "DATOMIC_PASSWORD")}])
           :target-path "target")
 
 (load-user)
@@ -217,7 +220,7 @@ Type \"Yes\" to confirm."
                          (slurp)
                          (clojure.edn/read-string))
         config-settings (load-file
-                         (str (System/getProperty "user.home") "/.wombats/config.edn"))]
+                         (str (System/getProperty "user.dir") "/config/credentials.edn"))]
     (get-datomic-uri env-settings config-settings)))
 
 (defn- lookup-arena-ref
@@ -280,10 +283,9 @@ Type \"Yes\" to confirm."
     (if (can-run-command? task-name)
       (do
         (println (format (boot-constants :task-confirm) task-name db))
-        (let [input (read-line)]
-          (if (= input "Yes")
-            (func)
-            (println (format (boot-constants :task-cancel) task-name db)))))
+        (if (= (read-line) "Yes")
+          (func)
+          (println (format (boot-constants :task-cancel) task-name db))))
       (println (format (boot-constants :task-block) task-name db)))))
 
 (deftask refresh-db-functions
@@ -306,15 +308,15 @@ Type \"Yes\" to confirm."
   "Refresh the current database set through WOMBATS_ENV"
   []
   (task-constructor "refresh"
-                    #( -> (build-connection-string)
-                      refresh-db!)))
+                    #(-> (build-connection-string)
+                          refresh-db!)))
 
 (deftask delete
   "Deletes the current database set through WOMBATS_ENV"
   []
   (task-constructor "delete"
-                    #( -> (build-connection-string)
-                      delete-db!)))
+                    #(-> (build-connection-string)
+                          delete-db!)))
 
 (deftask build
   "Creates a new build"
