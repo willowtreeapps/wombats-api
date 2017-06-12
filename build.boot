@@ -144,7 +144,7 @@ Type \"Yes\" to confirm."
 (defn- load-user
   "If loading in dev, load user as well"
   []
-  (when is-dev?
+  (when (is-dev?)
     (require 'user)))
 
 (set-env! :project 'wombats
@@ -308,14 +308,14 @@ Type \"Yes\" to confirm."
   "Refresh the current database set through WOMBATS_ENV"
   []
   (task-constructor "refresh"
-                    #( -> (build-connection-string)
+                    #(-> (build-connection-string)
                           refresh-db!)))
 
 (deftask delete
   "Deletes the current database set through WOMBATS_ENV"
   []
   (task-constructor "delete"
-                    #( -> (build-connection-string)
+                    #(-> (build-connection-string)
                           delete-db!)))
 
 (deftask build

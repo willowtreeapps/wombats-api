@@ -46,7 +46,7 @@
         file-location)))
 
 (defn- get-config-files
-  "Determins the files that should be used for configuration.
+  "Determines the files that should be used for configuration.
 
    Note: java.io/resource returns nil (if a file is not found) &
          searches for files on the classpate not within the file
