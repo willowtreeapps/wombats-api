@@ -1,7 +1,6 @@
 (ns wombats.handlers.user
   (:require [io.pedestal.interceptor.helpers :as interceptor]
             [org.httpkit.client :as http]
-            [clojure.core.async :refer [chan go >!]]
             [clojure.spec :as s]
             [cheshire.core :as cheshire]
             [wombats.daos.helpers :as dao]
@@ -174,13 +173,6 @@
           :operationId "get-user-repositories"
           :parameters []
           :responses {:200 {:description "get-user-repositories response"}}}}})
-
-(def get-github-string
-  (let [url (github-repositories-by-id "dehli")
-               auth-headers {:headers {"Accept" "application/json"}}
-               {:keys [status headers body error] :as resp} @(http/get url auth-headers)
-               repository-names (cheshire/parse-string body true)]
-    repository-names))
 
 (defn filter-hashmap-fields
   "Function to remove fields from Github's API return.
