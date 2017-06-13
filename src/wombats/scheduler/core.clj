@@ -3,6 +3,7 @@
             [taoensso.timbre :as log]
             [clj-time.core :as t]
             [clj-time.coerce :as c]
+            [clj-time.periodic :as p]
             [wombats.arena.core :refer [generate-arena]]))
 
 (defn schedule-game
@@ -42,7 +43,6 @@
                      (:game/start-time game)
                      start-round-fn))))
 
-
 ;; TODO #349
 ;; Schedule active & active intermission games
 ;; in the case of system restart.
@@ -50,8 +50,7 @@
 (def add-game-request
   {:arena-id "41193bec-4cf3-4f5d-8386-aed3ae3e5745"
    :game
-   {:game/start-time "2017-06-12T21:55:00.000-00:00"
-    :game/status :pending-open
+   {:game/status :pending-open
     :game/num-rounds 8
     :game/round-length 120000
     :game/round-intermission 600000
@@ -61,18 +60,24 @@
     :game/type :high-score
     :game/name "Daily Game"}})
 
+
 (defn add-game-scheduler
-  [request add-game-fn gen-id-fn get-game-by-id-fn get-arena-by-id-fn start-game-fn]
-  (let [arena-id (:arena-id request)
-        time-game (str (t/today-at 23 00))
-        game (merge (:game request)
+  "Called by the scheduler to add a game that starts a day after the scheduled time"
+  [{:keys [initial-time
+           game-params
+           add-game-fn
+           gen-id-fn
+           get-game-by-id-fn
+           get-arena-by-id-fn
+           start-game-fn]}]
+  (let [arena-id (:arena-id game-params)
+        time-game (str (t/plus initial-time  (t/hours 24)))
+        game (merge (:game game-params)
                     {:game/start-time
                      (read-string (str "#inst \"" time-game "\""))})
         ]
-    (println (:game/start-time game))
 
-    (let [game-id gen-id-fn
-          _broke (println game-id)
+    (let [game-id (gen-id-fn)
           new-game (merge game {:game/id game-id})
           arena-config (get-arena-by-id-fn arena-id)
           game-arena (generate-arena arena-config)
@@ -83,24 +88,20 @@
       (schedule-game
        game-id
        (:game/start-time game-record)
-       start-game-fn)
-      ;; todo return game-record here
-      )))
+       start-game-fn))))
 
-;; Post request from frontend for the context when creating game
-#_(POST (create-game-url arena-id)
-        {:response-format (edn-response-format)
-         :keywords? true
-         :format (edn-request-format)
-         :headers (add-auth-header {})
-         :params {:game/start-time start-time
-                  :game/num-rounds num-rounds
-                  :game/round-length round-length
-                  :game/round-intermission round-intermission
-                  :game/max-players max-players
-                  :game/password password
-                  :game/is-private is-private
-                  :game/type game-type
-                  :game/name name}
-         :handler on-success
-         :error-handler on-error})
+(defn automatic-game-scheduler
+  "Called on system start - uses add-game-scheduler to create a game"
+  [setup-params]
+  (chime-at (rest ; excludes *right now*
+               (p/periodic-seq (t/now)
+                               (-> 24 t/hours)))
+
+          (fn [time]
+            (add-game-scheduler
+             setup-params)
+            (log/info (str "Scheduled a new daily game")))
+
+          {:on-finished (fn []
+                          (log/info
+                           (str "Stopped scheduling daily games")))}))

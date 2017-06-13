@@ -11,6 +11,9 @@
   [user-id]
   (str "https://api.github.com/users/" user-id "/repos"))
 
+(defonce game-start-time-hour 8) ;; Games start 24 hours after this
+(defonce game-start-time-min 0)
+
 (defonce max-players 8)
 
 (defonce min-lambda-runtime 2000)
