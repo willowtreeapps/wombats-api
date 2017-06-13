@@ -6,7 +6,6 @@
             [wombats.daos.game :as game]
             [wombats.daos.arena :as arena]
             [wombats.daos.helpers :as helpers]
-            [clj-time.format :as f]
             [clj-time.core :as t]))
 
 (defrecord Scheduler [config datomic scheduler]
