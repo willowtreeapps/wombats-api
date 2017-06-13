@@ -230,7 +230,7 @@
                         :details {:arena-id arena-id}}))
 
        (sutils/validate-input ::new-game-input game)
-
+       (println game)
        (let [game-id (dao/gen-id)
              new-game (merge game {:game/id game-id})
              game-arena (generate-arena arena-config)
