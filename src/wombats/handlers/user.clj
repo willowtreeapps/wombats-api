@@ -191,7 +191,9 @@
            (wombat-error {:code 001000
                           :details {:user-id user-id}}))
          (let [url (github-repositories-by-id (:user/github-username user))
-               auth-headers {:headers {"Accept" "application/json"}}
+               auth-headers {:headers {"Accept" "application/json"
+                                       "Authorization" (str "token "
+                                                            (:user/github-access-token user))}}
                {:keys [status headers body error] :as resp} @(http/get url auth-headers)
                repository-names (filter-hashmap-fields (cheshire/parse-string body true) [:name :updated_at :description :url] )]
            (assoc context :response (assoc response
