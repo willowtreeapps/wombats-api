@@ -199,7 +199,7 @@
                                            :headers {"Content-Type" "application/edn"}
                                            :body repository-names)))))))
 
-     (defn- user-owns-wombat?
+(defn- user-owns-wombat?
   "Determines if a user owns a wombat"
   [user-id wombat-id context]
   (let [get-owner-id (dao/get-fn :get-wombat-owner-id context)
