@@ -65,8 +65,7 @@
              :put user/update-wombat}]]
           ["/repositories"
            ^:interceptors [(authorize #{:user.roles/user})]
-           {:get user/get-user-repositories}
-           ]]]
+           {:get user/get-user-repositories}]]]
 
         ["/arenas"
          ^:interceptors [(authorize #{:user.roles/admin})]
