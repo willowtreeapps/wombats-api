@@ -92,8 +92,6 @@
                                        :status (if user 200 401)
                                        :body user))))))
 
-
-
 (def ^:swagger-spec get-user-wombats-spec
   {"/api/v1/users/{user-id}/wombats"
    {:get {:description "Returns a vector of wombats that belong to a user"

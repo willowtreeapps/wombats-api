@@ -48,6 +48,19 @@
    102000 "Wombat with the name '%s' already exists."
    102001 "Wombat source code with that pathname has already registered. If you own the source code, change the file name and try again."})
 
+(defonce add-game-request
+  {:arena-id "41193bec-4cf3-4f5d-8386-aed3ae3e5745"
+   :game
+   {:game/status :pending-open
+    :game/num-rounds 8
+    :game/round-length 120000
+    :game/round-intermission 600000
+    :game/max-players max-players
+    :game/password ""
+    :game/is-private false
+    :game/type :high-score
+    :game/name "Daily Game"}})
+
 (def initial-stats
   {:stats/frame-number 0
    :stats/score 0

@@ -47,20 +47,6 @@
 ;; Schedule active & active intermission games
 ;; in the case of system restart.
 
-(def add-game-request
-  {:arena-id "41193bec-4cf3-4f5d-8386-aed3ae3e5745"
-   :game
-   {:game/status :pending-open
-    :game/num-rounds 8
-    :game/round-length 120000
-    :game/round-intermission 600000
-    :game/max-players 8
-    :game/password ""
-    :game/is-private false
-    :game/type :high-score
-    :game/name "Daily Game"}})
-
-
 (defn add-game-scheduler
   "Called by the scheduler to add a game that starts a day after the scheduled time"
   [{:keys [initial-time
@@ -71,19 +57,18 @@
            get-arena-by-id-fn
            start-game-fn]}]
   (let [arena-id (:arena-id game-params)
-        time-game (str (t/plus initial-time  (t/hours 24)))
+        time-game (str (t/plus initial-time (t/hours 24)))
         game (merge (:game game-params)
                     {:game/start-time
-                     (read-string (str "#inst \"" time-game "\""))})
-        ]
+                     (read-string (str "#inst \"" time-game "\""))})]
 
     (let [game-id (gen-id-fn)
           new-game (merge game {:game/id game-id})
           arena-config (get-arena-by-id-fn arena-id)
           game-arena (generate-arena arena-config)
           tx @(add-game-fn new-game
-                        (:db/id arena-config)
-                        game-arena)
+                           (:db/id arena-config)
+                           game-arena)
           game-record (get-game-by-id-fn game-id)]
       (schedule-game
        game-id

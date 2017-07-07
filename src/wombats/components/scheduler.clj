@@ -1,7 +1,8 @@
 (ns wombats.components.scheduler
   (:require [com.stuartsierra.component :as component]
             [wombats.constants :refer [game-start-time-min
-                                       game-start-time-hour]]
+                                       game-start-time-hour
+                                       add-game-request]]
             [wombats.scheduler.core :as scheduler]
             [wombats.daos.game :as game]
             [wombats.daos.arena :as arena]
@@ -24,7 +25,7 @@
                :add-game
                (scheduler/automatic-game-scheduler
                 {:initial-time (t/today-at game-start-time-hour game-start-time-min)
-                 :game-params scheduler/add-game-request
+                 :game-params add-game-request
                  :add-game-fn (game/add-game conn)
                  :gen-id-fn helpers/gen-id
                  :get-game-by-id-fn (game/get-game-by-id conn)
