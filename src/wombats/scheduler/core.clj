@@ -54,7 +54,6 @@
            gen-id-fn
            get-game-by-id-fn
            get-arena-by-id-fn
-           game-params
            start-game-fn]
     {:keys [arena-id
             game]} :game-params}]
