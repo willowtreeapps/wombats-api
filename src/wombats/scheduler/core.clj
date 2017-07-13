@@ -50,25 +50,26 @@
 (defn add-game-scheduler
   "Called by the scheduler to add a game that starts a day after the scheduled time"
   [{:keys [initial-time
-           game-params
            add-game-fn
            gen-id-fn
            get-game-by-id-fn
            get-arena-by-id-fn
-           start-game-fn]}]
-  (let [arena-id (:arena-id game-params)
-        time-game (str (t/plus initial-time (t/hours 24)))
-        game (merge (:game game-params)
+           game-params
+           start-game-fn]
+    {:keys [arena-id
+            game]} :game-params}]
+  (let [time-game (str (t/plus initial-time (t/hours 24)))
+        game (merge game
                     {:game/start-time
                      (read-string (str "#inst \"" time-game "\""))})
         game-id (gen-id-fn)
         new-game (merge game {:game/id game-id})
-          arena-config (get-arena-by-id-fn arena-id)
-          game-arena (generate-arena arena-config)
-          tx @(add-game-fn new-game
-                           (:db/id arena-config)
-                           game-arena)
-          game-record (get-game-by-id-fn game-id)]
+        arena-config (get-arena-by-id-fn arena-id)
+        game-arena (generate-arena arena-config)
+        tx @(add-game-fn new-game
+                         (:db/id arena-config)
+                         game-arena)
+        game-record (get-game-by-id-fn game-id)]
     (schedule-game
      game-id
      (:game/start-time game-record)
@@ -80,8 +81,7 @@
   (chime-at (rest ; excludes *right now*
                (p/periodic-seq (t/now)
                                (-> 24 t/hours)))
-
-          (fn [time]
+          (fn [_]
             (add-game-scheduler
              setup-params)
             (log/info "Scheduled a new daily game"))
