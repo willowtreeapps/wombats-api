@@ -2,7 +2,9 @@
   (:require [chime :refer [chime-at]]
             [taoensso.timbre :as log]
             [clj-time.core :as t]
-            [clj-time.coerce :as c]))
+            [clj-time.coerce :as c]
+            [clj-time.periodic :as p]
+            [wombats.arena.core :refer [generate-arena]]))
 
 (defn schedule-game
   "Takes in a game, and adds a hook to start the game at start"
@@ -44,3 +46,43 @@
 ;; TODO #349
 ;; Schedule active & active intermission games
 ;; in the case of system restart.
+
+(defn add-game-scheduler
+  "Called by the scheduler to add a game that starts a day after the scheduled time"
+  [{:keys [initial-time
+           add-game-fn
+           gen-id-fn
+           get-game-by-id-fn
+           get-arena-by-id-fn
+           start-game-fn]
+    {:keys [arena-id
+            game]} :game-params}]
+  (let [time-game (str (t/plus initial-time (t/hours 24)))
+        game (merge game
+                    {:game/start-time
+                     (read-string (str "#inst \"" time-game "\""))})
+        game-id (gen-id-fn)
+        new-game (merge game {:game/id game-id})
+        arena-config (get-arena-by-id-fn arena-id)
+        game-arena (generate-arena arena-config)
+        tx @(add-game-fn new-game
+                         (:db/id arena-config)
+                         game-arena)
+        game-record (get-game-by-id-fn game-id)]
+    (schedule-game
+     game-id
+     (:game/start-time game-record)
+     start-game-fn)))
+
+(defn automatic-game-scheduler
+  "Called on system start - uses add-game-scheduler to create a game"
+  [setup-params]
+  (chime-at (rest ; excludes *right now*
+               (p/periodic-seq (t/now)
+                               (-> 24 t/hours)))
+          (fn [_]
+            (add-game-scheduler
+             setup-params)
+            (log/info "Scheduled a new daily game"))
+
+          {:on-finished #(log/info "Stopped scheduling daily games")}))

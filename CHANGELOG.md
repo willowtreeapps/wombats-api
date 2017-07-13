@@ -1,9 +1,10 @@
 CHANGELOG
 =========
 
-## Develop (6.06.2017)
+## Develop (6.13.2017)
 **Enhancements**
-* Simpler local develop setup
+* Simpler local develop setup [Eli Bosley][/elibosley] *No Issue*
+* Game scheduler implemented to start a new game daily
     [Eli Bosley][/elibosley] *No Issue*
 * Datomic-Pro optional based on environment [Eli Bosley][/elibosley] *No Issue*
 * Simplified calls to reset, seed, etc. database [Eli Bosley][/elibosley] *No Issue*
