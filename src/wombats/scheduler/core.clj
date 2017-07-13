@@ -60,20 +60,19 @@
         time-game (str (t/plus initial-time (t/hours 24)))
         game (merge (:game game-params)
                     {:game/start-time
-                     (read-string (str "#inst \"" time-game "\""))})]
-
-    (let [game-id (gen-id-fn)
-          new-game (merge game {:game/id game-id})
+                     (read-string (str "#inst \"" time-game "\""))})
+        game-id (gen-id-fn)
+        new-game (merge game {:game/id game-id})
           arena-config (get-arena-by-id-fn arena-id)
           game-arena (generate-arena arena-config)
           tx @(add-game-fn new-game
                            (:db/id arena-config)
                            game-arena)
           game-record (get-game-by-id-fn game-id)]
-      (schedule-game
-       game-id
-       (:game/start-time game-record)
-       start-game-fn))))
+    (schedule-game
+     game-id
+     (:game/start-time game-record)
+     start-game-fn)))
 
 (defn automatic-game-scheduler
   "Called on system start - uses add-game-scheduler to create a game"
@@ -85,8 +84,6 @@
           (fn [time]
             (add-game-scheduler
              setup-params)
-            (log/info (str "Scheduled a new daily game")))
+            (log/info "Scheduled a new daily game"))
 
-          {:on-finished (fn []
-                          (log/info
-                           (str "Stopped scheduling daily games")))}))
+          {:on-finished #(log/info "Stopped scheduling daily games")}))
