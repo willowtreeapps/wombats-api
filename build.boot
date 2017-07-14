@@ -126,25 +126,26 @@ Type \"Yes\" to confirm."
     (into main-dependencies datomic-free)
     (into main-dependencies datomic-pro)))
 
-(defn- is-dev?
-  "Check if current env is dev or dev-ddb for loading user"
+(defn- is-local?
+  "Check if current env is local or local-ddb for loading user"
   []
   (let [env (get-wombats-env)]
-    (or (= env "dev")
-        (= env "dev-ddb"))))
+    (= env "dev")
+    ;; For local ddb development this should use (= env "dev-ddb") but was removed
+    ))
 
 (defn- get-source-paths
   "Build source path based on whether running in dev or qa/prod"
   []
   (let [src-test #{"src" "test"}]
-    (if (is-dev?)
+    (if (is-local?)
       (conj src-test "dev/src")
       src-test)))
 
 (defn- load-user
   "If loading in dev, load user as well"
   []
-  (when (is-dev?)
+  (when (is-local?)
     (require 'user)))
 
 (set-env! :project 'wombats
