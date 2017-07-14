@@ -10,7 +10,7 @@ CHANGELOG
 * Simplified calls to reset, seed, etc. database [Eli Bosley][/elibosley] *No Issue*
 
 **Bug Fixes**
-* Fixed a bug introduced in PR #[393](https://github.com/willowtreeapps/wombats-api/pull/393) with config files in production [Eli Bosley][/elibosley] *No Issue*
+* Fixed a bug introduced in PR #[393](https://github.com/willowtreeapps/wombats-api/pull/393) with config files in production [Eli Bosley][/elibosley] & [C.P. Dehli][/dehli] *No Issue*
 
 ## QA (4.11.2017)
 **Enhancements**
