@@ -14,7 +14,6 @@
 
   Defaults to :dev"
   []
-  (println (get env :wombats-env))
   (keyword (get env :wombats-env "dev")))
 
 (defn- remove-nil
