@@ -14,7 +14,8 @@
 
   Defaults to :dev"
   []
-  (keyword (get env :app-env "dev")))
+  (println (get env :wombats-env))
+  (keyword (get env :wombats-env "dev")))
 
 (defn- remove-nil
   "Remove nil values from a map"
