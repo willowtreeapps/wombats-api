@@ -44,8 +44,10 @@ This guide is responsible for getting your development environment setup to work
    - Callback URL is `http://localhost:8888/api/v1/auth/github/callback`
    - Once the application is created, keep the page open, you will need the client-id and the client-secret for the next step.
 
-1. Make a copy of the file called credentials_empty.edn named `credentials.edn` at `wombats-api/config/credentials-empty.edn`
+1. Make a copy of the config_empty.edn file located at `wombats-api/config/config-empty.edn` named `config.edn`
+    - Place the file in either `~/.wombats/config.edn` or in `wombats-api/config/config.edn`. The home directory `.wombats` location will override the file in `wombats-api`.
     - Replace the Github Client ID and Github Client Secret with your Client ID and Secret.
+
 1. Start the boot repl
     - `$ boot repl`
 1. Seed the database
@@ -60,7 +62,7 @@ This guide is responsible for getting your development environment setup to work
    - Add two enviroment variables to allow Datomic to download when running the app with Boot.
         - `DATOMIC_USERNAME=YourEmail@example.com`
         - `DATOMIC_PASSWORD=YourDatomicPassword`
-1. To run on another environment than local, create an environment variable called `WOMBATS_ENV`. 
+1. To run on another environment than local, create an environment variable called `WOMBATS_ENV`.
 
     Possible values for `WOMBATS_ENV` are:
     - `dev` (local)
@@ -73,11 +75,12 @@ This guide is responsible for getting your development environment setup to work
    - Callback URL is `http://localhost:8888/api/v1/auth/github/callback`
    - Once the application is created, keep the page open, you will need the client-id and the client-secret for the next step.
 
-1. Make a copy of the file called credentials_empty.edn named `credentials.edn` at `wombats-api/config/credentials-empty.edn`
+1. Make a copy of the config_empty.edn file located at `wombats-api/config/config-empty.edn` named `config.edn`
+    - Place the file in either `~/.wombats/config.edn` or in `wombats-api/config/config.edn`. The home directory `.wombats` location will override the file in `wombats-api`.
     - Replace the Github Client ID and Github Client Secret with your Client ID and Secret.
     - `:aws nil` allows the program to run without AWS Lambda
     - For Lamda support the `:aws` object should look like this:
-    ``` 
+    ```
     :aws {:access-key-id “YourAWSAccessKeyId”
     :secret-key “YourAWSSecretKey”}
     ```

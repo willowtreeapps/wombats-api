@@ -211,6 +211,14 @@ Type \"Yes\" to confirm."
     (str uri "?aws_access_key_id=" akid "&aws_secret_key=" sk)
     uri))
 
+(defn- get-private-config-file
+  [] (let [file-location-dev (str (System/getProperty "user.dir") "/config/config.edn")
+           file-location-prod (str (System/getProperty "user.home") "/.wombats/config.edn")]
+       (when (.exists (io/as-file file-location-dev))
+         file-location-dev)
+       (when (.exists (io/as-file file-location-prod))
+         file-location-prod)))
+
 (defn- build-connection-string
   []
   (let [env (get-wombats-env)
@@ -219,11 +227,7 @@ Type \"Yes\" to confirm."
                          (clojure.java.io/file)
                          (slurp)
                          (clojure.edn/read-string))
-        config-settings (or
-                          (load-file
-                           (str (System/getProperty "user.dir") "/config/credentials.edn"))
-                          (load-file
-                           (str (System/getProperty "user.home") "/.wombats/config.edn")))]
+        config-settings (load-file (get-private-config-file))]
     (get-datomic-uri env-settings config-settings)))
 
 (defn- lookup-arena-ref
