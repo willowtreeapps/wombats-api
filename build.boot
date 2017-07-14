@@ -212,12 +212,13 @@ Type \"Yes\" to confirm."
     uri))
 
 (defn- get-private-config-file
-  [] (let [file-location-dev (str (System/getProperty "user.dir") "/config/config.edn")
-           file-location-prod (str (System/getProperty "user.home") "/.wombats/config.edn")]
-       (when (.exists (io/as-file file-location-dev))
-         file-location-dev)
-       (when (.exists (io/as-file file-location-prod))
-         file-location-prod)))
+  []
+  (let [file-location-dev (str (System/getProperty "user.dir") "/config/config.edn")
+        file-location-prod (str (System/getProperty "user.home") "/.wombats/config.edn")]
+    (when (.exists (io/as-file file-location-dev))
+      file-location-dev)
+    (when (.exists (io/as-file file-location-prod))
+      file-location-prod)))
 
 (defn- build-connection-string
   []
