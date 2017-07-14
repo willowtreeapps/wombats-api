@@ -8,6 +8,7 @@
   [code state timeout-in]
   (let [timeout (fn [] (- timeout-in (tc/to-long (t/now))))
         state-obj (:state (cheshire/parse-string state true))
-        ret-value ((load-string code) state-obj timeout)]
+        lib (slurp "src/wombats/game/dev_mode/lib/wombat.clj")
+        ret-value ((load-string (str "(do " lib code ")")) state-obj timeout)]
     (cheshire/generate-string ret-value)))
 
