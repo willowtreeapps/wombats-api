@@ -28,12 +28,12 @@ deployment:
   develop:
     branch: develop
     commands:
-      - ./deploy.sh deploy@dev.api.wombats.io
+      - WOMBATS_ENV="dev-ddb" ./deploy.sh deploy@dev.api.wombats.io
   qa:
     branch: qa
     commands:
-      - ./deploy.sh deploy@qa.api.wombats.io
+      - WOMBATS_ENV="qa-ddb" ./deploy.sh deploy@qa.api.wombats.io
   prod:
     branch: master
     commands:
-      - ./deploy.sh deploy@api.wombats.io
+      - WOMBATS_ENV="prod-ddb" ./deploy.sh deploy@api.wombats.io
