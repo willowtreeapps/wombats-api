@@ -130,6 +130,7 @@ Type \"Yes\" to confirm."
   "Check if current env is dev or dev-ddb for loading user"
   []
   (let [env (get-wombats-env)]
+    (println env)
     (or (= env "dev")
         (= env "dev-ddb"))))
 
@@ -219,8 +220,11 @@ Type \"Yes\" to confirm."
                          (clojure.java.io/file)
                          (slurp)
                          (clojure.edn/read-string))
-        config-settings (load-file
-                         (str (System/getProperty "user.dir") "/config/credentials.edn"))]
+        config-settings (or
+                          (load-file
+                           (str (System/getProperty "user.dir") "/config/credentials.edn"))
+                          (load-file
+                           (str (System/getProperty "user.home") "/.wombats/config.edn")))]
     (get-datomic-uri env-settings config-settings)))
 
 (defn- lookup-arena-ref
