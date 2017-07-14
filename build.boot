@@ -130,7 +130,6 @@ Type \"Yes\" to confirm."
   "Check if current env is dev or dev-ddb for loading user"
   []
   (let [env (get-wombats-env)]
-    (println env)
     (or (= env "dev")
         (= env "dev-ddb"))))
 
