@@ -91,10 +91,8 @@ Type \"Yes\" to confirm."
   (let [env (System/getenv "WOMBATS_ENV")]
     (if (or (= env "")
             (nil? env))
-      (do (System/setProperty "APP_ENV" "dev")
-          "dev")
-      (do (System/setProperty "APP_ENV" env)
-          env))))
+      "dev"
+      env)))
 
 (defn- get-wombats-db-name
   "Gets the user readable name of the database that various tasks will be performed on"
