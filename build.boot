@@ -77,8 +77,8 @@ Type \"Yes\" to confirm."
    [adzerk/boot-test "1.1.2" :scope "test"]
 
    ;; Code Analysis
-   [tolitius/boot-check "0.1.4" :scope "test"]]
-)
+   [tolitius/boot-check "0.1.4" :scope "test"]])
+
 (def datomic-free
   '[[com.datomic/datomic-free "0.9.5561.50"]])
 

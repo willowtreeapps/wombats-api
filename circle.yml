@@ -19,7 +19,7 @@ dependencies:
     - "~/.boot/cache/lib"
 compile:
   override:
-    - boot build
+    - WOMBATS_ENV="build" boot build
 test:
   override:
     # Nothing to run here
@@ -28,12 +28,12 @@ deployment:
   develop:
     branch: develop
     commands:
-      - WOMBATS_ENV="dev-ddb" ./deploy.sh deploy@dev.api.wombats.io
+      - ./deploy.sh deploy@dev.api.wombats.io
   qa:
     branch: qa
     commands:
-      - WOMBATS_ENV="qa-ddb" ./deploy.sh deploy@qa.api.wombats.io
+      - ./deploy.sh deploy@qa.api.wombats.io
   prod:
     branch: master
     commands:
-      - WOMBATS_ENV="prod-ddb" ./deploy.sh deploy@api.wombats.io
+      - ./deploy.sh deploy@api.wombats.io
