@@ -53,11 +53,11 @@ Type \"Yes\" to confirm."
    [com.stuartsierra/component   "0.3.2"]
 
    ;; Database
-   [com.amazonaws/aws-java-sdk-dynamodb "1.11.6"]
+   [com.amazonaws/aws-java-sdk-dynamodb "1.11.82"]
    [io.rkn/conformity "0.4.0"]
 
    ;; Amazon SDK
-   [com.amazonaws/aws-java-sdk "1.11.6"]
+   [com.amazonaws/aws-java-sdk "1.11.82"]
 
    ;; HTTP Server
    [io.pedestal/pedestal.service "0.5.2"]
