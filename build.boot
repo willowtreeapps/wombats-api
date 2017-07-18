@@ -130,9 +130,8 @@ Type \"Yes\" to confirm."
   "Check if current env is local or local-ddb for loading user"
   []
   (let [env (get-wombats-env)]
-    (= env "dev")
-    ;; For local ddb development this should use (= env "dev-ddb") but was removed
-    ))
+    (or (= env "dev")
+        (= env "dev-ddb"))))
 
 (defn- get-source-paths
   "Build source path based on whether running in dev or qa/prod"
