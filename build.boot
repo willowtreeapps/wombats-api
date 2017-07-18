@@ -215,10 +215,9 @@ Type \"Yes\" to confirm."
   []
   (let [file-location-dev (str (System/getProperty "user.dir") "/config/config.edn")
         file-location-prod (str (System/getProperty "user.home") "/.wombats/config.edn")]
-    (when (.exists (io/as-file file-location-dev))
-      file-location-dev)
-    (when (.exists (io/as-file file-location-prod))
-      file-location-prod)))
+    (cond
+      (.exists (io/as-file file-location-dev)) file-location-dev
+      (.exists (io/as-file file-location-prod)) file-location-prod)))
 
 (defn- build-connection-string
   []

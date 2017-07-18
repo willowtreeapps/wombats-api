@@ -13,4 +13,4 @@ pom.xml.asc
 .nrepl-port
 /.nrepl-history
 /logs/
-/config/credentials.edn
+/config/config.edn
