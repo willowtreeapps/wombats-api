@@ -11,6 +11,8 @@ CHANGELOG
 
 **Bug Fixes**
 * Fixed a bug introduced in PR #[393](https://github.com/willowtreeapps/wombats-api/pull/393) with config files in production [Eli Bosley][/elibosley] & [C.P. Dehli][/dehli] *No Issue*
+* Dev-DDB Reloaded.Repl Fix
+  [Eli Bosley](/elibosley) #[400](https://github.com/willowtreeapps/wombats-api/issues/400)
 
 ## QA (4.11.2017)
 **Enhancements**
