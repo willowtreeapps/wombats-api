@@ -15,6 +15,7 @@ CHANGELOG
   [Eli Bosley](/elibosley) #[400](https://github.com/willowtreeapps/wombats-api/issues/400)
 * Fixed an issue with loading config files introduced in PR #[397](https://github.com/willowtreeapps/wombats-api/pull/397)
   [Eli Bosley](/elibosley) *No Issue*
+* Added ability to delete games as an administrator [Eli Bosley](/elibosley) #[284](https://github.com/willowtreeapps/wombats-web-client/issues/284)
 
 ## QA (4.11.2017)
 **Enhancements**

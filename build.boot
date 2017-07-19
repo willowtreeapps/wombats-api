@@ -186,6 +186,7 @@ Type \"Yes\" to confirm."
 (require '[wombats.arena.core])
 
 (require '[wombats.datomic.db-functions :as db-fns])
+(require '[wombats.components.configuration :refer [get-private-config-file]])
 
 (defn read-all
   "Read all forms in f, where f is any resource that can
@@ -210,14 +211,6 @@ Type \"Yes\" to confirm."
   (if auth?
     (str uri "?aws_access_key_id=" akid "&aws_secret_key=" sk)
     uri))
-
-(defn- get-private-config-file
-  []
-  (let [file-location-dev (str (System/getProperty "user.dir") "/config/config.edn")
-        file-location-prod (str (System/getProperty "user.home") "/.wombats/config.edn")]
-    (cond
-      (.exists (io/as-file file-location-prod)) file-location-prod)
-      (.exists (io/as-file file-location-dev)) file-location-dev))
 
 (defn- build-connection-string
   []
