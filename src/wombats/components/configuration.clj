@@ -45,14 +45,14 @@
   (let [file-location-dev (str (System/getProperty "user.dir") "/config/config.edn")
         file-location-prod (str (System/getProperty "user.home") "/.wombats/config.edn")]
     (cond
-      (.exists (io/as-file file-location-dev))
-      (do
-        (log/info "Using private config at:" file-location-dev)
-        file-location-dev)
       (.exists (io/as-file file-location-prod))
       (do
         (log/info (str  "Using private config at " file-location-prod))
         file-location-prod)
+      (.exists (io/as-file file-location-dev))
+      (do
+        (log/info "Using private config at:" file-location-dev)
+        file-location-dev)
       :else (log/info "Not using a private config file"))))
 
 (defn- get-config-files
