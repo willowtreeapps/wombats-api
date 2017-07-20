@@ -8,6 +8,7 @@ CHANGELOG
     [Eli Bosley][/elibosley] *No Issue*
 * Datomic-Pro optional based on environment [Eli Bosley][/elibosley] *No Issue*
 * Simplified calls to reset, seed, etc. database [Eli Bosley][/elibosley] *No Issue*
+* Migrated AWS Lambda to this repo and added script for easy updating [Daniel Hoerauf][/daniel-hoerauf] *No Issue*
 
 **Bug Fixes**
 * Fixed a bug introduced in PR #[393](https://github.com/willowtreeapps/wombats-api/pull/393) with config files in production [Eli Bosley][/elibosley] & [C.P. Dehli][/dehli] *No Issue*
@@ -77,3 +78,4 @@ CHANGELOG
 [/oconn]: https://github.com/oconn
 [/erochest]: https://github.com/erochest
 [/elibosley]: http://github.com/elibosley
+[/daniel-hoerauf]: http://github.com/Daniel-Hoerauf

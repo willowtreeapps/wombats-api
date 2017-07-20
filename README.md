@@ -32,6 +32,10 @@ To use `lambda.sh`, you need the environment variables `AWS_ACCESS_KEY_ID` and `
 
 ##### Usage
 ```bash
+# The script requires the AWS Cli utility provided by Amazon through pip
+# To install:
+pip install -r requirements.txt
+
 # Replace <lambda_prefix> with the prefix of the lambda function, e.g. wombats-prod or wombats-qa
 ./lambda.sh <lambda_prefix>
 ```
