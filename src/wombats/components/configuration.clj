@@ -5,7 +5,8 @@
   (:require [clojure.java.io :as io]
             [com.stuartsierra.component :as component]
             [environ.core :refer [env]]
-            [immuconf.config :as immuconf]))
+            [immuconf.config :as immuconf]
+            [taoensso.timbre :as log]))
 
 ;; Private helper functions
 
@@ -39,16 +40,13 @@
     (spit file-name (str formatted-config))
     (io/file file-name)))
 
-(defn- get-private-config-file
+(defn get-private-config-file
   []
   (let [file-location-dev (str (System/getProperty "user.dir") "/config/config.edn")
         file-location-prod (str (System/getProperty "user.home") "/.wombats/config.edn")]
-    (when (.exists (io/as-file file-location-dev))
-      (println "Using config at /config/config.edn")
-      file-location-dev)
-    (when (.exists (io/as-file file-location-prod))
-      (println "Using config at ~/.wombats/config.edn")
-      file-location-prod)))
+    (cond
+      (.exists (io/as-file file-location-prod)) file-location-prod
+      (.exists (io/as-file file-location-dev)) file-location-dev)))
 
 (defn- get-config-files
   "Determines the files that should be used for configuration.
@@ -64,6 +62,9 @@
         private-config-envs (get-private-envs)
         private-config-file (get-private-config-file)
         env-config (io/resource (str (name env) ".edn"))]
+    (if private-config-file
+      (log/info (str "Using private config-file " private-config-file))
+      (log/info "Not using a private config-file"))
     (remove nil? [base-config
                   private-config-envs
                   private-config-file

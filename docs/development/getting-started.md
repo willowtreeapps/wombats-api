@@ -89,6 +89,13 @@ This guide is responsible for getting your development environment setup to work
 1. Start the Wombats system
    - `boot.user => (reloaded.repl/go)`
 
+### Building the API
+    - Building the Wombats API is very easy, just run `boot build`.
+    - This option must be run with a flag that is not `dev` or `dev-ddb` for the WOMBATS_ENV environment variable.
+    - Once compiled, the jar is placed in `wombats-api/target/wombats.jar`.
+    - WOMBATS_ENV variable must be set in the launch options to one of the values specified above.
+    - Run the API with a command like this `WOMBATS_ENV=env java -jar target/wombats.jar`.
+
 ### Workflow
 
 Check out Stuart Sierra's [reloaded workflow](http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded) to get an idea of how the development workflow for Wombats has been modeled.
