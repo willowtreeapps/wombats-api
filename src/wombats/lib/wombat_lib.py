@@ -20,6 +20,22 @@ game_parameters = {
     'shot-distance': 5
 }
 
+shot_range = game_parameters['shot-distance']
+zakano_key = 'zakano'
+wombat_key = 'wombat'
+steel_key = 'steel-barrier'
+wood_key = 'wood-barrier'
+food_key = 'food'
+poison_key = 'poison'
+fog_key = 'fog'
+open_key = 'open'
+
+point_sources = [zakano_key, wombat_key, steel_key, wood_key, food_key]
+points_no_wall = [zakano_key, wombat_key, food_key]
+enemies = [wombat_key, zakano_key]
+blockers = [zakano_key, wombat_key, wood_key, steel_key, poison_key]
+targets = [zakano_key, wombat_key, steel_key, wood_key]
+
 def get_arena_size(state):
     '''Fetches the size of one side of the arena from the state'''
     return state['global-dimensions'][0]
@@ -112,6 +128,10 @@ def is_facing(dir, target, arena_half, wombat={'x': 3, 'y': 3}):
         return False
 
 def distance_to_tile(dir, node, arena_size, wombat={'x': 3, 'y': 3}):
+    '''
+    Gets the minimum numbers of moves it would take to travel to a given tile
+    Does not take into account anything that might be in the way
+    '''
     facing = 0 if is_facing(dir, node, arena_size / 2, wombat) else 1
     x_dist = min(abs(node['x'] - wombat['x']), arena_size + 1 +
                  min(node['x'], wombat['x']) - max(node['x'], wombat['x']))
@@ -120,6 +140,10 @@ def distance_to_tile(dir, node, arena_size, wombat={'x': 3, 'y': 3}):
     return x_dist + y_dist + facing
 
 def turn_to_dir(curr_dir, next_dir):
+    '''
+    Given the current cardinal direction and the desired cardinal direction
+    Returns the turn motion needed
+    '''
     dirs = {'n': 0, 'e': 1, 's': 2, 'w': 3}
     motion = [None, 'left', 'about-face', 'right']
     diff = (dirs[curr_dir] - dirs[next_dir]) % 4
@@ -142,16 +166,14 @@ def shootable(dir, wombat, tile, arena_size, shot_range):
         return False
 
 def can_shoot(dir, arena, arena_size, shot_range, wombat={'x': 3, 'y': 3}, wall=True):
-    filters = ['zakano', 'wombat']
-    filters += ['wood-barrier', 'steel-barrier'] if wall else []
-    targets = filter_arena(arena, filters)
-    return [tile for tile in targets
+    filters = targets if wall else enemies
+    possible_targets = filter_arena(arena, filters)
+    return [tile for tile in possible_targets
             if shootable(dir, wombat, tile, arena_size, shot_range)] != []
 
 def possible_points(arena, wombat={'x': 3, 'y': 3}, wall=True):
     arena = add_locs(arena)
-    filters = ['zakano', 'wombat', 'food']
-    filters += ['wood-barrier', 'steel-barrier'] if wall else []
+    filters = point_sources if wall else points_no_wall
     possible = filter_arena(arena, filters)
     x, y = wombat['x'], wombat['y']
     return [tile for tile in possible if (tile['x'] != x or tile['y'] != y)]
@@ -188,7 +210,6 @@ def front_tile(dir, arena_size, wombat={'x': 3, 'y': 3}):
         return {'x': x, 'y': y}
 
 def is_clear(arena, wombat):
-    blockers = ['zakano', 'wombat', 'wood-barrier', 'steel-barrier', 'poison']
     x, y = wombat['x'], wombat['y']
     return arena[y][x]['contents']['type'] not in blockers
 

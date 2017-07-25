@@ -18,6 +18,24 @@
  ;; In game parameters
  :shot-distance 5})
 
+(def shot-range (:shot-distance game-parameters))
+(def zakano-key "zakano")
+(def wombat-key "wombat")
+(def steel-key "steel-barrier")
+(def wood-key "wood-barrier")
+(def food-key "food")
+(def poison-key "poison")
+(def fog-key "fog")
+(def open-key "open")
+
+(def point-sources [zakano-key wombat-key steel-key wood-key food-key])
+(def points-no-wall [zakano-key wombat-key food-key])
+(def enemies [wombat-key zakano-key])
+(def blockers [zakanko-key wombat-key wood-key steel-key poison-key])
+(def targets [zakano-key wombat-key steel-key wood-key])
+
+(def default-tile {:contents {:type fog-key}})
+
 (defn get-arena-size
   "Fetches the size of one side of the arena from the state"
   [state]
@@ -31,17 +49,16 @@
 (defn add-locs
   "Add local :x and :y coordinates to arena matrix"
   [arena]
-  (reduce
-    #(conj %1
-      (reduce
-        (fn [acc node] (conj acc (assoc node :x (count acc) :y (count %1))))
-        [] %2))
-    [] arena))
+  (map-indexed 
+    (fn [y row] (map-indexed
+                  (fn [x tile] (assoc tile :x x :y y))
+                  row)) 
+    arena))
 
 (defn filter-arena
   "Filter the arena to return only nodes that contain one of the supplied types"
   ([arena] (flatten arena))
-  ([arena & filters]
+  ([arena filters]
   (let [node-list (flatten arena)]
     (filter #(in? (get-in % [:contents :type]) filters) node-list))))
 
@@ -49,14 +66,12 @@
   "Constructs an initial global state populated by fog"
   [global-size]
   (add-locs (into [] (map (fn [_] 
-     (into [] (map (fn [_] {:contents {:type "fog"}}) (range global-size)))) (range global-size)))))
+     (into [] (map (fn [_] default-tile) (range global-size)))) (range global-size)))))
 
 (defn add-to-state
   "Update the global saved state with the given element and position"
-  [matrix elem]
-  (let [x (:x elem) 
-        y (:y elem)]
-    (assoc matrix y (assoc (nth matrix y) x elem))))
+  [matrix {:keys [x y] as elem}]
+  (assoc matrix y (assoc (nth matrix y) x elem)))
 
 (defn merge-global-state
   "Add local state vision to global saved state. Position is that of the player which corresponds to (3,3) in local matrix"
@@ -93,10 +108,10 @@
   If no self coordinates are provided, use distance from {:x 3 :y 3}"
   ([dir {x_tar :x y_tar :y} arena-half {x_self :x y_self :y}]
     (case dir
-          "n" (and (not (= y_tar y_self)) (>= arena-half (mod (- y_self y_tar) (* arena-half 2)))) 
-          "e" (and (not (= x_tar x_self)) (>= arena-half (mod (- x_tar x_self) (* arena-half 2))))
-          "s" (and (not (= y_tar y_self)) (>= arena-half (mod (- y_tar y_self) (* arena-half 2))))
-          "w" (and (not (= x_tar x_self)) (>= arena-half (mod (- x_self x_tar)  (* arena-half 2))))
+          "n" (and (not= y_tar y_self) (>= arena-half (mod (- y_self y_tar) (* arena-half 2)))) 
+          "e" (and (not= x_tar x_self) (>= arena-half (mod (- x_tar x_self) (* arena-half 2))))
+          "s" (and (not= y_tar y_self) (>= arena-half (mod (- y_tar y_self) (* arena-half 2))))
+          "w" (and (not= x_tar x_self) (>= arena-half (mod (- x_self x_tar)  (* arena-half 2))))
           false))
   ([dir node arena-half] (facing? dir node arena-half {:x 3 :y 3})))
 
@@ -126,24 +141,27 @@
 
 (defn can-shoot
   "Returns true if there is a Zakano or Wombat within shooting range"
-  ([dir arena arena-size shot-range self]
+  [dir arena arena-size & {:keys [wombat wall]
+                           :or {wombat {:x 3 :y 3}
+                                wall true}}]
     (def shootable (case dir
       "n" #(and (= (:x self) (:x %)) (>= shot-range (mod (- (:y self) (:y %)) arena-size)))
       "e" #(and (= (:y self) (:y %)) (>= shot-range (mod (- (:x %) (:x self)) arena-size)))
       "s" #(and (= (:x self) (:x %)) (>= shot-range (mod (- (:y %) (:y self)) arena-size)))
       "w" #(and (= (:y self) (:y %)) (>= shot-range (mod (- (:x self) (:x %)) arena-size)))
       #(false)))
-    (let [shootable (filter shootable (filter-arena arena "zakano" "wombat" "wood-barrier" ""))]
+    (let [filters (if wall targets enemies)
+          shootable (filter shootable (filter-arena arena filters))]
       (not (empty? (filter #(not (and (= (:x %) (:x self)) (= (:y self) (:y %)))) shootable)))))
-  ([dir arena arena-size shot-range] (can-shoot-enemy? dir arena arena-size shot-range {:x 3 :y 3})))
 
 (defn possible-points
   "Get all locations with possible points"
-  ([arena self]
-    (remove #(and (= (:x %) (:x self)) (= (:y %) (:y self)))
-            (filter-arena (add-locs arena) "food" "wood-barrier" "steel-barrier" "zakano" "wombat")))
-  ([arena]
-    (possible-points arena {:x 3 :y 3})))
+  [arena & {:keys [wombat wall]
+            :or {wombat {:x 3 :y 3}
+                 wall true}}]
+   (let [filters (if wall point-sources points-no-wall)]
+     (remove #(and (= (:x %) (:x self)) (= (:y %) (:y self)))
+            (filter-arena (add-locs arena) filters))))
 
 (defn build-resp
   "Helper method to construct the return command"
@@ -197,8 +215,9 @@
 
 (defn select-target
   "Pulls the coordinates of the closest point source to the player"
-  ([arena arena-size self]
-    (let [possible (possible-points arena self)
+  [arena arena-size & {:keys [wombat wall]
+                        :or {wombat {:x 3 :y 3}
+                             wall true}}]
+    (let [possible (possible-points arena :wombat wombat :wall wall)
           direction (get-direction arena)]
-      (first (sort-by :dist (map #(assoc % :dist (distance-to-tile direction % arena-size self)) possible)))))
-  ([arena arena-size] (select-target arena arena-size {:x 3 :y 3})))
+      (first (sort-by :dist (map #(assoc % :dist (distance-to-tile direction % arena-size wombat)) possible)))))
