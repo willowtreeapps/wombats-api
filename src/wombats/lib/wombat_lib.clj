@@ -19,7 +19,7 @@
  :shot-distance 5})
 
 (defn get-arena-size
-  "Fetchs the size of one side of the arena from the state"
+  "Fetches the size of one side of the arena from the state"
   [state]
   (first (:global-dimensions state)))
 
@@ -29,7 +29,7 @@
   (some #(= elem %) coll))
 
 (defn add-locs
-  "Add local :x and :y coordinates to state matrix"
+  "Add local :x and :y coordinates to arena matrix"
   [arena]
   (reduce
     #(conj %1
@@ -39,7 +39,7 @@
     [] arena))
 
 (defn filter-arena
-  "Filter the arena to return only nodes that contain one of the given type"
+  "Filter the arena to return only nodes that contain one of the supplied types"
   ([arena] (flatten arena))
   ([arena & filters]
   (let [node-list (flatten arena)]
@@ -49,7 +49,7 @@
   "Constructs an initial global state populated by fog"
   [global-size]
   (add-locs (into [] (map (fn [_] 
-     (into [] (map (fn [_] {:type "fog"}) (range global-size)))) (range global-size)))))
+     (into [] (map (fn [_] {:contents {:type "fog"}}) (range global-size)))) (range global-size)))))
 
 (defn add-to-state
   "Update the global saved state with the given element and position"
@@ -59,7 +59,7 @@
     (assoc matrix y (assoc (nth matrix y) x elem))))
 
 (defn merge-global-state
-  "Add local state vision to global saved state. Position is that of the play which corresponds to (3,3) in local matrix"
+  "Add local state vision to global saved state. Position is that of the player which corresponds to (3,3) in local matrix"
   [global-state local-state arena-size]
     (let [local-nodes (filter-arena ((comp add-locs :arena) local-state)
                                     "food" "poison" "open" "wood-barrier" "steel-barrier")
@@ -103,12 +103,14 @@
 (defn distance-to-tile
   "Get the number of moves it would take to move from current location.
   If no self coordinates are provided, use distance from {:x 3 :y 3}"
-  ([dir node arena-half self-node]
-    (+ (Math/abs (- (:y node) (:y self-node)))
-       (Math/abs (- (:x node) (:x self-node)))
-       (if (facing? dir node arena-half self-node) 0 1)))
-  ([dir node arena-half]
-    (distance-to-tile dir node arena-half {:x 3 :y 3})))
+  ([dir {x_tar :x y_tar :y} arena-size {x_self :x y_self :y}]
+    (+ (min (Math/abs (- x_tar x_self))
+           (- (+ arena-size 1 (min x_tar x_self)) (max x_tar x_self)))
+       (min (Math/abs (- y_tar y_self))
+           (- (+ arena-size 1 (min y_tar y_self)) (max y_tar y_self)))
+       (if (facing? dir node (/ arena-size 2) self-node) 0 1)))
+  ([dir node arena-size]
+    (distance-to-tile dir node arena-size {:x 3 :y 3})))
 
 (defn turn-to-dir
   "Returns one of [:right :left :about-face]"
@@ -122,7 +124,7 @@
       2  :about-face
       3  :right)))
 
-(defn can-shoot-enemy?
+(defn can-shoot
   "Returns true if there is a Zakano or Wombat within shooting range"
   ([dir arena arena-size shot-range self]
     (def shootable (case dir
@@ -131,22 +133,9 @@
       "s" #(and (= (:x self) (:x %)) (>= shot-range (mod (- (:y %) (:y self)) arena-size)))
       "w" #(and (= (:y self) (:y %)) (>= shot-range (mod (- (:x self) (:x %)) arena-size)))
       #(false)))
-    (let [shootable (filter shootable (filter-arena arena "zakano" "wombat"))]
+    (let [shootable (filter shootable (filter-arena arena "zakano" "wombat" "wood-barrier" ""))]
       (not (empty? (filter #(not (and (= (:x %) (:x self)) (= (:y self) (:y %)))) shootable)))))
   ([dir arena arena-size shot-range] (can-shoot-enemy? dir arena arena-size shot-range {:x 3 :y 3})))
-
-(defn can-shoot-barrier?
-  "Returns true if there is a barrier within shooting range"
-  ([dir arena arena-size shot-range self]
-    (def shootable (case dir
-      "n" #(and (= (:x self) (:x %)) (>= shot-range (mod (- (:y self) (:y %)) arena-size)))
-      "e" #(and (= (:y self) (:y %)) (>= shot-range (mod (- (:x %) (:x self)) arena-size)))
-      "s" #(and (= (:x self) (:x %)) (>= shot-range (mod (- (:y %) (:y self)) arena-size)))
-      "w" #(and (= (:y self) (:y %)) (>= shot-range (mod (- (:x self) (:x %)) arena-size)))
-      #(false)))
-    (let [shootable (filter shootable (filter-arena arena "wood-barrier" "steel-barrier"))]
-      (not (empty? (filter #(not (and (= (:x %) (:x self)) (= (:y self) (:y %)))) shootable)))))
-  ([dir arena arena-size shot-range] (can-shoot-barrier? dir arena arena-size shot-range {:x 3 :y 3})))
 
 (defn possible-points
   "Get all locations with possible points"
@@ -158,11 +147,12 @@
 
 (defn build-resp
   "Helper method to construct the return command"
+  ; Args can be passed as either keywords or strings
+  ([action] {:action (keyword action)
+             :metadata {}}))
   ([action direction]
     {:action (keyword action)
      :metadata {:direction (keyword direction)}})
-  ([action] {:action (keyword action)
-             :metadata {}}))
 
 (defn new-direction
   "Pick new direction to turn to get to loc. If no direction is possible, turns left"
@@ -172,7 +162,7 @@
         positions (filter #(facing? % loc arena-half self) available)]
     (if (not (empty? positions))
         (turn-to-dir dir (first positions))
-        ;TODO improve this logic
+        ; TODO: implement logic here
         :left)))
 
 (defn front-tile
@@ -194,12 +184,11 @@
 (defn move-to
   "Take the best action to get to given space"
   ([arena arena-half dir loc self]
-    (def ^:private orientations ["n" "e" "s" "w"])
     (if (and (facing? dir loc arena-half self) (is-clear? arena (front-tile dir (* arena-half 2) self)))
         (build-resp :move)
         (build-resp :turn (new-direction dir loc self arena-half))))
-  ([arena dir loc]
-    (move-to dir arena loc {:x 3 :y 3})))
+  ([arena arena-half dir loc]
+    (move-to dir arena arena-half loc {:x 3 :y 3})))
 
 (defn focus-sight
   "Cut the arena down to 5x5 from 7x7"
@@ -208,25 +197,8 @@
 
 (defn select-target
   "Pulls the coordinates of the closest point source to the player"
-  ([arena arena-half self]
+  ([arena arena-size self]
     (let [possible (possible-points arena self)
           direction (get-direction arena)]
-      (first (sort-by :dist (map #(assoc % :dist (distance-to-tile direction % arena-half self)) possible)))))
-  ([arena arena-half] (select-target arena arena-half {:x 3 :y 3})))
-
-(defn possible-points-nowall
-  "Get all locations with possible points"
-  ([arena self]
-    (remove #(and (= (:x %) (:x self)) (= (:y %) (:y self)))
-            (filter-arena (add-locs arena)
-                           "food" "zakano" "wombat")))
-  ([arena]
-    (possible-points arena {:x 3 :y 3})))
-
-(defn select-target-nowall
-  "Pulls the coordinates of the closest point source to the player"
-  ([arena arena-half self]
-    (let [possible (possible-points-nowall arena self)
-          direction (get-direction arena)]
-         (first (sort-by :dist (map #(assoc % :dist (distance-to-tile direction % arena-half self)) possible)))))
-  ([arena arena-half] (select-target arena arena-half {:x 3 :y 3})))
+      (first (sort-by :dist (map #(assoc % :dist (distance-to-tile direction % arena-size self)) possible)))))
+  ([arena arena-size] (select-target arena arena-size {:x 3 :y 3})))
