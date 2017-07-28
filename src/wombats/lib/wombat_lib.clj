@@ -119,11 +119,14 @@
   "Get the number of moves it would take to move from current location.
   If no self coordinates are provided, use distance from {:x 3 :y 3}"
   ([dir {x_tar :x y_tar :y} arena-size {x_self :x y_self :y}]
-    (+ (min (Math/abs (- x_tar x_self))
-           (- (+ arena-size 1 (min x_tar x_self)) (max x_tar x_self)))
-       (min (Math/abs (- y_tar y_self))
-           (- (+ arena-size 1 (min y_tar y_self)) (max y_tar y_self)))
-       (if (facing? dir node (/ arena-size 2) self-node) 0 1)))
+   (let [x_dist (min (Math/abs (- x_tar x_self))
+           (- (+ arena-size (min x_tar x_self)) (max x_tar x_self)))
+         y_dist (min (Math/abs (- y_tar y_self))
+           (- (+ arena-size (min y_tar y_self)) (max y_tar y_self)))]
+     (+ x_dist
+        y_dist
+        (if (facing? dir node (/ arena-size 2) self-node) 0 1)
+        (if (= (min x_dist y_dist) 0) 0 1))))
   ([dir node arena-size]
     (distance-to-tile dir node arena-size {:x 3 :y 3})))
 
@@ -151,6 +154,7 @@
       "w" #(and (= (:y self) (:y %)) (>= shot-range (mod (- (:x self) (:x %)) arena-size)))
       #(false)))
     (let [filters (if wall targets enemies)
+          arena (add_locs arena)
           shootable (filter shootable (filter-arena arena filters))]
       (not (empty? (filter #(not (and (= (:x %) (:x self)) (= (:y self) (:y %)))) shootable)))))
 
@@ -194,10 +198,9 @@
   ([dir arena-size] front-tile dir arena-size {:x 3 :y 3}))
 
 (defn is-clear?
-  "Return true if you can move forward without a collision or poison"
+  "Return true if wombat can safely occupy given tile"
   [arena {x :x y :y}]
-  (not (in? (get-in (nth (nth arena y) x) [:contents :type])
-            ["zakano" "wombat" "wood-barrier" "steel-barrier" "poison"])))
+  (not (in? (get-in (nth (nth arena y) x) [:contents :type]) blockers)))
 
 (defn move-to
   "Take the best action to get to given space"

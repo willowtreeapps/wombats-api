@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import deepcopy, copy
 turn_directions = ['right', 'left', 'about-face']
 smoke_directions = ['forward', 'backward', 'left', 'right', 'drop']
 game_parameters = {
@@ -29,12 +29,16 @@ food_key = 'food'
 poison_key = 'poison'
 fog_key = 'fog'
 open_key = 'open'
+smoke_key = 'smoke'
 
 point_sources = [zakano_key, wombat_key, steel_key, wood_key, food_key]
 points_no_wall = [zakano_key, wombat_key, food_key]
 enemies = [wombat_key, zakano_key]
 blockers = [zakano_key, wombat_key, wood_key, steel_key, poison_key]
 targets = [zakano_key, wombat_key, steel_key, wood_key]
+persistent = [food_key, poison_key, open_key, wood_key, steel_key]
+
+default_tile = {'contents': {'type': fog_key}}
 
 def get_arena_size(state):
     '''Fetches the size of one side of the arena from the state'''
@@ -58,7 +62,7 @@ def filter_arena(arena, filters=None):
 
 def build_initial_global_state(global_size):
     '''Constructs an intitial global state populated by fog'''
-    return [[{'contents': {'type': 'fog'}} for _ in range(global_size)] for _ in range(global_size)]
+    return [[copy(default_tile) for _ in range(global_size)] for _ in range(global_size)]
 
 def add_to_state(arena, elem):
     '''Update the global state with the given element and position'''
@@ -71,11 +75,10 @@ def merge_global_state(global_arena, local_state, global_size):
     Position is that of the player which corresponds to (3,3) in local matrix'''
     x_offset = (local_state['global-coords'][0] - 3) % global_size
     y_offset = (local_state['global-coords'][1] - 3) % global_size
-    local_tiles = filter_arena(add_locs(local_state['arena']),
-                               ['food', 'poison', 'open',
-                                'wood-barrier', 'steel-barrier'])
+    local_tiles = filter_arena(add_locs(local_state['arena']), persistent)
+
     # We want to add that the tile the player currently occupies is open
-    wombat = {'contents': {'type': 'open'},
+    wombat = {'contents': {'type': open_key},
               'x': local_state['global-coords'][0],
               'y': local_state['global-coords'][1]
               }
@@ -133,11 +136,12 @@ def distance_to_tile(dir, node, arena_size, wombat={'x': 3, 'y': 3}):
     Does not take into account anything that might be in the way
     '''
     facing = 0 if is_facing(dir, node, arena_size / 2, wombat) else 1
-    x_dist = min(abs(node['x'] - wombat['x']), arena_size + 1 +
+    x_dist = min(abs(node['x'] - wombat['x']), arena_size +
                  min(node['x'], wombat['x']) - max(node['x'], wombat['x']))
-    y_dist = min(abs(node['y'] - wombat['y']), arena_size + 1 +
+    y_dist = min(abs(node['y'] - wombat['y']), arena_size +
                  min(node['y'], wombat['y']) - max(node['y'], wombat['y']))
-    return x_dist + y_dist + facing
+    turn = 0 if min(x_dist, y_dist) == 0 else 1
+    return x_dist + y_dist + facing + turn
 
 def turn_to_dir(curr_dir, next_dir):
     '''
@@ -149,12 +153,12 @@ def turn_to_dir(curr_dir, next_dir):
     diff = (dirs[curr_dir] - dirs[next_dir]) % 4
     return motion[diff]
 
-def shootable(dir, wombat, tile, arena_size, shot_range):
+def shootable(dir, wombat, tile, arena_size):
     x_wom, y_wom = wombat['x'], wombat['y']
     x_tar, y_tar = tile['x'], tile['y']
     if x_wom == x_tar and y_wom == y_tar:
         return False
-    if dir == 'n':
+    elif dir == 'n':
         return x_wom == x_tar and (shot_range >= (y_wom - y_tar) % arena_size)
     elif dir == 'e':
         return y_wom == y_tar and (shot_range >= (x_tar - x_wom) % arena_size)
@@ -165,11 +169,12 @@ def shootable(dir, wombat, tile, arena_size, shot_range):
     else:
         return False
 
-def can_shoot(dir, arena, arena_size, shot_range, wombat={'x': 3, 'y': 3}, wall=True):
+def can_shoot(dir, arena, arena_size, wombat={'x': 3, 'y': 3}, wall=True):
+    arena = add_locs(arena)
     filters = targets if wall else enemies
     possible_targets = filter_arena(arena, filters)
     return [tile for tile in possible_targets
-            if shootable(dir, wombat, tile, arena_size, shot_range)] != []
+            if shootable(dir, wombat, tile, arena_size)] != []
 
 def possible_points(arena, wombat={'x': 3, 'y': 3}, wall=True):
     arena = add_locs(arena)
@@ -209,8 +214,8 @@ def front_tile(dir, arena_size, wombat={'x': 3, 'y': 3}):
         # This should never happen
         return {'x': x, 'y': y}
 
-def is_clear(arena, wombat):
-    x, y = wombat['x'], wombat['y']
+def is_clear(arena, tile):
+    x, y = tile['x'], tile['y']
     return arena[y][x]['contents']['type'] not in blockers
 
 def move_to(arena, arena_half, dir, loc, wombat={'x': 3, 'y': 3}):
