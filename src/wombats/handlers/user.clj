@@ -2,11 +2,13 @@
   (:require [io.pedestal.interceptor.helpers :as interceptor]
             [org.httpkit.client :as http]
             [clojure.spec :as s]
+            [cheshire.core :as cheshire]
             [wombats.daos.helpers :as dao]
             [wombats.handlers.helpers :refer [wombat-error]]
             [wombats.interceptors.authorization :refer [authorization-error]]
             [wombats.specs.utils :as sutils]
-            [wombats.constants :refer [github-repo-api-base]]))
+            [wombats.constants :refer [github-repo-api-base
+                                       github-repositories-by-id]]))
 
 (def ^:private wombat-body-sample
   #:wombat{:name "Teddy"
@@ -161,6 +163,43 @@
            (wombat-error {:code 001001
                           :params [(:wombat/name new-wombat)
                                    (:wombat/url new-wombat)]})))))))
+
+(def ^:swagger-spec get-user-repositories-spec
+  {"/api/vi/users/{user-id}/repositories"
+   {:get {:description "Returns a vector of repositories that belong to a user"
+          :tags ["user"]
+          :operationId "get-user-repositories"
+          :parameters []
+          :responses {:200 {:description "get-user-repositories response"}}}}})
+
+(defn- filter-hashmap-fields
+  "Function to remove fields from Github's API return.
+  Fields is a vector of keys and hashmap is the parsed map"
+  [hashmap fields]
+  (map #(select-keys % fields) hashmap))
+
+(def get-user-repositories
+  "Return a list of the users repositories"
+  (interceptor/before
+     ::get-user-repositories
+     (fn [{:keys [response request] :as context}]
+
+       (let [get-entire-user-by-id (dao/get-fn :get-entire-user-by-id context)
+             user-id (get-in request [:path-params :user-id])
+             user (get-entire-user-by-id user-id)]
+         (when-not user
+           (wombat-error {:code 001000
+                          :details {:user-id user-id}}))
+         (let [url (github-repositories-by-id (:user/github-username user))
+               auth-headers {:headers {"Accept" "application/json"
+                                       "Authorization" (str "token "
+                                                            (:user/github-access-token user))}}
+               {:keys [status headers body error] :as resp} @(http/get url auth-headers)
+               repository-names (filter-hashmap-fields (cheshire/parse-string body true) [:name :updated_at :description :url] )]
+           (assoc context :response (assoc response
+                                           :status status
+                                           :headers {"Content-Type" "application/edn"}
+                                           :body repository-names)))))))
 
 (defn- user-owns-wombat?
   "Determines if a user owns a wombat"

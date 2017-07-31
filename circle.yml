@@ -19,7 +19,7 @@ dependencies:
     - "~/.boot/cache/lib"
 compile:
   override:
-    - boot build
+    - WOMBATS_ENV="build" boot build
 test:
   override:
     # Nothing to run here
