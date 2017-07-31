@@ -41,14 +41,21 @@ persistent = [food_key, poison_key, open_key, wood_key, steel_key]
 default_tile = {'contents': {'type': fog_key}}
 
 def get_arena_size(state):
-    '''Fetches the size of one side of the arena from the state'''
-    return state['global-dimensions'][0]
+    '''
+    Fetches the size of the arena and returns it as a dictionary with keys:
+        width
+        height
+    '''
+    return {
+        'width': state['global-dimensions'][0],
+        'height': state['global-dimensions'][1]
+    }
 
 def add_locs(arena):
     '''Add local x and y coordinates to the arena matrix'''
     arena = deepcopy(arena)
     for x in range(len(arena)):
-        for y in range(len(arena)):
+        for y in range(len(arena[x])):
             arena[y][x]['x'] = x
             arena[y][x]['y'] = y
     return arena
@@ -62,7 +69,8 @@ def filter_arena(arena, filters=None):
 
 def build_initial_global_state(global_size):
     '''Constructs an intitial global state populated by fog'''
-    return [[copy(default_tile) for _ in range(global_size)] for _ in range(global_size)]
+    return [[copy(default_tile) for _ in range(global_size['width'])]
+            for _ in range(global_size['height'])]
 
 def add_to_state(arena, elem):
     '''Update the global state with the given element and position'''
@@ -73,8 +81,8 @@ def add_to_state(arena, elem):
 def merge_global_state(global_arena, local_state, global_size):
     '''Add local state vision to global saved state.
     Position is that of the player which corresponds to (3,3) in local matrix'''
-    x_offset = (local_state['global-coords'][0] - 3) % global_size
-    y_offset = (local_state['global-coords'][1] - 3) % global_size
+    x_offset = (local_state['global-coords'][0] - 3) % global_size['width']
+    y_offset = (local_state['global-coords'][1] - 3) % global_size['height']
     local_tiles = filter_arena(add_locs(local_state['arena']), persistent)
 
     # We want to add that the tile the player currently occupies is open
@@ -83,8 +91,8 @@ def merge_global_state(global_arena, local_state, global_size):
               'y': local_state['global-coords'][1]
               }
     for tile in local_tiles:
-        tile['x'] = (tile['x'] + x_offset) % global_size
-        tile['y'] = (tile['y'] + y_offset) % global_size
+        tile['x'] = (tile['x'] + x_offset) % global_size['width']
+        tile['y'] = (tile['y'] + y_offset) % global_size['height']
         global_arena = add_to_state(global_arena, tile)
 
     return add_to_state(global_arena, wombat)
@@ -101,7 +109,7 @@ def get_global_state(state, path):
             temp = {}
             break
     if temp == {}:
-        return build_initial_global_state(state['global-dimensions'][0])
+        return build_initial_global_state(get_arena_size(state))
     else:
         return temp
 
@@ -109,23 +117,25 @@ def get_direction(arena):
     '''Gets the current direction of your wombat from the 2d arena array'''
     return arena[3][3]['contents']['orientation']
 
-def is_facing(dir, target, arena_half, wombat={'x': 3, 'y': 3}):
+def is_facing(dir, target, arena_size, wombat={'x': 3, 'y': 3}):
     '''
     Returns true if a move forward will bring you closer to the target location
     If no self coordinated are provided, use distance from (x, y)
     '''
+    x_half = arena_size['width'] / 2
+    y_half = arena_size['height'] / 2
     if dir == 'n':
         return ((target['y'] != wombat['y']) and
-                (arena_half >= ((wombat['y'] - target['y']) % (arena_half * 2))))
+                (y_half >= ((wombat['y'] - target['y']) % (y_half * 2))))
     elif dir == 'e':
         return ((target['x'] != wombat['x']) and
-                (arena_half >= ((target['x'] - wombat['x']) % (arena_half * 2))))
+                (x_half >= ((target['x'] - wombat['x']) % (x_half * 2))))
     elif dir == 's':
         return ((target['y'] != wombat['y']) and
-                (arena_half >= ((target['y'] - wombat['y']) % (arena_half * 2))))
+                (y_half >= ((target['y'] - wombat['y']) % (y_half * 2))))
     elif dir == 'w':
         return ((target['x'] != wombat['x']) and
-                (arena_half >= ((wombat['x'] - target['x']) % (arena_half * 2))))
+                (x_half >= ((wombat['x'] - target['x']) % (x_half * 2))))
     else:
         # This shouldn't happen
         return False
@@ -135,10 +145,10 @@ def distance_to_tile(dir, node, arena_size, wombat={'x': 3, 'y': 3}):
     Gets the minimum numbers of moves it would take to travel to a given tile
     Does not take into account anything that might be in the way
     '''
-    facing = 0 if is_facing(dir, node, arena_size / 2, wombat) else 1
-    x_dist = min(abs(node['x'] - wombat['x']), arena_size +
+    facing = 0 if is_facing(dir, node, arena_size, wombat) else 1
+    x_dist = min(abs(node['x'] - wombat['x']), arena_size['width'] +
                  min(node['x'], wombat['x']) - max(node['x'], wombat['x']))
-    y_dist = min(abs(node['y'] - wombat['y']), arena_size +
+    y_dist = min(abs(node['y'] - wombat['y']), arena_size['height'] +
                  min(node['y'], wombat['y']) - max(node['y'], wombat['y']))
     turn = 0 if min(x_dist, y_dist) == 0 else 1
     return x_dist + y_dist + facing + turn
@@ -156,16 +166,18 @@ def turn_to_dir(curr_dir, next_dir):
 def shootable(dir, wombat, tile, arena_size):
     x_wom, y_wom = wombat['x'], wombat['y']
     x_tar, y_tar = tile['x'], tile['y']
+    x_size = arena_size['width']
+    y_size = arena_size['height']
     if x_wom == x_tar and y_wom == y_tar:
         return False
     elif dir == 'n':
-        return x_wom == x_tar and (shot_range >= (y_wom - y_tar) % arena_size)
+        return x_wom == x_tar and (shot_range >= (y_wom - y_tar) % y_size)
     elif dir == 'e':
-        return y_wom == y_tar and (shot_range >= (x_tar - x_wom) % arena_size)
+        return y_wom == y_tar and (shot_range >= (x_tar - x_wom) % x_size)
     elif dir == 's':
-        return x_wom == x_tar and (shot_range >= (y_tar - y_wom) % arena_size)
+        return x_wom == x_tar and (shot_range >= (y_tar - y_wom) % y_size)
     elif dir == 'w':
-        return y_wom == y_tar and (shot_range >= (x_wom - x_tar) % arena_size)
+        return y_wom == y_tar and (shot_range >= (x_wom - x_tar) % x_size)
     else:
         return False
 
@@ -189,10 +201,10 @@ def build_resp(action, direction=None):
     else:
         return {'action': action, 'metadata': {'direction': direction}}
 
-def new_direction(direction, loc, wombat, arena_half):
+def new_direction(direction, loc, wombat, arena_size):
     dirs = ['n', 'e', 's', 'w']
     dirs.remove(direction)
-    positions = [dir for dir in dirs if is_facing(dir, loc, arena_half, wombat)]
+    positions = [dir for dir in dirs if is_facing(dir, loc, arena_size, wombat)]
     if positions != []:
         return turn_to_dir(direction, positions[0])
     else:
@@ -203,13 +215,13 @@ def front_tile(dir, arena_size, wombat={'x': 3, 'y': 3}):
     x = wombat['x']
     y = wombat['y']
     if dir == 'n':
-        return {'x': x, 'y': (y - 1) % arena_size}
+        return {'x': x, 'y': (y - 1) % arena_size['height']}
     elif dir == 'e':
-        return {'x': (x + 1) % arena_size, 'y': y}
+        return {'x': (x + 1) % arena_size['width'], 'y': y}
     elif dir == 's':
-        return {'x': x, 'y': (y + 1) % arena_size}
+        return {'x': x, 'y': (y + 1) % arena_size['height']}
     elif dir == 'w':
-        return {'x': (x - 1) % arena_size, 'y': y}
+        return {'x': (x - 1) % arena_size['width'], 'y': y}
     else:
         # This should never happen
         return {'x': x, 'y': y}
@@ -218,15 +230,15 @@ def is_clear(arena, tile):
     x, y = tile['x'], tile['y']
     return arena[y][x]['contents']['type'] not in blockers
 
-def move_to(arena, arena_half, dir, loc, wombat={'x': 3, 'y': 3}):
-    if is_facing(dir, loc, arena_half, wombat) and is_clear(
-      arena, front_tile(dir, arena_half * 2, wombat)):
+def move_to(arena, arena_size, dir, loc, wombat={'x': 3, 'y': 3}):
+    if is_facing(dir, loc, arena_size, wombat) and is_clear(
+      arena, front_tile(dir, arena_size, wombat)):
         return build_resp('move')
     else:
-        return build_resp('turn', new_direction(dir, loc, wombat, arena_half))
+        return build_resp('turn', new_direction(dir, loc, wombat, arena_size))
 
-def focus_sight(arena):
-    return [row[1:7] for row in arena[1:7]]
+def focus_sight(arena, arena_size):
+    return [row[1:arena_size['width']] for row in arena[1:arena_size['height']]]
 
 def select_target(arena, arena_size, wombat={'x': 3, 'y': 3}, wall=True):
     possible = possible_points(arena, wombat, wall=wall)

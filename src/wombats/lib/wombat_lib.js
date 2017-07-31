@@ -45,7 +45,10 @@ module.exports = function() {
   };
 
   this.get_arena_size = function(state) {
-    return state['global-dimensions'][0];
+    return {
+      width: state['global-dimensions'][0],
+      height: state['global-dimensions'][1]
+    };
   };
 
   this.add_locs = function(arena) {
@@ -72,10 +75,11 @@ module.exports = function() {
   };
 
   this.build_initial_global_state = function(global_size) {
-    var matrix = new Array(global_size);
+    var matrix = new Array(global_size.height);
     for(i = 0; i < global_size; i++) {
-      matrix[i] = new Array(global_size);
+      matrix[i] = new Array(global_size.width);
       for(j = 0; j < global_size; j++) {
+        // Need to get a deep copy of the default tile so that they can be altered independently
         matrix[i][j] = JSON.parse(JSON.stringify(default_tile));
       }
     }
@@ -88,8 +92,8 @@ module.exports = function() {
   };
 
   this.merge_global_state = function(global_arena, local_state, global_size) {
-    var x_offset = (local_state['global-coords'][0] - 3) % global_size;
-    var y_offset = (local_state['global-coords'][1] - 3) % global_size;
+    var x_offset = (local_state['global-coords'][0] - 3) % global_size.height;
+    var y_offset = (local_state['global-coords'][1] - 3) % global_size.width;
     var local_tiles = filter_arena(add_locs(local_state.arena), persistent);
 
     var wombat = {contents: {type: open_key},
@@ -99,8 +103,8 @@ module.exports = function() {
 
     for (i = 0; i < local_tiles.length; i++) {
       var tile = local_tiles[i];
-      tile.x = (tile.x + x_offset) % global_size;
-      tile.y = (tile.y + y_offset) % global_size;
+      tile.x = (tile.x + x_offset) % global_size.width;
+      tile.y = (tile.y + y_offset) % global_size.height;
       global_arena = add_to_state(global_arena, tile);
     }
 
@@ -112,7 +116,7 @@ module.exports = function() {
     for (level in path) {
       temp = temp[path[level]];
       if (null == temp) {
-        return build_initial_global_state(state['global-dimensions'][0]);
+        return build_initial_global_state(get_arena_size(state));
       }
     }
     return temp;
@@ -122,19 +126,21 @@ module.exports = function() {
     return arena[3][3].contents.orientation;
   };
   
-  this.is_facing = function(dir, target, arena_half, wombat={x: 3, y:3}) {
+  this.is_facing = function(dir, target, arena_size, wombat={x: 3, y:3}) {
+    var x_half = arena_size.width / 2;
+    var y_half = arena_size.height / 2;
     switch(dir) {
       case 'n':
-        return (target.y != wombat.y) && (arena_half >= mod(wombat.y - target.y, (arena_half * 2)));
+        return (target.y != wombat.y) && (y_half >= mod(wombat.y - target.y, (y_half * 2)));
         break;
       case 'e':
-        return (target.x != wombat.x) && (arena_half >= mod(target.x - wombat.x, (arena_half * 2)));
+        return (target.x != wombat.x) && (x_half >= mod(target.x - wombat.x, (x_half * 2)));
         break;
       case 's':
-        return (target.y != wombat.y) && (arena_half >= mod(target.y - wombat.y, (arena_half * 2)));
+        return (target.y != wombat.y) && (y_half >= mod(target.y - wombat.y, (y_half * 2)));
         break;
       case 'w':
-        return (target.x != wombat.x) && (arena_half >= mod(wombat.x - target.x, (arena_half * 2)));
+        return (target.x != wombat.x) && (x_half >= mod(wombat.x - target.x, (x_half * 2)));
         break;
       default:
         return false;
@@ -142,11 +148,11 @@ module.exports = function() {
   };
 
   this.distance_to_tile = function(dir, node, arena_size, wombat={x: 3, y:3 }) {
-    var facing = is_facing(dir, node, arena_size / 2, wombat) ? 0 : 1;
+    var facing = is_facing(dir, node, arena_size, wombat) ? 0 : 1;
     var x_dist = Math.min(Math.abs(node.x - wombat.x),
-                          arena_size + Math.min(node.x, wombat.x) - Math.max(node.x, wombat.x));
+                          arena_size.width + Math.min(node.x, wombat.x) - Math.max(node.x, wombat.x));
     var y_dist = Math.min(Math.abs(node.y - wombat.y),
-                          arena_size + Math.min(node.y, wombat.y) - Math.max(node.y, wombat.y));
+                          arena_size.height + Math.min(node.y, wombat.y) - Math.max(node.y, wombat.y));
     var turn = 0 == Math.min(x_dist, y_dist) ? 0 : 1;
     return x_dist + y_dist + facing + turn;
   };
@@ -164,16 +170,16 @@ module.exports = function() {
     }
     switch(dir) {
       case 'n':
-        return wom.x == tile.x && (shot_range >= mod(wom.y - tile.y, arena_size));
+        return wom.x == tile.x && (shot_range >= mod(wom.y - tile.y, arena_size.height));
         break;
       case 'e':
-        return wom.y == tile.y && (shot_range >= mod(tile.x - wom.x, arena_size));
+        return wom.y == tile.y && (shot_range >= mod(tile.x - wom.x, arena_size.width));
         break;
       case 's':
-        return wom.x == tile.x && (shot_range >= mod(tile.y - wom.y, arena_size));
+        return wom.x == tile.x && (shot_range >= mod(tile.y - wom.y, arena_size.height));
         break;
       case 'w':
-        return wom.x == tile.x && (shot_range >= mod(wom.y - tile.y, arena_size));
+        return wom.x == tile.x && (shot_range >= mod(wom.y - tile.y, arena_size.width));
         break;
       default:
         return false;
@@ -208,11 +214,11 @@ module.exports = function() {
     }
   };
 
-  this.new_direction = function(dir, loc, wombat, arena_half) {
+  this.new_direction = function(dir, loc, wombat, arena_size) {
     var dirs = ['n', 'e', 's', 'w'];
     dirs.splice(dirs.indexOf(dir), 1);
     var positions = dirs.filter(function(dir) {
-      return is_facing(dir, loc, arena_half, wombat);
+      return is_facing(dir, loc, arena_size, wombat);
     });
     if (positions.length == 0) {
       return 'left';
@@ -225,13 +231,13 @@ module.exports = function() {
     var x = wombat.x, y = wombat.y;
     switch (dir) {
       case 'n':
-        return {x: x, y: mod(y - 1, arena_size)};
+        return {x: x, y: mod(y - 1, arena_size.height)};
       case 'e':
-        return {x: mod(x + 1, arena_size), y: y};
+        return {x: mod(x + 1, arena_size.width), y: y};
       case 's':
-        return {x: x, y: mod(y + 1, arena_size)};
+        return {x: x, y: mod(y + 1, arena_size.height)};
       case 'w':
-        return {x: mod(x - 1, arena_size), y: y};
+        return {x: mod(x - 1, arena_size.width), y: y};
       default:
         return {x: x, y: y};
     }
@@ -243,12 +249,12 @@ module.exports = function() {
     return !blockers.includes(arena[y][x].contents.type);
   };
 
-  this.move_to = function(arena, arena_half, dir, loc, wombat={x: 3, y: 3}) {
-    if (is_facing(dir, loc, arena_half, wombat) && is_clear(arena, front_tile(dir, arena_half * 2, wombat))) {
+  this.move_to = function(arena, arena_size, dir, loc, wombat={x: 3, y: 3}) {
+    if (is_facing(dir, loc, arena_size, wombat) && is_clear(arena, front_tile(dir, arena_size, wombat))) {
       return build_resp('move');
     }  
     else {
-      return build_resp('turn', new_direction(dir, loc, wombat, arena_half));
+      return build_resp('turn', new_direction(dir, loc, wombat, arena_size));
     }
   };
 
@@ -267,7 +273,7 @@ module.exports = function() {
     }
     var direction = get_direction(arena);
     for (tile in possible) {
-      possible[tile].dist = distance_to_tile(direction, tile, arena_size, wombat);
+      possible[tile].dist = distance_to_tile(direction, possible[tile], arena_size, wombat);
     }
     return possible.sort(function(a, b) {
       return a.dist - b.dist;
