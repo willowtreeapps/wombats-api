@@ -5,16 +5,17 @@
   (:require [clojure.java.io :as io]
             [com.stuartsierra.component :as component]
             [environ.core :refer [env]]
-            [immuconf.config :as immuconf]))
+            [immuconf.config :as immuconf]
+            [taoensso.timbre :as log]))
 
 ;; Private helper functions
 
 (defn- get-app-env
-  "Determins the environment that the application is running in.
+  "Determines the environment that the application is running in.
 
   Defaults to :dev"
   []
-  (keyword (get env :app-env "dev")))
+  (keyword (get env :wombats-env "dev")))
 
 (defn- remove-nil
   "Remove nil values from a map"
@@ -39,26 +40,31 @@
     (spit file-name (str formatted-config))
     (io/file file-name)))
 
-(defn- get-private-config-file
+(defn get-private-config-file
   []
-  (let [file-location (str (System/getProperty "user.home") "/.wombats/config.edn")]
-    (when (.exists (io/as-file file-location))
-      file-location)))
+  (let [file-location-dev (str (System/getProperty "user.dir") "/config/config.edn")
+        file-location-prod (str (System/getProperty "user.home") "/.wombats/config.edn")]
+    (cond
+      (.exists (io/as-file file-location-prod)) file-location-prod
+      (.exists (io/as-file file-location-dev)) file-location-dev)))
 
 (defn- get-config-files
-  "Determins the files that should be used for configuration.
+  "Determines the files that should be used for configuration.
 
    Note: java.io/resource returns nil (if a file is not found) &
          searches for files on the classpate not within the file
          system. immuconf uses slup under the hood which lets you
          specify the ~ user dir.
 
-   Defaults -> [config/base.edn, ~/.wombats/config.edn,  config/{env}.edn]"
+   Defaults -> [config/base.edn, /config/config.edn, ~/.wombats/config.edn"
   [env]
   (let [base-config (io/resource "base.edn")
         private-config-envs (get-private-envs)
         private-config-file (get-private-config-file)
         env-config (io/resource (str (name env) ".edn"))]
+    (if private-config-file
+      (log/info (str "Using private config-file " private-config-file))
+      (log/info "Not using a private config-file"))
     (remove nil? [base-config
                   private-config-envs
                   private-config-file

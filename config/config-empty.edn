@@ -1,0 +1,5 @@
+{:github {:client-id "YourClientID"
+          :client-secret "YourClientSecret"}
+ :aws {:access-key-id "YourAWSAccessKeyId"
+       :secret-key "YourAWSSecretKey"}
+ :security {:signing-secret "Anything"}}

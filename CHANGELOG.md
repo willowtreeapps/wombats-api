@@ -1,12 +1,20 @@
 CHANGELOG
 =========
 
-## Develop
+## Develop (6.13.2017)
 **Enhancements**
-* None
+* Simpler local develop setup [Eli Bosley][/elibosley] *No Issue*
+* Game scheduler implemented to start a new game daily
+    [Eli Bosley][/elibosley] *No Issue*
+* Datomic-Pro optional based on environment [Eli Bosley][/elibosley] *No Issue*
+* Simplified calls to reset, seed, etc. database [Eli Bosley][/elibosley] *No Issue*
 
 **Bug Fixes**
-* None
+* Fixed a bug introduced in PR #[393](https://github.com/willowtreeapps/wombats-api/pull/393) with config files in production [Eli Bosley][/elibosley] & [C.P. Dehli][/dehli] *No Issue*
+* Dev-DDB Reloaded.Repl Fix
+  [Eli Bosley](/elibosley) #[400](https://github.com/willowtreeapps/wombats-api/issues/400)
+* Fixed an issue with loading config files introduced in PR #[397](https://github.com/willowtreeapps/wombats-api/pull/397)
+  [Eli Bosley](/elibosley) *No Issue*
 
 ## QA (4.11.2017)
 **Enhancements**
@@ -72,3 +80,4 @@ CHANGELOG
 [/emily]: https://github.com/emilyseibert
 [/oconn]: https://github.com/oconn
 [/erochest]: https://github.com/erochest
+[/elibosley]: http://github.com/elibosley
