@@ -1,29 +1,28 @@
 CHANGELOG
 =========
 
-## Develop (6.13.2017)
-**Enhancements**
-* Simpler local develop setup [Eli Bosley][/elibosley] *No Issue*
-* Game scheduler implemented to start a new game daily
-    [Eli Bosley][/elibosley] *No Issue*
-* Datomic-Pro optional based on environment [Eli Bosley][/elibosley] *No Issue*
-* Simplified calls to reset, seed, etc. database [Eli Bosley][/elibosley] *No Issue*
-
-**Bug Fixes**
-* Fixed a bug introduced in PR #[393](https://github.com/willowtreeapps/wombats-api/pull/393) with config files in production [Eli Bosley][/elibosley] & [C.P. Dehli][/dehli] *No Issue*
-* Dev-DDB Reloaded.Repl Fix
-  [Eli Bosley](/elibosley) #[400](https://github.com/willowtreeapps/wombats-api/issues/400)
-* Fixed an issue with loading config files introduced in PR #[397](https://github.com/willowtreeapps/wombats-api/pull/397)
-  [Eli Bosley](/elibosley) *No Issue*
-
-## QA (4.11.2017)
+## Develop
 **Enhancements**
 * None
 
 **Bug Fixes**
 * None
 
-## Master (4.11.2017)
+## QA
+**Enhancements**
+* None
+
+**Bug Fixes**
+* None
+
+## Master
+**Enhancements**
+* None
+
+**Bug Fixes**
+* None
+
+## 1.0.0-alpha2 (8.2.2017)
 **Enhancements**
 * AWS Lambda Mock
     [Eric Rochester][/erochest] #[329](https://github.com/willowtreeapps/wombats-api/issues/329)
@@ -45,6 +44,14 @@ CHANGELOG
     [Matt O'Connell][/oconn] #[336](https://github.com/willowtreeapps/wombats-api/issues/336)
 * CORS Fixed
     [Matt O'Connell][/oconn] #[177](https://github.com/willowtreeapps/wombats-api/issues/177)
+* Simpler local develop setup
+    [Eli Bosley][/elibosley] *No Issue*
+* Game scheduler implemented to start a new game daily
+    [Eli Bosley][/elibosley] *No Issue*
+* Datomic-Pro optional based on environment
+    [Eli Bosley][/elibosley] *No Issue*
+* Simplified calls to reset, seed, etc. database
+    [Eli Bosley][/elibosley] *No Issue*
 
 **Bug Fixes**
 * Additional Error Logging in OAuth2 Response
@@ -61,6 +68,12 @@ CHANGELOG
     [C.P. Dehli][/dehli] *No Issue*
 * Remove Swagger schema (so that Swagger site works)
     [C.P. Dehli][/dehli] *No Issue*
+* Fixed a bug introduced in PR #[393](https://github.com/willowtreeapps/wombats-api/pull/393) with config files in production
+    [Eli Bosley][/elibosley] & [C.P. Dehli][/dehli] *No Issue*
+* Dev-DDB Reloaded.Repl Fix
+    [Eli Bosley](/elibosley) #[400](https://github.com/willowtreeapps/wombats-api/issues/400)
+* Fixed an issue with loading config files introduced in PR #[397](https://github.com/willowtreeapps/wombats-api/pull/397)
+    [Eli Bosley](/elibosley) *No Issue*
 
 ## 1.0.0-alpha1 (3.14.2017)
 **Enhancements**
