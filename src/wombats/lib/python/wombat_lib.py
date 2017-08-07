@@ -61,8 +61,11 @@ def add_locs(arena):
     return arena
 
 def filter_arena(arena, filters=None):
-    '''Filter the arena to return only nodes that contain one of the supplied types'''
+    '''
+    Filter the arena to return only nodes that contain one of the supplied types
+    '''
     if filters is None:
+        # With no filters returns the flattened arena
         return [tile for row in arena for tile in row]
     else:
         return [tile for row in arena for tile in row if tile['contents']['type'] in filters]
@@ -73,14 +76,13 @@ def build_initial_global_state(global_size):
             for _ in range(global_size['height'])]
 
 def add_to_state(arena, elem):
-    '''Update the global state with the given element and position'''
+    '''Update the global state with the given element'''
     # Modifies the arena object passed in and returns it
     arena[elem['y']][elem['x']] = elem
     return arena
 
 def merge_global_state(global_arena, local_state, global_size):
-    '''Add local state vision to global saved state.
-    Position is that of the player which corresponds to (3,3) in local matrix'''
+    '''Add local state vision to global saved state.'''
     x_offset = (local_state['global-coords'][0] - 3) % global_size['width']
     y_offset = (local_state['global-coords'][1] - 3) % global_size['height']
     local_tiles = filter_arena(add_locs(local_state['arena']), persistent)
@@ -114,13 +116,16 @@ def get_global_state(state, path):
         return temp
 
 def get_direction(arena):
-    '''Gets the current direction of your wombat from the 2d arena array'''
+    '''
+    Gets the current direction of your wombat from the 2d arena array
+    Assumes local arena vision will always be 7x7
+    '''
     return arena[3][3]['contents']['orientation']
 
 def is_facing(dir, target, arena_size, wombat={'x': 3, 'y': 3}):
     '''
     Returns true if a move forward will bring you closer to the target location
-    If no self coordinated are provided, use distance from (x, y)
+    If no wombat coordinates are provided, use distance from (3, 3)
     '''
     x_half = arena_size['width'] / 2
     y_half = arena_size['height'] / 2
@@ -142,14 +147,17 @@ def is_facing(dir, target, arena_size, wombat={'x': 3, 'y': 3}):
 
 def distance_to_tile(dir, node, arena_size, wombat={'x': 3, 'y': 3}):
     '''
-    Gets the minimum numbers of moves it would take to travel to a given tile
+    Gets the minimum number of moves it would take to travel to a given tile
     Does not take into account anything that might be in the way
     '''
+    # Will you need to turn to face location?
     facing = 0 if is_facing(dir, node, arena_size, wombat) else 1
+    # Minimum of actual distance or distance with wraparound
     x_dist = min(abs(node['x'] - wombat['x']), arena_size['width'] +
                  min(node['x'], wombat['x']) - max(node['x'], wombat['x']))
     y_dist = min(abs(node['y'] - wombat['y']), arena_size['height'] +
                  min(node['y'], wombat['y']) - max(node['y'], wombat['y']))
+    # Will you need to turn again
     turn = 0 if min(x_dist, y_dist) == 0 else 1
     return x_dist + y_dist + facing + turn
 
@@ -164,11 +172,15 @@ def turn_to_dir(curr_dir, next_dir):
     return motion[diff]
 
 def shootable(dir, wombat, tile, arena_size):
+    '''
+    Helper function to determine if wombat can shoot given tile
+    '''
     x_wom, y_wom = wombat['x'], wombat['y']
     x_tar, y_tar = tile['x'], tile['y']
     x_size = arena_size['width']
     y_size = arena_size['height']
     if x_wom == x_tar and y_wom == y_tar:
+        # You can't shoot yourself
         return False
     elif dir == 'n':
         return x_wom == x_tar and (shot_range >= (y_wom - y_tar) % y_size)
@@ -182,6 +194,10 @@ def shootable(dir, wombat, tile, arena_size):
         return False
 
 def can_shoot(dir, arena, arena_size, wombat={'x': 3, 'y': 3}, wall=True):
+    '''
+    Searches the list of all tiles to determine if any tile is shootable
+    If wall is False, doesn't include steel-barrier or wood-barrier
+    '''
     arena = add_locs(arena)
     filters = targets if wall else enemies
     possible_targets = filter_arena(arena, filters)
@@ -189,29 +205,44 @@ def can_shoot(dir, arena, arena_size, wombat={'x': 3, 'y': 3}, wall=True):
             if shootable(dir, wombat, tile, arena_size)] != []
 
 def possible_points(arena, wombat={'x': 3, 'y': 3}, wall=True):
+    '''
+    Returns a list of all possible point sources within field of vision
+    If wall is False, doesn't include steel-barrier or wood-barrier
+    '''
     arena = add_locs(arena)
     filters = point_sources if wall else points_no_wall
     possible = filter_arena(arena, filters)
+    # Return list of tiles minus the wombat itself
     x, y = wombat['x'], wombat['y']
     return [tile for tile in possible if (tile['x'] != x or tile['y'] != y)]
 
 def build_resp(action, direction=None):
+    '''
+    Helper function to create a well formed response object
+    '''
     if direction is None:
         return {'action': action, 'metadata': {}}
     else:
         return {'action': action, 'metadata': {'direction': direction}}
 
 def new_direction(direction, loc, wombat, arena_size):
+    '''
+    Returns which direction to turn to face target location
+    Currently returns None if no direction is facing target
+    '''
     dirs = ['n', 'e', 's', 'w']
     dirs.remove(direction)
     positions = [dir for dir in dirs if is_facing(dir, loc, arena_size, wombat)]
     if positions != []:
         return turn_to_dir(direction, positions[0])
     else:
-        # TODO: implement logic here
-        return 'left'
+        return None
 
 def front_tile(dir, arena_size, wombat={'x': 3, 'y': 3}):
+    '''
+    Returns the a dictionary containing keys 'x' and 'y' representing the tile
+    directly in front of the wombat
+    '''
     x = wombat['x']
     y = wombat['y']
     if dir == 'n':
@@ -227,20 +258,36 @@ def front_tile(dir, arena_size, wombat={'x': 3, 'y': 3}):
         return {'x': x, 'y': y}
 
 def is_clear(arena, tile):
+    '''
+    Returns true if wombat can safely occupy given tile, returns false otherwise
+    '''
     x, y = tile['x'], tile['y']
     return arena[y][x]['contents']['type'] not in blockers
 
 def move_to(arena, arena_size, dir, loc, wombat={'x': 3, 'y': 3}):
+    '''
+    Returns the command to move closer to target location
+    If cannot move forward and directly facing location returns None
+    '''
     if is_facing(dir, loc, arena_size, wombat) and is_clear(
       arena, front_tile(dir, arena_size, wombat)):
         return build_resp('move')
     else:
-        return build_resp('turn', new_direction(dir, loc, wombat, arena_size))
+        new_dir = new_direction(dir, loc, wombat, arena_size)
+        return build_resp('turn', new_dir) if new_dir is not None else None
 
-def focus_sight(arena, arena_size):
-    return [row[1:arena_size['width']] for row in arena[1:arena_size['height']]]
+def focus_sight(arena):
+    '''
+    Changes the 7x7 local vision to 5x5 to focus on closer objects
+    '''
+    return [row[1:5] for row in arena[1:5]]
 
 def select_target(arena, arena_size, wombat={'x': 3, 'y': 3}, wall=True):
+    '''
+    Returns the closest point source to the wombat, by number of moves it
+        would take to reach location
+    Does not take into account anything blocking the path or total possible value
+    '''
     possible = possible_points(arena, wombat, wall=wall)
     if possible == []:
         return None

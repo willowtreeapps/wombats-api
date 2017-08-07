@@ -6,7 +6,7 @@
   [code state timeout]
   (let [script (str "require(\""
                     (System/getProperty "user.dir")
-                    "/src/wombats/lib/wombat_lib.js\")();"
+                    "/src/wombats/lib/javascript/wombat_lib.js\")();"
                     "const stdin  = process.stdin,\n"
                     "      stdout = process.stdout;\n\n"
                     "const wombats = "

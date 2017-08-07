@@ -1,4 +1,4 @@
-// Import the standard library and add elper functions to the same namespace
+// Import the standard library and add helper functions to the same namespace
 require("wombat_lib.js")();
 
 const handleEvent = (event, time_left) => {

@@ -78,4 +78,4 @@ CHANGELOG
 [/oconn]: https://github.com/oconn
 [/erochest]: https://github.com/erochest
 [/elibosley]: http://github.com/elibosley
-[/daniel-hoerauf]: http://github.com/Daniel-Hoerauf
+[/daniel-hoerauf]: https://github.com/Daniel-Hoerauf

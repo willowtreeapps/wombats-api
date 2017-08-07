@@ -38,9 +38,9 @@
 
 (defn get-arena-size
   "Fetches the size of one side of the arena from the state"
-  [state]
-  {:width (first (:global-dimensions state))
-   :height (second (:global-dimensions state))})
+  [{[width height] :global-dimensions}]
+  {:width width
+   :height height})
 
 (defn in?
   "Return true if coll contains elem"
@@ -75,7 +75,7 @@
   (assoc matrix y (assoc (nth matrix y) x elem)))
 
 (defn merge-global-state
-  "Add local state vision to global saved state. Position is that of the player which corresponds to (3,3) in local matrix"
+  "Add local state vision to global saved state"
   [global-state local-state arena-size]
     (let [local-nodes (filter-arena ((comp add-locs :arena) local-state)
                                     "food" "poison" "open" "wood-barrier" "steel-barrier")
@@ -99,7 +99,7 @@
         size  (get-arena-size state)]
     (if (nil? saved)
       (build-initial-global-state size)
-      saved )))
+      saved)))
 
 (defn get-direction
   "Get the current direction of your wombat from the 2d arena array"
@@ -183,15 +183,14 @@
   
 
 (defn new-direction
-  "Pick new direction to turn to get to loc. If no direction is possible, turns left"
+  "Pick new direction to turn to get to loc. If no direction is possible, returns nil"
   [dir loc self arena-size]
   (def ^:private orientations ["n" "e" "s" "w"])
   (let [available (remove #(= % dir) orientations)
         positions (filter #(facing? % loc arena-size self) available)]
     (if (not (empty? positions))
-        (turn-to-dir dir (first positions))
-        ; TODO: implement logic here
-        :left)))
+      (turn-to-dir dir (first positions))
+      nil)))
 
 (defn front-tile
   "Returns a map containing {:x x, :y y}, where x and y are the coordinates directly in front"
@@ -209,11 +208,15 @@
   (not (in? (get-in (nth (nth arena y) x) [:contents :type]) blockers)))
 
 (defn move-to
-  "Take the best action to get to given space"
+  "Take the best action to get to given space
+   If cannot move forward and directly facing location returns nil"
   ([arena arena-size dir loc self]
     (if (and (facing? dir loc arena-size self) (is-clear? arena (front-tile dir arena-size self)))
-        (build-resp :move)
-        (build-resp :turn (new-direction dir loc self arena-size))))
+      (build-resp :move)
+      (let [new-dir (new-direction dir loc self arena-size)]
+        (if (nil? new-dir) 
+          nil
+          (build-resp :turn new-dir)))))
   ([arena arena-size dir loc]
     (move-to dir arena arena-size loc {:x 3 :y 3})))
 
