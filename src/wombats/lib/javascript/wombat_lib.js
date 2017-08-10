@@ -234,13 +234,23 @@ const possible_points = function(arena, wombat={x: 3, y: 3}, wall=true) {
   });
 };
 
-const build_resp = function(action, direction=null) {
-  // Helper function to create a well formed response
+const build_command = function(action, direction=null) {
+  // Helper function to create a well formed command
   if (direction == null) {
     return {action: action, metadata: {}};
   }
   else {
     return {action: action, metadata: {direction: direction}};
+  }
+};
+
+const build_resp = function(command, state=null) {
+  // Helper function to create a well formed response
+  if (state == null) {
+    return {command: command, state: {}};
+  }
+  else {
+    return {command: command, state: state};
   }
 };
 
@@ -287,11 +297,11 @@ const move_to = function(arena, arena_size, dir, loc, wombat={x: 3, y: 3}) {
   // Returns the command to move wombat closer to target location
   // If cannot move forward and directly facing location returns null
   if (is_facing(dir, loc, arena_size, wombat) && is_clear(arena, front_tile(dir, arena_size, wombat))) {
-    return build_resp('move');
+    return build_command('move');
   }  
   else {
     const new_dir = new_direction(dir, loc, wombat, arena_size);
-    return (new_dir === null) ? null :  build_resp('turn', new_dir);
+    return (new_dir === null) ? null :  build_command('turn', new_dir);
   }
 };
 
@@ -350,6 +360,7 @@ module.exports = function() {
   this.mod = mod;
   this.copy_arena = copy_arena;
   this.get_arena_size = get_arena_size;
+  this.build_command = build_command;
   this.build_resp = build_resp;
 
   // Global State Manipulations

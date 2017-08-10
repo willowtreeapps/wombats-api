@@ -217,14 +217,23 @@ def possible_points(arena, wombat={'x': 3, 'y': 3}, wall=True):
     x, y = wombat['x'], wombat['y']
     return [tile for tile in possible if (tile['x'] != x or tile['y'] != y)]
 
-def build_resp(action, direction=None):
+def build_command(action, direction=None):
     '''
-    Helper function to create a well formed response object
+    Helper function to create a well formed command
     '''
     if direction is None:
         return {'action': action, 'metadata': {}}
     else:
         return {'action': action, 'metadata': {'direction': direction}}
+
+def build_resp(command, state=None):
+    '''
+    Helper function to create a well formed response object
+    '''
+    if state is None:
+        return {'command': command, 'state': {}}
+    else:
+        return {'command': command, 'state': state}
 
 def new_direction(direction, loc, wombat, arena_size):
     '''
@@ -272,10 +281,10 @@ def move_to(arena, arena_size, dir, loc, wombat={'x': 3, 'y': 3}):
     '''
     if is_facing(dir, loc, arena_size, wombat) and is_clear(
       arena, front_tile(dir, arena_size, wombat)):
-        return build_resp('move')
+        return build_command('move')
     else:
         new_dir = new_direction(dir, loc, wombat, arena_size)
-        return build_resp('turn', new_dir) if new_dir is not None else None
+        return build_command('turn', new_dir) if new_dir is not None else None
 
 def focus_sight(arena):
     '''

@@ -7,8 +7,9 @@ This is standard library for wombats, including functions that you may find help
 
 - [add\_locs()](#add_locsarena)
 - [add\_to\_state()](#add_to_statearena-elem)
+- [build\_command()](#build_commandaction-directionnone)
 - [build\_initial\_global\_state()](#build_initial_global_stateglobal_size)
-- [build\_resp()](#build_respaction-directionnone)
+- [build\_resp()](#build_respcommand-statenone)
 - [can\_shoot()](#can_shootdir-arena-arena_size-wombatx-3-y-3-walltrue)
 - [distance\_to\_tile()](#distance_to_tiledir-node-arena_size-wombatx-3-y-3)
 - [filter\_arena()](#filter_arenaarena-filtersnone)
@@ -119,6 +120,38 @@ arena = add_to_state(state['arena'], tile)
 ##### Returns
 Modifies the arena in place as well as returning the new 2d array representing the arena
 
+
+### `build_command(action, direction=None)`
+**Helper function that will create a well formed response for a single wombat action**
+##### Params
+- `action`
+
+  A string representing the action to be taken by your wombat
+
+- `direction`
+
+  For `smoke` or `turn`, a string representing the direction in which to take the action. Defaults to `None`
+##### Usage
+```python
+# Move forward
+resp = build_command('move')
+
+# Turn around
+resp = build_command('turn', 'about-face')
+
+# Throw smoke on top of yourself
+resp = build_command('smoke', 'drop')
+
+# Shoot directly in front of yourself
+resp = build_command('shoot')
+
+# Have your wombat actually perform the action
+return {'command': resp}
+```
+##### Returns
+Returns a dictionary containing the keys `'action'` and `'metadata'`
+
+
 ### `build_initial_global_state(global_size)`
 **Constructs an initial global state populated by fog**
 ##### Params
@@ -136,35 +169,28 @@ global_arena = build_initial_global_state(global_size)
 ##### Returns
 Returns an 2 dimensional array with `height` rows where each row contains `width` shallow copies of `default_tile`
 
-### `build_resp(action, direction=None)`
-**Helper function that will create a well formed response for a single wombat action**
+
+### `build_resp(command, state=None)`
+**Helper function that will create a well formed response for your wombat function**
 ##### Params
-- `action`
+- `command`
 
-  A string representing the action to be taken by your wombat
+  The dictionary with keys `'action'` and `'metadata'` defining the action to be taken by your wombat
 
-- `direction`
+- `state`
 
-  For `smoke` or `turn`, a string representing the direction in which to take the action. Defaults to `None`
+  A dictionary representing the information you wish to save in the state object. Defaults to `None`
 ##### Usage
 ```python
-# Move forward
-resp = build_resp('move')
+action = build_command('move') # However you want to construct your command
 
-# Turn around
-resp = build_resp('turn', 'about-face')
-
-# Throw smoke on top of yourself
-resp = build_resp('smoke', 'drop')
-
-# Shoot directly in front of yourself
-resp = build_resp('shoot')
-
-# Have your wombat actually perform the action
-return {'command': resp}
+return build_resp(action)
+# Or
+to_save = {'did_turn': True} # Whatever you want to save in state
+return build_resp(action, to_save
 ```
 ##### Returns
-Returns a dictionary containing the keys `'action'` and `'metadata'`
+Returns a dictionary containing the keys `'command'` and `'state'`
 
 ### `can_shoot(dir, arena, arena_size, wombat={'x': 3, 'y': 3}, wall=True)`
 **Returns true if wombat shooting would damage an enemy or barrier**

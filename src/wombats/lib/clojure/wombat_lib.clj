@@ -172,14 +172,19 @@
      (remove #(and (= (:x %) (:x wombat)) (= (:y %) (:y wombat)))
             (filter-arena (add-locs arena) filters))))
 
-(defn build-resp
-  "Helper method to construct the return command"
+(defn build-command
+  "Helper method to construct the wombat action"
   ; Args can be passed as either keywords or strings
   ([action] {:action (keyword action)
              :metadata {}})
   ([action direction]
     {:action (keyword action)
      :metadata {:direction (keyword direction)}}))
+
+(defn build-resp
+  "Helper function to construct the return command"
+  ([command] {:command command :state {}})
+  ([command state] {:command command :state state}))
   
 
 (defn new-direction
@@ -212,11 +217,11 @@
    If cannot move forward and directly facing location returns nil"
   ([arena arena-size dir loc self]
     (if (and (facing? dir loc arena-size self) (is-clear? arena (front-tile dir arena-size self)))
-      (build-resp :move)
+      (build-command :move)
       (let [new-dir (new-direction dir loc self arena-size)]
         (if (nil? new-dir) 
           nil
-          (build-resp :turn new-dir)))))
+          (build-command :turn new-dir)))))
   ([arena arena-size dir loc]
     (move-to dir arena arena-size loc {:x 3 :y 3})))
 
