@@ -147,6 +147,7 @@ resp = build_command('shoot')
 
 # Have your wombat actually perform the action
 return {'command': resp}
+# Or use build_resp() to return
 ```
 ##### Returns
 Returns a dictionary containing the keys `'action'` and `'metadata'`
@@ -187,7 +188,7 @@ action = build_command('move') # However you want to construct your command
 return build_resp(action)
 # Or
 to_save = {'did_turn': True} # Whatever you want to save in state
-return build_resp(action, to_save
+return build_resp(action, to_save)
 ```
 ##### Returns
 Returns a dictionary containing the keys `'command'` and `'state'`
@@ -378,6 +379,7 @@ Returns a strings that is one of `'n'`, `'e'`, `'s'`, or `'w'`
 global_state = get_global_state(state, ['saved-state', 'global', 'arena'])
 # Update the global state and do things with it
 
+# Use build_resp() and build_command() to simplify the return statement
 return { 
   'command': resp # Whatever action you are taking
   'state': {
