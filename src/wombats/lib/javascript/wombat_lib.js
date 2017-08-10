@@ -65,7 +65,7 @@ const get_arena_size = function(state) {
 
 const add_locs = function(arena) {
   // Add local x and y coordinates to the arena matrix
-  const arena = copy_arena(arena)
+  arena = copy_arena(arena)
   for(let y = 0; y < arena.length; y++) {
     const row = arena[y];
     for(let x = 0; x < row.length; x++) {

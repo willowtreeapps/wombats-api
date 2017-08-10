@@ -21,6 +21,7 @@ game_parameters = {
 }
 
 shot_range = game_parameters['shot-distance']
+
 zakano_key = 'zakano'
 wombat_key = 'wombat'
 steel_key = 'steel-barrier'
