@@ -5,7 +5,8 @@
   "This evalutes the py bot code against the state given."
   [code state timeout]
   (let [script (str "import json, sys, time\n\n\n"
-                    "def timeout():\n"
+                    (slurp "src/wombats/lib/python/wombat_lib.py")
+                    "\ndef timeout():\n"
                     "    return " timeout " - int(time.time() * 1000)"
                     "\n\n\n"
                     code
