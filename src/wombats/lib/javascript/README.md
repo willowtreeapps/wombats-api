@@ -11,6 +11,7 @@ This is standard library for wombats, including functions that you may find help
 - [build\_initial\_global\_state()](#build_initial_global_stateglobal_size)
 - [build\_resp()](#build_respcommand-statenull)
 - [can\_shoot()](#can_shootdir-arena-arena_size-wombatx-3-y-3-walltrue)
+- [copy\_arena()](#copy_arenaarena)
 - [distance\_to\_tile()](#distance_to_tiledir-node-arena_size-wombatx-3-y-3)
 - [filter\_arena()](#filter_arenaarena-filtersnull)
 - [focus\_sight()](#focus_sightarena)
@@ -21,6 +22,7 @@ This is standard library for wombats, including functions that you may find help
 - [is\_clear()](#is_cleararena-tile)
 - [is\_facing()](#is_facingdir-target-arena_size-wombatx-3-y-3)
 - [merge\_global\_state()](#merge_global_stateglobal_arena-local_state-global_size)
+- [mod()](#modn-m)
 - [move\_to()](#move_toarena-arena_size-dir-loc-wombatx-3-y-3)
 - [new\_direction()](#new_directiondirection-loc-wombat-arena_size)
 - [possible\_points()](#possible_pointsarena-wombatx-3-y-3-walltrue)
@@ -234,6 +236,21 @@ should_shoot = can_shoot('n', state.arena, global_size, wombat={x: 3, y: 3}, wal
 
 ##### Returns
 Returns true if there is a shootable object directly in front of wombat -- wraparound included -- or false otherwise
+
+
+### `copy_arena(arena)`
+**Returns a shallow copy of the arena**
+##### Params
+- `arena`
+
+  The two dimensional array of objects representing the current state of the game arena
+##### Usage
+```javascript
+// state is the top level parameter in the wombat function
+arena_copy = copy_arena(state.aren)
+```
+##### Returns
+Returns a 2 dimensional array of objects that represents the arena
 
 ### `distance_to_tile(dir, node, arena_size, wombat={x: 3, y: 3})`
 **Finds the minimum number of steps required to get from current position to node. Does not take into account actual pathfinding**
@@ -472,6 +489,24 @@ const updated_global_arena = merge_global_state(global_arena, state, global_size
 Returns the global arena with each persistent tile in the local arena overwritting the corresponding tile in the global arena
 
 
+### `mod(n, m)`
+**A modulus function for javascript**
+##### Params
+- `n`
+
+  An integer
+- `m`
+
+  An integer
+##### Usage
+```javascript
+mod(5, 7) // 7
+mod(-1, 3) // 2
+mod(7, 5) // 2
+```
+##### Returns
+Returns an integer
+
 ### `move_to(arena, arena_size, dir, loc, wombat={x: 3, y: 3})`
 **Pick a move that would move you closer to target location**
 ##### Params
@@ -577,7 +612,7 @@ possible_targets = possible_points(global_arena, wombat=wombat, wall=false)
 Returns a list of objects where each object is an arena tile
 
 ### `select_target(arena, arena_size, wombat={x: 3, y: 3}, wall=true)`
-**Get the closest point source to the player
+**Get the closest point source to the player**
 ##### Params
 - `arena`
 

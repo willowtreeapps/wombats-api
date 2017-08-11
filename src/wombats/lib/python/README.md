@@ -575,7 +575,7 @@ possible_targets = possible_points(global_arena, wombat=wombat, wall=False)
 Returns a list of dictionaries where each dictionary is an arena tile
 
 ### `select_target(arena, arena_size, wombat={'x': 3, 'y': 3}, wall=True)`
-**Get the closest point source to the player
+**Get the closest point source to the player**
 ##### Params
 - `arena`
 
